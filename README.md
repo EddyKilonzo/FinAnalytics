@@ -1,18 +1,33 @@
 # FinAnalytix
 
-**Smart money management for young Kenyans.** Track spending automatically, budget with AI-categorized transactions, get nudges before you overspend, and save toward goals—without the guesswork.
+**Smart money management for young Kenyans.**  
+Track spending, budget with AI-categorized transactions, get nudges before you overspend, and save toward goals—without the guesswork.
+
+---
+
+## Objective
+
+FinAnalytix helps young Kenyans **stop wondering where their money went and start controlling it**. We aim to:
+
+- **Track spending** with minimal friction — quick manual entry or future bank sync.
+- **Budget with confidence** — AI-categorized transactions, limits per category (e.g. Food, Transport, Social), and alerts before you overspend.
+- **Save toward goals** — set targets and deadlines, see progress and “on track” nudges (e.g. “Save KES X more per week to hit your goal 2 weeks early”).
+- **Learn as you go** — short 5–7 minute lessons (budgeting, saving, debt) shown when they’re most relevant (e.g. after recording HELB income or creating your first goal).
+- **Respect the user** — no judgment, no locking spending, no spam, no ads, no selling data. We only track and advise.
 
 ---
 
 ## Tech Stack
 
-| Layer | Technologies |
-|-------|--------------|
-| **Frontend** | Angular, TypeScript, Angular Material / Tailwind CSS, Chart.js / Recharts, PWA |
-| **Backend** | NestJS, TypeScript, JWT, TypeORM / Prisma |
-| **Database** | PostgreSQL |
-| **ML** | Python, scikit-learn, Flask / FastAPI |
-| **Deployment** | Vercel / Netlify (frontend), Heroku / Railway / Render (backend), Heroku Postgres / Supabase (DB), Docker (ML) |
+Built with a **frontend (Angular)**, **backend (NestJS)**, and **ML service (Python/FastAPI)** talking to a **PostgreSQL** database.
+
+| Layer | Tech | Badges |
+|-------|------|--------|
+| **Frontend** | Angular, TypeScript, RxJS | ![Angular](https://img.shields.io/badge/Angular-DD0031?style=flat-square&logo=angular&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white) ![RxJS](https://img.shields.io/badge/RxJS-B7178C?style=flat-square&logo=reactivex&logoColor=white) |
+| **Backend** | NestJS, TypeScript, Prisma, JWT | ![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=flat-square&logo=nestjs&logoColor=white) ![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=flat-square&logo=prisma&logoColor=white) ![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white) |
+| **Database** | PostgreSQL | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white) |
+| **ML service** | Python, FastAPI, scikit-learn | ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white) ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=flat-square&logo=scikit-learn&logoColor=white) |
+| **DevOps** | Docker, GitHub Actions | ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=github-actions&logoColor=white) |
 
 **Prerequisites:** Node.js 18+, Python 3.9+, PostgreSQL 14+, Git.
 
@@ -118,12 +133,56 @@ Adjust if you use a monorepo or different naming.
 
 ## Running locally
 
-1. **Database:** Start PostgreSQL and create a database. Set `DATABASE_URL` (or equivalent) in backend env.
-2. **Backend:** From `backend/`, copy `.env.example` to `.env`, fill in DB and JWT secret, then run `npm run start:dev`.
-3. **ML service:** From `ml-service/`, create a virtualenv, `pip install -r requirements.txt`, then run the Flask/FastAPI app (e.g. `python app.py` or `uvicorn main:app`).
-4. **Frontend:** From `frontend/`, set API URL in environment (e.g. `src/environments/environment.ts`), then run `ng serve`.
+Full stack: **PostgreSQL → Backend (NestJS) ← ML service (Python)**. The backend injects the ML service for transaction categorisation; both can run independently (without ML, transactions still save but no category suggestion).
 
-Open the frontend URL (e.g. `http://localhost:4200`) and ensure it talks to the backend; backend should call the ML service for categorization when configured.
+### 1. Database
+
+Start PostgreSQL and create a database. Set `DATABASE_URL` in `backend/.env` (copy from `backend/.env.example`).
+
+### 2. Backend (NestJS)
+
+```bash
+cd backend
+cp .env.example .env   # then fill DATABASE_URL, JWT_SECRET, and optionally ML_SERVICE_URL
+npm install
+npx prisma migrate deploy
+npm run start:dev
+```
+
+API: `http://localhost:3000/api/v1` · Swagger: `http://localhost:3000/api/docs` · Health (backend + ML status): `http://localhost:3000/api/v1/health`
+
+### 3. ML service (Python) — required for category suggestions
+
+```bash
+cd ml-service
+python -m venv .venv
+.venv\Scripts\activate   # Windows
+# source .venv/bin/activate   # macOS/Linux
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+
+ML API: `http://localhost:8000` · Docs: `http://localhost:8000/docs`
+
+Set `ML_SERVICE_URL=http://localhost:8000` in `backend/.env` so the backend calls this service when creating transactions. If the ML service is down, the backend still works; new transactions simply won’t get an auto-suggested category.
+
+### 4. Frontend (Angular)
+
+From `frontend/`, set the API URL (e.g. `src/environments/environment.ts`) to `http://localhost:3000/api/v1`, then run `ng serve`. Open `http://localhost:4200`.
+
+### Run backend + ML together (from repo root)
+
+With Node and Python available, you can start both in one go:
+
+```bash
+# Terminal 1: ML service
+cd ml-service && pip install -r requirements.txt && uvicorn main:app --port 8000
+
+# Terminal 2: Backend
+cd backend && npm run start:dev
+```
+
+From the repo root you can run both in one terminal: `npm install` (installs `concurrently`), then `npm run start:stack`.
 
 ---
 
