@@ -20,6 +20,10 @@ export interface AuthUser {
   avatarUrl: string | null;
   role: Role;
   emailVerifiedAt: Date | null;
+  userType: string | null;
+  incomeSources: unknown;
+  onboardingCompleted: boolean;
+  suspendedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,6 +46,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException(
         'Session expired or account not found. Please log in again.',
+      );
+    }
+    if (user.suspendedAt) {
+      throw new UnauthorizedException(
+        'Your account has been suspended. Please contact support.',
       );
     }
     // Always read role fresh from DB — reflects any admin role changes immediately

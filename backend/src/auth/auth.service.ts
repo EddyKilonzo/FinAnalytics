@@ -16,6 +16,7 @@ import { LoginDto } from './dto/login.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { VerifyEmailCodeDto } from './dto/verify-email-code.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
+import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
 import { handlePrismaError } from '../common/helpers/prisma-error.handler';
 import { MailerService } from '../common/mailer/mailer.service';
 import type { JwtPayload } from './strategies/jwt.strategy';
@@ -80,6 +81,9 @@ export class AuthService {
           avatarUrl: user.avatarUrl,
           role: user.role,
           emailVerifiedAt: user.emailVerifiedAt,
+          userType: user.userType ?? null,
+          incomeSources: [],
+          onboardingCompleted: false,
         },
         requiresEmailVerification: true,
       };
@@ -108,6 +112,12 @@ export class AuthService {
         );
       }
 
+      if (user.suspendedAt) {
+        throw new UnauthorizedException(
+          'Your account has been suspended. Please contact support.',
+        );
+      }
+
       this.logger.log(`User signed in: ${user.email} [${user.role}]`);
 
       return {
@@ -118,6 +128,9 @@ export class AuthService {
           avatarUrl: user.avatarUrl,
           role: user.role,
           emailVerifiedAt: user.emailVerifiedAt,
+          userType: user.userType,
+          incomeSources: user.incomeSources,
+          onboardingCompleted: user.onboardingCompleted,
         },
         accessToken: this.generateToken(user.id, user.email, user.role),
       };
@@ -239,6 +252,22 @@ export class AuthService {
     } catch (error) {
       if (error instanceof HttpException) throw error;
       handlePrismaError(error, this.logger, 'AuthService.resendVerification');
+    }
+  }
+
+  async completeOnboarding(userId: string, dto: CompleteOnboardingDto) {
+    try {
+      const updated = await this.usersService.completeOnboarding(userId, {
+        userType: dto.userType,
+        incomeSources: dto.incomeSources,
+      });
+
+      this.logger.log(`Onboarding completed for user [${userId}]`);
+
+      return { user: updated };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      handlePrismaError(error, this.logger, 'AuthService.completeOnboarding');
     }
   }
 

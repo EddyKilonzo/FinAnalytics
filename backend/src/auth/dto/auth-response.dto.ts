@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Role } from '../../common/enums/role.enum';
+import { UserType } from './complete-onboarding.dto';
 
 export class UserDto {
   @ApiProperty({ example: 'cuid123abc', description: 'Unique user ID' })
@@ -25,6 +26,26 @@ export class UserDto {
     description: 'Timestamp when email was verified. Null means not verified yet.',
   })
   emailVerifiedAt: Date | null;
+
+  @ApiPropertyOptional({
+    enum: UserType,
+    example: UserType.UNIVERSITY_STUDENT,
+    description: 'Life stage selected during onboarding.',
+  })
+  userType: UserType | null;
+
+  @ApiPropertyOptional({
+    type: [String],
+    example: ['allowance', 'freelance'],
+    description: 'Income sources selected during onboarding.',
+  })
+  incomeSources: string[];
+
+  @ApiProperty({
+    example: false,
+    description: 'True once the user completes the onboarding wizard.',
+  })
+  onboardingCompleted: boolean;
 }
 
 export class AuthDataDto {

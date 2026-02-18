@@ -85,8 +85,11 @@ async function bootstrap() {
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
+  const mlUrl = process.env.ML_SERVICE_URL ?? 'http://localhost:8000';
   logger.log(`API       → http://localhost:${port}/api/v1`);
   logger.log(`Swagger   → http://localhost:${port}/api/docs`);
+  logger.log(`Health    → http://localhost:${port}/api/v1/health (backend + ML status)`);
+  logger.log(`ML        → ${mlUrl} (transaction categorisation)`);
 }
 
 bootstrap().catch((err: unknown) => {

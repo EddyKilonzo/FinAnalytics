@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Patch,
   Body,
   Query,
   HttpCode,
@@ -26,6 +27,8 @@ import { LoginDto } from './dto/login.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { VerifyEmailCodeDto } from './dto/verify-email-code.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
+import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
+import { SkipOnboarding } from '../common/decorators/skip-onboarding.decorator';
 import {
   AuthResponseDto,
   ProfileResponseDto,
@@ -227,6 +230,54 @@ export class AuthController {
       );
       throw new InternalServerErrorException(
         'Could not resend verification email. Please try again.',
+      );
+    }
+  }
+
+  /**
+   * PATCH /api/v1/auth/onboarding
+   */
+  @Patch('onboarding')
+  @UseGuards(JwtAuthGuard)
+  @SkipOnboarding()
+  @HttpCode(HttpStatus.OK)
+  @SkipThrottle()
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Complete onboarding',
+    description:
+      'Saves the user type and income sources selected during the first-time onboarding wizard. Requires a valid Bearer token.',
+  })
+  @ApiBody({ type: CompleteOnboardingDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Onboarding completed successfully.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation failed.',
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Missing or invalid token.',
+    type: ErrorResponseDto,
+  })
+  async completeOnboarding(
+    @Request() req: AuthRequest,
+    @Body() dto: CompleteOnboardingDto,
+  ) {
+    try {
+      const data = await this.authService.completeOnboarding(req.user.id, dto);
+      return { success: true, message: 'Onboarding completed', data };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error(
+        'Unexpected error in completeOnboarding',
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw new InternalServerErrorException(
+        'Onboarding failed. Please try again.',
       );
     }
   }

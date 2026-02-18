@@ -1,0 +1,39 @@
+# Local dev: API + PostgreSQL. ML service and frontend run separately.
+# Usage: docker compose up -d
+# Then: set DATABASE_URL to postgresql://finanalytics:finanalytics@localhost:5432/finanalytics
+#       and run migrations: npx prisma migrate deploy (from host) or use API container.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: finanalytics
+      POSTGRES_PASSWORD: finanalytics
+      POSTGRES_DB: finanalytics
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finanalytics -d finanalytics"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://finanalytics:finanalytics@db:5432/finanalytics?schema=public
+      JWT_SECRET: change-me-in-production-min-32-chars
+      CORS_ORIGIN: http://localhost:4200
+      # Optional: set MAIL_*, CLOUDINARY_*, ML_SERVICE_URL for full features
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

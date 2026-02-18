@@ -1,0 +1,38 @@
+[
+  {
+    "id": "lesson-budgeting-basics",
+    "title": "Budgeting basics",
+    "slug": "budgeting-basics",
+    "durationMinutes": 5,
+    "topics": ["budgeting", "planning"],
+    "summary": "Learn how to set a simple budget and stick to it.",
+    "body": "## Why budget?\n\nA budget is a plan for your money. It helps you see where your cash goes and avoid running out before the end of the month.\n\n## The 50/30/20 rule\n\n- **50%** – Needs (transport, food, rent)\n- **30%** – Wants (entertainment, social)\n- **20%** – Savings and goals\n\nStart by tracking what you spend for one week. Then set limits for each category. Use FinAnalytics to set budgets and get alerts when you're close to the limit."
+  },
+  {
+    "id": "lesson-saving-tips",
+    "title": "Simple saving tips",
+    "slug": "saving-tips",
+    "durationMinutes": 6,
+    "topics": ["saving", "goals"],
+    "summary": "Small habits that help you save without feeling the pinch.",
+    "body": "## Pay yourself first\n\nAs soon as you get money, move a small amount to savings (even 5–10%). What's left is what you can spend.\n\n## Name your savings\n\nGive each goal a name: \"Emergency fund\", \"New laptop\", \"Trip home\". You're more likely to stick to it when you know what it's for.\n\n## Use the app\n\nCreate goals in FinAnalytics and add to them regularly. Watch your progress—it keeps you motivated."
+  },
+  {
+    "id": "lesson-debt-awareness",
+    "title": "Debt awareness",
+    "slug": "debt-awareness",
+    "durationMinutes": 6,
+    "topics": ["debt", "HELB", "loans"],
+    "summary": "Understanding debt and how to stay on top of it.",
+    "body": "## Good vs unhelpful debt\n\n- **Useful debt** – e.g. HELB for studies, can increase your earning power.\n- **Costly debt** – high-interest loans, buy-now-pay-later for wants.\n\n## Stay on top of HELB\n\nIf you have HELB, track when repayment starts. Set aside a little each month so you're ready. Even small amounts help.\n\n## Avoid new high-interest debt\n\nBefore borrowing, ask: Do I need this? Can I save for it instead? Use the app to see how much you really have before spending."
+  },
+  {
+    "id": "lesson-compound-interest",
+    "title": "Compound interest",
+    "slug": "compound-interest",
+    "durationMinutes": 7,
+    "topics": ["saving", "interest", "long-term"],
+    "summary": "How your money can grow when you save early.",
+    "body": "## What is compound interest?\n\nYou earn interest on your savings. Then you earn interest on that interest. Over time, your balance grows faster.\n\n## Start early\n\nEven small amounts add up. Saving KES 500 a month from age 20 can grow much more than starting at 30—because time is on your side.\n\n## Use goals with deadlines\n\nIn FinAnalytics, set a target and a deadline. The app helps you see how much to put aside each month to get there."
+  }
+]

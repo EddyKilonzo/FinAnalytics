@@ -2,6 +2,7 @@ import {
   Injectable,
   Logger,
   HttpException,
+  BadRequestException,
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
@@ -23,6 +24,10 @@ const USER_SAFE_SELECT = {
   avatarUrl: true,
   role: true,
   emailVerifiedAt: true,
+  userType: true,
+  incomeSources: true,
+  onboardingCompleted: true,
+  suspendedAt: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -39,6 +44,10 @@ export interface UserEntity {
   emailVerificationTokenHash: string | null;
   emailVerificationTokenExpiresAt: Date | null;
   emailVerificationCodeHash: string | null;
+  userType: string | null;
+  incomeSources: unknown;
+  onboardingCompleted: boolean;
+  suspendedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -46,7 +55,18 @@ export interface UserEntity {
 /** A user object that never contains the password hash. */
 export type SafeUser = Pick<
   UserEntity,
-  'id' | 'email' | 'name' | 'avatarUrl' | 'role' | 'emailVerifiedAt' | 'createdAt' | 'updatedAt'
+  | 'id'
+  | 'email'
+  | 'name'
+  | 'avatarUrl'
+  | 'role'
+  | 'emailVerifiedAt'
+  | 'userType'
+  | 'incomeSources'
+  | 'onboardingCompleted'
+  | 'suspendedAt'
+  | 'createdAt'
+  | 'updatedAt'
 >;
 
 @Injectable()
@@ -215,6 +235,31 @@ export class UsersService {
   }
 
   /**
+   * Fetch a single user by ID with summary stats (transaction, budget, goal counts).
+   * Used by admin "view user details" to show full profile and activity summary.
+   */
+  async findOneWithDetails(id: string): Promise<SafeUser & { stats: { transactionCount: number; budgetCount: number; goalCount: number } }> {
+    try {
+      const user = await this.findOneOrFail(id);
+
+      const prisma = this.prisma as any;
+      const [transactionCount, budgetCount, goalCount] = await Promise.all([
+        prisma.transaction.count({ where: { userId: id } }),
+        prisma.budget.count({ where: { userId: id } }),
+        prisma.goal.count({ where: { userId: id } }),
+      ]);
+
+      return {
+        ...user,
+        stats: { transactionCount, budgetCount, goalCount },
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      handlePrismaError(error, this.logger, 'UsersService.findOneWithDetails');
+    }
+  }
+
+  /**
    * Update a user's name and/or role.
    *
    * Safety rules enforced here (not in the controller) so they apply
@@ -267,24 +312,75 @@ export class UsersService {
    */
   async deleteUser(targetId: string, requesterId: string): Promise<void> {
     try {
-      // Prevent self-deletion to avoid leaving the system adminless
       if (targetId === requesterId) {
         throw new ForbiddenException(
           'You cannot delete your own account. Ask another admin to do this.',
         );
       }
-
-      // Confirm the target exists — throws 404 if not found
       await this.findOneOrFail(targetId);
-
       await this.db.user.delete({ where: { id: targetId } });
-
       this.logger.log(
         `Admin [${requesterId}] permanently deleted user [${targetId}]`,
       );
     } catch (error) {
       if (error instanceof HttpException) throw error;
       handlePrismaError(error, this.logger, 'UsersService.deleteUser');
+    }
+  }
+
+  /**
+   * Suspend a user account. Suspended users cannot log in or use existing tokens.
+   * Admins cannot suspend their own account.
+   */
+  async suspendUser(targetId: string, requesterId: string): Promise<SafeUser> {
+    try {
+      if (targetId === requesterId) {
+        throw new ForbiddenException(
+          'You cannot suspend your own account. Ask another admin to do this.',
+        );
+      }
+      const user = await this.findOneOrFail(targetId);
+      if (user.suspendedAt) {
+        throw new BadRequestException('This account is already suspended.');
+      }
+      const updated = await this.db.user.update({
+        where: { id: targetId },
+        data: { suspendedAt: new Date() },
+        select: USER_SAFE_SELECT,
+      });
+      this.logger.log(`Admin [${requesterId}] suspended user [${targetId}]`);
+      return updated;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      handlePrismaError(error, this.logger, 'UsersService.suspendUser');
+    }
+  }
+
+  /**
+   * Unsuspend (reactivate) a user account.
+   * Admins cannot unsuspend their own account (no-op if self; we still forbid for consistency).
+   */
+  async unsuspendUser(targetId: string, requesterId: string): Promise<SafeUser> {
+    try {
+      if (targetId === requesterId) {
+        throw new ForbiddenException(
+          'You cannot change suspension status on your own account.',
+        );
+      }
+      const user = await this.findOneOrFail(targetId);
+      if (!user.suspendedAt) {
+        throw new BadRequestException('This account is not suspended.');
+      }
+      const updated = await this.db.user.update({
+        where: { id: targetId },
+        data: { suspendedAt: null },
+        select: USER_SAFE_SELECT,
+      });
+      this.logger.log(`Admin [${requesterId}] unsuspended user [${targetId}]`);
+      return updated;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      handlePrismaError(error, this.logger, 'UsersService.unsuspendUser');
     }
   }
 
@@ -375,6 +471,26 @@ export class UsersService {
     } catch (error) {
       if (error instanceof HttpException) throw error;
       handlePrismaError(error, this.logger, 'UsersService.markEmailVerified');
+    }
+  }
+
+  async completeOnboarding(
+    userId: string,
+    data: { userType: string; incomeSources: string[] },
+  ): Promise<SafeUser> {
+    try {
+      return await this.db.user.update({
+        where: { id: userId },
+        data: {
+          userType: data.userType,
+          incomeSources: data.incomeSources,
+          onboardingCompleted: true,
+        },
+        select: USER_SAFE_SELECT,
+      });
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      handlePrismaError(error, this.logger, 'UsersService.completeOnboarding');
     }
   }
 
