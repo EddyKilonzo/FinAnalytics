@@ -1,0 +1,6 @@
+fastapi>=0.111.0,<0.200.0
+uvicorn[standard]>=0.29.0,<0.200.0
+scikit-learn>=1.4.0,<2.0.0
+joblib>=1.4.0,<2.0.0
+python-dotenv>=1.0.0,<2.0.0
+pydantic>=2.6.0,<3.0.0
