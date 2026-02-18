@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <body style="font-family: Arial, sans-serif; color: #111827; line-height: 1.6;">
+    <h2 style="margin-bottom: 8px;">Verify your email</h2>
+    <p>Hi <%= name %>,</p>
+    <p>Thanks for signing up. Please verify your email using the button below:</p>
+    <p style="margin: 20px 0;">
+      <a href="<%= verificationLink %>"
+         style="background:#2563eb;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none;"
+         target="_blank" rel="noreferrer">
+        Verify my email
+      </a>
+    </p>
+    <p>Or enter this 6-digit code in the app:</p>
+    <p style="font-size: 24px; font-weight: bold; letter-spacing: 4px; margin: 8px 0 16px 0;">
+      <%= verificationCode %>
+    </p>
+    <p>This link expires in 24 hours.</p>
+    <p style="margin-top: 20px;">— FinAnalytics Team</p>
+  </body>
+</html>
