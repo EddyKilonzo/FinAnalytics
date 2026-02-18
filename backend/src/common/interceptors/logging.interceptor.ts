@@ -4,11 +4,11 @@ import {
   ExecutionContext,
   CallHandler,
   Logger,
-} from '@nestjs/common';
-import { Observable, tap } from 'rxjs';
-import { randomUUID } from 'crypto';
-import type { Request, Response } from 'express';
-import type { AuthUser } from '../../auth/strategies/jwt.strategy';
+} from "@nestjs/common";
+import { Observable, tap } from "rxjs";
+import { randomUUID } from "crypto";
+import type { Request, Response } from "express";
+import type { AuthUser } from "../../auth/strategies/jwt.strategy";
 
 interface AuthenticatedRequest extends Request {
   user?: AuthUser;
@@ -28,7 +28,7 @@ interface AuthenticatedRequest extends Request {
  */
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger('HTTP');
+  private readonly logger = new Logger("HTTP");
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const req = context.switchToHttp().getRequest<AuthenticatedRequest>();
@@ -37,8 +37,8 @@ export class LoggingInterceptor implements NestInterceptor {
     req.requestId = randomUUID();
 
     const { method, url, ip } = req;
-    const userAgent = req.get('user-agent') ?? '-';
-    const userId = req.user?.id ?? 'anonymous';
+    const userAgent = req.get("user-agent") ?? "-";
+    const userId = req.user?.id ?? "anonymous";
     const start = Date.now();
 
     return next.handle().pipe(
@@ -60,7 +60,7 @@ export class LoggingInterceptor implements NestInterceptor {
         error: (err: unknown) => {
           const ms = Date.now() - start;
           const status =
-            typeof err === 'object' && err !== null && 'status' in err
+            typeof err === "object" && err !== null && "status" in err
               ? (err as { status: number }).status
               : 500;
           const line = `[${req.requestId}] ${method} ${url} → ${status} ERROR (${ms}ms) user=${userId} ${ip} "${userAgent}"`;

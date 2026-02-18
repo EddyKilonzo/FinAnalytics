@@ -4,14 +4,14 @@ import {
   HttpException,
   NotFoundException,
   ForbiddenException,
-} from '@nestjs/common';
-import { PrismaService } from '../common/prisma.service';
-import { MlService } from '../ml/ml.service';
-import { handlePrismaError } from '../common/helpers/prisma-error.handler';
-import type { CreateTransactionDto } from './dto/create-transaction.dto';
-import type { UpdateTransactionDto } from './dto/update-transaction.dto';
-import type { TransactionQueryDto } from './dto/transaction-query.dto';
-import type { CorrectCategoryDto } from './dto/correct-category.dto';
+} from "@nestjs/common";
+import { PrismaService } from "../common/prisma.service";
+import { MlService } from "../ml/ml.service";
+import { handlePrismaError } from "../common/helpers/prisma-error.handler";
+import type { CreateTransactionDto } from "./dto/create-transaction.dto";
+import type { UpdateTransactionDto } from "./dto/update-transaction.dto";
+import type { TransactionQueryDto } from "./dto/transaction-query.dto";
+import type { CorrectCategoryDto } from "./dto/correct-category.dto";
 
 @Injectable()
 export class TransactionsService {
@@ -33,7 +33,11 @@ export class TransactionsService {
    * Build the Prisma `where` clause shared by list and count queries.
    * Non-admin users are always scoped to their own userId.
    */
-  private buildWhere(query: TransactionQueryDto, userId: string, isAdmin: boolean) {
+  private buildWhere(
+    query: TransactionQueryDto,
+    userId: string,
+    isAdmin: boolean,
+  ) {
     const where: Record<string, any> = {};
 
     if (!isAdmin) where.userId = userId;
@@ -43,7 +47,7 @@ export class TransactionsService {
     if (query.dateFrom || query.dateTo) {
       where.date = {
         ...(query.dateFrom ? { gte: new Date(query.dateFrom) } : {}),
-        ...(query.dateTo   ? { lte: new Date(query.dateTo)   } : {}),
+        ...(query.dateTo ? { lte: new Date(query.dateTo) } : {}),
       };
     }
 
@@ -57,14 +61,22 @@ export class TransactionsService {
    */
   private async validateCategory(categoryId: string): Promise<any> {
     try {
-      const cat = await this.db.category.findUnique({ where: { id: categoryId } });
+      const cat = await this.db.category.findUnique({
+        where: { id: categoryId },
+      });
       if (!cat) {
-        throw new NotFoundException(`Category with id "${categoryId}" was not found`);
+        throw new NotFoundException(
+          `Category with id "${categoryId}" was not found`,
+        );
       }
       return cat;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'TransactionsService.validateCategory');
+      handlePrismaError(
+        error,
+        this.logger,
+        "TransactionsService.validateCategory",
+      );
     }
   }
 
@@ -78,7 +90,11 @@ export class TransactionsService {
       return cat?.id ?? null;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'TransactionsService.categoryIdFromSlug');
+      handlePrismaError(
+        error,
+        this.logger,
+        "TransactionsService.categoryIdFromSlug",
+      );
     }
   }
 
@@ -90,27 +106,33 @@ export class TransactionsService {
    */
   async findAll(query: TransactionQueryDto, userId: string, userRole: string) {
     try {
-      const isAdmin = userRole === 'ADMIN';
-      const page  = query.page  ?? 1;
+      const isAdmin = userRole === "ADMIN";
+      const page = query.page ?? 1;
       const limit = query.limit ?? 20;
-      const skip  = (page - 1) * limit;
+      const skip = (page - 1) * limit;
       const where = this.buildWhere(query, userId, isAdmin);
 
       const [transactions, total] = await Promise.all([
         this.db.transaction.findMany({
           where,
           include: { category: true, suggestedCategory: true },
-          orderBy: { date: 'desc' },
+          orderBy: { date: "desc" },
           skip,
           take: limit,
         }),
         this.db.transaction.count({ where }),
       ]);
 
-      return { transactions, total, page, limit, totalPages: Math.ceil(total / limit) };
+      return {
+        transactions,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'TransactionsService.findAll');
+      handlePrismaError(error, this.logger, "TransactionsService.findAll");
     }
   }
 
@@ -128,17 +150,21 @@ export class TransactionsService {
       });
 
       if (!transaction) {
-        throw new NotFoundException(`Transaction with id "${id}" was not found`);
+        throw new NotFoundException(
+          `Transaction with id "${id}" was not found`,
+        );
       }
 
-      if (userRole !== 'ADMIN' && transaction.userId !== userId) {
-        throw new ForbiddenException('You do not have permission to view this transaction');
+      if (userRole !== "ADMIN" && transaction.userId !== userId) {
+        throw new ForbiddenException(
+          "You do not have permission to view this transaction",
+        );
       }
 
       return transaction;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'TransactionsService.findById');
+      handlePrismaError(error, this.logger, "TransactionsService.findById");
     }
   }
 
@@ -165,12 +191,15 @@ export class TransactionsService {
       // Step 1 — persist the transaction
       const transaction = await this.db.transaction.create({
         data: {
-          amount:        dto.amount,
-          type:          dto.type,
-          description:   dto.description ?? null,
-          date:          dto.date ? new Date(dto.date) : new Date(),
-          categoryId:    dto.categoryId ?? null,
-          incomeSource:  dto.type === 'income' && dto.incomeSource ? dto.incomeSource.trim() : null,
+          amount: dto.amount,
+          type: dto.type,
+          description: dto.description ?? null,
+          date: dto.date ? new Date(dto.date) : new Date(),
+          categoryId: dto.categoryId ?? null,
+          incomeSource:
+            dto.type === "income" && dto.incomeSource
+              ? dto.incomeSource.trim()
+              : null,
           userId,
         },
         include: { category: true, suggestedCategory: true },
@@ -201,7 +230,7 @@ export class TransactionsService {
 
             this.logger.log(
               `ML suggestion: "${prediction.suggestedCategorySlug}" ` +
-              `(${(prediction.confidence * 100).toFixed(1)}%) for tx ${transaction.id}`,
+                `(${(prediction.confidence * 100).toFixed(1)}%) for tx ${transaction.id}`,
             );
             return enriched;
           }
@@ -211,7 +240,7 @@ export class TransactionsService {
       return transaction;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'TransactionsService.create');
+      handlePrismaError(error, this.logger, "TransactionsService.create");
     }
   }
 
@@ -235,17 +264,19 @@ export class TransactionsService {
       }
 
       const data: Record<string, any> = {};
-      if (dto.amount        !== undefined) data.amount        = dto.amount;
-      if (dto.type          !== undefined) data.type          = dto.type;
-      if (dto.description   !== undefined) data.description   = dto.description;
-      if (dto.date          !== undefined) data.date          = new Date(dto.date);
-      if (dto.categoryId    !== undefined) data.categoryId   = dto.categoryId;
+      if (dto.amount !== undefined) data.amount = dto.amount;
+      if (dto.type !== undefined) data.type = dto.type;
+      if (dto.description !== undefined) data.description = dto.description;
+      if (dto.date !== undefined) data.date = new Date(dto.date);
+      if (dto.categoryId !== undefined) data.categoryId = dto.categoryId;
 
       const effectiveType = dto.type ?? (existing as any).type;
-      if (effectiveType === 'expense') {
+      if (effectiveType === "expense") {
         data.incomeSource = null;
       } else if (dto.incomeSource !== undefined) {
-        data.incomeSource = dto.incomeSource ? String(dto.incomeSource).trim() : null;
+        data.incomeSource = dto.incomeSource
+          ? String(dto.incomeSource).trim()
+          : null;
       }
 
       const updated = await this.db.transaction.update({
@@ -258,7 +289,7 @@ export class TransactionsService {
       return updated;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'TransactionsService.update');
+      handlePrismaError(error, this.logger, "TransactionsService.update");
     }
   }
 
@@ -312,7 +343,11 @@ export class TransactionsService {
       return updated;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'TransactionsService.correctCategory');
+      handlePrismaError(
+        error,
+        this.logger,
+        "TransactionsService.correctCategory",
+      );
     }
   }
 
@@ -325,7 +360,7 @@ export class TransactionsService {
       this.logger.log(`Transaction deleted: ${id} by user ${userId}`);
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'TransactionsService.delete');
+      handlePrismaError(error, this.logger, "TransactionsService.delete");
     }
   }
 
@@ -341,7 +376,7 @@ export class TransactionsService {
         dateFrom || dateTo
           ? {
               ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
-              ...(dateTo   ? { lte: new Date(dateTo)   } : {}),
+              ...(dateTo ? { lte: new Date(dateTo) } : {}),
             }
           : undefined;
 
@@ -349,26 +384,30 @@ export class TransactionsService {
 
       const [incomeResult, expenseResult] = await Promise.all([
         this.db.transaction.aggregate({
-          where: { ...baseWhere, type: 'income' },
+          where: { ...baseWhere, type: "income" },
           _sum: { amount: true },
         }),
         this.db.transaction.aggregate({
-          where: { ...baseWhere, type: 'expense' },
+          where: { ...baseWhere, type: "expense" },
           _sum: { amount: true },
         }),
       ]);
 
-      const totalIncome   = +(Number(incomeResult._sum.amount   ?? 0).toFixed(2));
-      const totalExpenses = +(Number(expenseResult._sum.amount  ?? 0).toFixed(2));
-      const balance       = +(totalIncome - totalExpenses).toFixed(2);
+      const totalIncome = +Number(incomeResult._sum.amount ?? 0).toFixed(2);
+      const totalExpenses = +Number(expenseResult._sum.amount ?? 0).toFixed(2);
+      const balance = +(totalIncome - totalExpenses).toFixed(2);
 
       // Income by source (Phase 9)
-      const incomeBySource = await this.getIncomeBySource(userId, dateFrom, dateTo);
+      const incomeBySource = await this.getIncomeBySource(
+        userId,
+        dateFrom,
+        dateTo,
+      );
 
       return { totalIncome, totalExpenses, balance, incomeBySource };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'TransactionsService.getSummary');
+      handlePrismaError(error, this.logger, "TransactionsService.getSummary");
     }
   }
 
@@ -386,30 +425,39 @@ export class TransactionsService {
         dateFrom || dateTo
           ? {
               ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
-              ...(dateTo   ? { lte: new Date(dateTo)   } : {}),
+              ...(dateTo ? { lte: new Date(dateTo) } : {}),
             }
           : undefined;
 
       const transactions = await this.db.transaction.findMany({
         where: {
           userId,
-          type: 'income',
+          type: "income",
           ...(dateFilter ? { date: dateFilter } : {}),
         },
         select: { amount: true, incomeSource: true },
       });
 
       const grouped: Record<string, number> = {};
-      for (const t of transactions as { amount: unknown; incomeSource: string | null }[]) {
-        const source = t.incomeSource?.trim() || 'other';
-        grouped[source] = +(Number(grouped[source] ?? 0) + Number(t.amount)).toFixed(2);
+      for (const t of transactions as {
+        amount: unknown;
+        incomeSource: string | null;
+      }[]) {
+        const source = t.incomeSource?.trim() || "other";
+        grouped[source] = +(
+          Number(grouped[source] ?? 0) + Number(t.amount)
+        ).toFixed(2);
       }
       return Object.entries(grouped)
         .map(([source, total]) => ({ source, total }))
         .sort((a, b) => b.total - a.total);
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'TransactionsService.getIncomeBySource');
+      handlePrismaError(
+        error,
+        this.logger,
+        "TransactionsService.getIncomeBySource",
+      );
     }
   }
 
@@ -417,52 +465,65 @@ export class TransactionsService {
    * Return spending totals broken down by category for a user.
    * Drives the pie/bar charts on the dashboard.
    */
-  async getSpendingByCategory(userId: string, dateFrom?: string, dateTo?: string) {
+  async getSpendingByCategory(
+    userId: string,
+    dateFrom?: string,
+    dateTo?: string,
+  ) {
     try {
       const dateFilter =
         dateFrom || dateTo
           ? {
               ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
-              ...(dateTo   ? { lte: new Date(dateTo)   } : {}),
+              ...(dateTo ? { lte: new Date(dateTo) } : {}),
             }
           : undefined;
 
       const transactions = await this.db.transaction.findMany({
         where: {
           userId,
-          type: 'expense',
+          type: "expense",
           ...(dateFilter ? { date: dateFilter } : {}),
         },
         include: { category: true },
       });
 
-      const grouped: Record<string, {
-        categoryId: string | null;
-        name: string;
-        color: string | null;
-        slug: string | null;
-        total: number;
-      }> = {};
+      const grouped: Record<
+        string,
+        {
+          categoryId: string | null;
+          name: string;
+          color: string | null;
+          slug: string | null;
+          total: number;
+        }
+      > = {};
 
       for (const t of transactions as any[]) {
-        const key  = t.categoryId ?? 'uncategorised';
-        const name = t.category?.name ?? 'Uncategorised';
+        const key = t.categoryId ?? "uncategorised";
+        const name = t.category?.name ?? "Uncategorised";
         if (!grouped[key]) {
           grouped[key] = {
             categoryId: t.categoryId,
             name,
             color: t.category?.color ?? null,
-            slug:  t.category?.slug  ?? null,
+            slug: t.category?.slug ?? null,
             total: 0,
           };
         }
-        grouped[key].total = +(grouped[key].total + Number(t.amount)).toFixed(2);
+        grouped[key].total = +(grouped[key].total + Number(t.amount)).toFixed(
+          2,
+        );
       }
 
       return Object.values(grouped).sort((a, b) => b.total - a.total);
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'TransactionsService.getSpendingByCategory');
+      handlePrismaError(
+        error,
+        this.logger,
+        "TransactionsService.getSpendingByCategory",
+      );
     }
   }
 }

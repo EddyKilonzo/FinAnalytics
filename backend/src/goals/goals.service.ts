@@ -5,13 +5,13 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
-} from '@nestjs/common';
-import { PrismaService } from '../common/prisma.service';
-import { handlePrismaError } from '../common/helpers/prisma-error.handler';
-import type { CreateGoalDto } from './dto/create-goal.dto';
-import type { UpdateGoalDto } from './dto/update-goal.dto';
-import type { AllocateGoalDto } from './dto/allocate-goal.dto';
-import type { WithdrawGoalDto } from './dto/withdraw-goal.dto';
+} from "@nestjs/common";
+import { PrismaService } from "../common/prisma.service";
+import { handlePrismaError } from "../common/helpers/prisma-error.handler";
+import type { CreateGoalDto } from "./dto/create-goal.dto";
+import type { UpdateGoalDto } from "./dto/update-goal.dto";
+import type { AllocateGoalDto } from "./dto/allocate-goal.dto";
+import type { WithdrawGoalDto } from "./dto/withdraw-goal.dto";
 
 @Injectable()
 export class GoalsService {
@@ -42,14 +42,16 @@ export class GoalsService {
         throw new NotFoundException(`Goal with id "${id}" was not found`);
       }
 
-      if (userRole !== 'ADMIN' && goal.userId !== userId) {
-        throw new ForbiddenException('You do not have permission to access this goal');
+      if (userRole !== "ADMIN" && goal.userId !== userId) {
+        throw new ForbiddenException(
+          "You do not have permission to access this goal",
+        );
       }
 
       return goal;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'GoalsService.findAndAuthorise');
+      handlePrismaError(error, this.logger, "GoalsService.findAndAuthorise");
     }
   }
 
@@ -77,10 +79,11 @@ export class GoalsService {
    */
   private enrichWithProgress(goal: any) {
     const currentAmount = +Number(goal.currentAmount).toFixed(2);
-    const targetAmount  = +Number(goal.targetAmount).toFixed(2);
-    const percentage    = targetAmount > 0
-      ? +Math.min((currentAmount / targetAmount) * 100, 100).toFixed(1)
-      : 0;
+    const targetAmount = +Number(goal.targetAmount).toFixed(2);
+    const percentage =
+      targetAmount > 0
+        ? +Math.min((currentAmount / targetAmount) * 100, 100).toFixed(1)
+        : 0;
 
     const msPerDay = 1000 * 60 * 60 * 24;
 
@@ -106,15 +109,20 @@ export class GoalsService {
       monthlyRateNeeded = +(dailyRateNeeded * 30).toFixed(2);
     }
 
-    let status: 'completed' | 'on_track' | 'at_risk' | 'overdue' | 'in_progress';
+    let status:
+      | "completed"
+      | "on_track"
+      | "at_risk"
+      | "overdue"
+      | "in_progress";
 
     if (percentage >= 100) {
-      status = 'completed';
+      status = "completed";
     } else if (daysRemaining !== null && daysRemaining < 0) {
-      status = 'overdue';
+      status = "overdue";
     } else if (daysRemaining !== null && daysRemaining > 0) {
       // Compare actual savings rate vs required rate
-      const actualDailyRate   = currentAmount / daysElapsed;
+      const actualDailyRate = currentAmount / daysElapsed;
       const requiredDailyRate = dailyRateNeeded ?? 0;
 
       // on_track if saving fast enough, or < 7 days but already above 90 %
@@ -122,10 +130,10 @@ export class GoalsService {
         actualDailyRate >= requiredDailyRate ||
         (daysRemaining <= 7 && percentage >= 90);
 
-      status = isOnTrack ? 'on_track' : 'at_risk';
+      status = isOnTrack ? "on_track" : "at_risk";
     } else {
       // No deadline — just track progress
-      status = 'in_progress';
+      status = "in_progress";
     }
 
     return {
@@ -150,11 +158,11 @@ export class GoalsService {
       const goal = await this.db.goal.create({
         data: {
           userId,
-          name:          dto.name,
-          description:   dto.description ?? null,
-          targetAmount:  dto.targetAmount,
+          name: dto.name,
+          description: dto.description ?? null,
+          targetAmount: dto.targetAmount,
           currentAmount: 0,
-          deadline:      dto.deadline ? new Date(dto.deadline) : null,
+          deadline: dto.deadline ? new Date(dto.deadline) : null,
         },
       });
 
@@ -164,7 +172,7 @@ export class GoalsService {
       return this.enrichWithProgress(goal);
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'GoalsService.create');
+      handlePrismaError(error, this.logger, "GoalsService.create");
     }
   }
 
@@ -175,17 +183,17 @@ export class GoalsService {
    */
   async findAll(userId: string, userRole: string): Promise<any[]> {
     try {
-      const where = userRole === 'ADMIN' ? {} : { userId };
+      const where = userRole === "ADMIN" ? {} : { userId };
 
       const goals = await this.db.goal.findMany({
         where,
-        orderBy: [{ deadline: 'asc' }, { createdAt: 'desc' }],
+        orderBy: [{ deadline: "asc" }, { createdAt: "desc" }],
       });
 
       return (goals as any[]).map((g) => this.enrichWithProgress(g));
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'GoalsService.findAll');
+      handlePrismaError(error, this.logger, "GoalsService.findAll");
     }
   }
 
@@ -198,7 +206,7 @@ export class GoalsService {
       return this.enrichWithProgress(goal);
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'GoalsService.findById');
+      handlePrismaError(error, this.logger, "GoalsService.findById");
     }
   }
 
@@ -216,10 +224,12 @@ export class GoalsService {
       await this.findAndAuthorise(id, userId, userRole);
 
       const data: Record<string, any> = {};
-      if (dto.name         !== undefined) data.name         = dto.name;
-      if (dto.description  !== undefined) data.description  = dto.description ?? null;
+      if (dto.name !== undefined) data.name = dto.name;
+      if (dto.description !== undefined)
+        data.description = dto.description ?? null;
       if (dto.targetAmount !== undefined) data.targetAmount = dto.targetAmount;
-      if (dto.deadline     !== undefined) data.deadline     = dto.deadline ? new Date(dto.deadline) : null;
+      if (dto.deadline !== undefined)
+        data.deadline = dto.deadline ? new Date(dto.deadline) : null;
 
       const updated = await this.db.goal.update({ where: { id }, data });
 
@@ -227,7 +237,7 @@ export class GoalsService {
       return this.enrichWithProgress(updated);
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'GoalsService.update');
+      handlePrismaError(error, this.logger, "GoalsService.update");
     }
   }
 
@@ -241,7 +251,7 @@ export class GoalsService {
       this.logger.log(`Goal deleted: ${id} by user ${userId}`);
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'GoalsService.delete');
+      handlePrismaError(error, this.logger, "GoalsService.delete");
     }
   }
 
@@ -261,7 +271,9 @@ export class GoalsService {
     try {
       const goal = await this.findAndAuthorise(id, userId, userRole);
 
-      const newAmount = +Number(Number(goal.currentAmount) + dto.amount).toFixed(2);
+      const newAmount = +Number(
+        Number(goal.currentAmount) + dto.amount,
+      ).toFixed(2);
 
       const updated = await this.db.goal.update({
         where: { id },
@@ -270,12 +282,12 @@ export class GoalsService {
 
       this.logger.log(
         `Goal allocation: KES ${dto.amount} added to "${goal.name}" (${id}) — ` +
-        `total now KES ${newAmount}`,
+          `total now KES ${newAmount}`,
       );
       return this.enrichWithProgress(updated);
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'GoalsService.allocate');
+      handlePrismaError(error, this.logger, "GoalsService.allocate");
     }
   }
 
@@ -310,12 +322,12 @@ export class GoalsService {
 
       this.logger.log(
         `Goal withdrawal: KES ${dto.amount} removed from "${goal.name}" (${id}) — ` +
-        `remaining KES ${newAmount}`,
+          `remaining KES ${newAmount}`,
       );
       return this.enrichWithProgress(updated);
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'GoalsService.withdraw');
+      handlePrismaError(error, this.logger, "GoalsService.withdraw");
     }
   }
 
@@ -327,22 +339,37 @@ export class GoalsService {
    * Extra weekly amount is computed so that if the user saves (required + extra) per week,
    * they would reach the target 2 weeks before the deadline.
    */
-  async getGoalNudges(userId: string): Promise<{ id: string; type: string; message: string; severity: string }[]> {
+  async getGoalNudges(
+    userId: string,
+  ): Promise<
+    { id: string; type: string; message: string; severity: string }[]
+  > {
     try {
-      const goals = await this.findAll(userId, 'USER');
-      const nudges: { id: string; type: string; message: string; severity: string }[] = [];
-      const msPerDay = 1000 * 60 * 60 * 24;
+      const goals = await this.findAll(userId, "USER");
+      const nudges: {
+        id: string;
+        type: string;
+        message: string;
+        severity: string;
+      }[] = [];
       const WEEKS_EARLY = 2;
       const MIN_WEEKS_REMAINING = 2.5; // only suggest if at least ~2.5 weeks left
 
       for (const g of goals as any[]) {
-        if (g.status === 'completed' || g.status === 'overdue' || g.status === 'in_progress') continue;
+        if (
+          g.status === "completed" ||
+          g.status === "overdue" ||
+          g.status === "in_progress"
+        )
+          continue;
         if (g.daysRemaining == null || g.daysRemaining <= 0) continue;
 
         const weeksRemaining = g.daysRemaining / 7;
         if (weeksRemaining < MIN_WEEKS_REMAINING) continue;
 
-        const remaining = +(Number(g.targetAmount) - Number(g.currentAmount)).toFixed(2);
+        const remaining = +(
+          Number(g.targetAmount) - Number(g.currentAmount)
+        ).toFixed(2);
         if (remaining <= 0) continue;
 
         const requiredWeekly = remaining / weeksRemaining;
@@ -355,9 +382,9 @@ export class GoalsService {
         if (extraPerWeek > 0 && extraPerWeek < 1e6) {
           nudges.push({
             id: `goal_early_${g.id}`,
-            type: 'goal_save_early',
+            type: "goal_save_early",
             message: `If you save KES ${extraPerWeek.toLocaleString()} more per week, you'll reach "${g.name}" ${WEEKS_EARLY} weeks early.`,
-            severity: 'info',
+            severity: "info",
           });
         }
       }
@@ -365,7 +392,7 @@ export class GoalsService {
       return nudges;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'GoalsService.getGoalNudges');
+      handlePrismaError(error, this.logger, "GoalsService.getGoalNudges");
       return [];
     }
   }
@@ -382,21 +409,21 @@ export class GoalsService {
     try {
       const goals = await this.findAll(userId, userRole);
 
-      const totalSaved  = goals.reduce((s, g) => s + g.currentAmount, 0);
-      const totalTarget = goals.reduce((s, g) => s + g.targetAmount,  0);
+      const totalSaved = goals.reduce((s, g) => s + g.currentAmount, 0);
+      const totalTarget = goals.reduce((s, g) => s + g.targetAmount, 0);
 
       const counts = {
-        total:       goals.length,
-        completed:   goals.filter((g) => g.status === 'completed').length,
-        on_track:    goals.filter((g) => g.status === 'on_track').length,
-        at_risk:     goals.filter((g) => g.status === 'at_risk').length,
-        overdue:     goals.filter((g) => g.status === 'overdue').length,
-        in_progress: goals.filter((g) => g.status === 'in_progress').length,
+        total: goals.length,
+        completed: goals.filter((g) => g.status === "completed").length,
+        on_track: goals.filter((g) => g.status === "on_track").length,
+        at_risk: goals.filter((g) => g.status === "at_risk").length,
+        overdue: goals.filter((g) => g.status === "overdue").length,
+        in_progress: goals.filter((g) => g.status === "in_progress").length,
       };
 
       return {
         summary: {
-          totalSaved:  +totalSaved.toFixed(2),
+          totalSaved: +totalSaved.toFixed(2),
           totalTarget: +totalTarget.toFixed(2),
           overallPct:
             totalTarget > 0
@@ -408,7 +435,7 @@ export class GoalsService {
       };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'GoalsService.getDashboard');
+      handlePrismaError(error, this.logger, "GoalsService.getDashboard");
     }
   }
 }

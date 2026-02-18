@@ -1,6 +1,6 @@
-import { Module } from '@nestjs/common';
-import { AdminController } from './admin.controller';
-import { AdminService } from './admin.service';
+import { Module } from "@nestjs/common";
+import { AdminController } from "./admin.controller";
+import { AdminService } from "./admin.service";
 
 /**
  * AdminModule — dashboard and list endpoints for administrators only.

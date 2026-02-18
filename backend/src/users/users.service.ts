@@ -5,12 +5,12 @@ import {
   BadRequestException,
   ForbiddenException,
   NotFoundException,
-} from '@nestjs/common';
-import { PrismaService } from '../common/prisma.service';
-import { handlePrismaError } from '../common/helpers/prisma-error.handler';
-import type { UpdateUserDto } from './dto/update-user.dto';
-import type { PaginationQueryDto } from '../common/dto/pagination.dto';
-import type { Role } from '../common/enums/role.enum';
+} from "@nestjs/common";
+import { PrismaService } from "../common/prisma.service";
+import { handlePrismaError } from "../common/helpers/prisma-error.handler";
+import type { UpdateUserDto } from "./dto/update-user.dto";
+import type { PaginationQueryDto } from "../common/dto/pagination.dto";
+import type { Role } from "../common/enums/role.enum";
 
 // ---------------------------------------------------------------------------
 // Shared select shape — password is intentionally excluded from every query
@@ -55,18 +55,18 @@ export interface UserEntity {
 /** A user object that never contains the password hash. */
 export type SafeUser = Pick<
   UserEntity,
-  | 'id'
-  | 'email'
-  | 'name'
-  | 'avatarUrl'
-  | 'role'
-  | 'emailVerifiedAt'
-  | 'userType'
-  | 'incomeSources'
-  | 'onboardingCompleted'
-  | 'suspendedAt'
-  | 'createdAt'
-  | 'updatedAt'
+  | "id"
+  | "email"
+  | "name"
+  | "avatarUrl"
+  | "role"
+  | "emailVerifiedAt"
+  | "userType"
+  | "incomeSources"
+  | "onboardingCompleted"
+  | "suspendedAt"
+  | "createdAt"
+  | "updatedAt"
 >;
 
 @Injectable()
@@ -117,7 +117,7 @@ export class UsersService {
       return await this.db.user.findUnique({ where: { email } });
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'UsersService.findByEmail');
+      handlePrismaError(error, this.logger, "UsersService.findByEmail");
     }
   }
 
@@ -131,7 +131,7 @@ export class UsersService {
       return await this.db.user.findUnique({ where: { id } });
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'UsersService.findById');
+      handlePrismaError(error, this.logger, "UsersService.findById");
     }
   }
 
@@ -148,7 +148,7 @@ export class UsersService {
       return await this.db.user.create({ data });
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'UsersService.create');
+      handlePrismaError(error, this.logger, "UsersService.create");
     }
   }
 
@@ -179,8 +179,12 @@ export class UsersService {
       const where = query.search
         ? {
             OR: [
-              { email: { contains: query.search, mode: 'insensitive' as const } },
-              { name: { contains: query.search, mode: 'insensitive' as const } },
+              {
+                email: { contains: query.search, mode: "insensitive" as const },
+              },
+              {
+                name: { contains: query.search, mode: "insensitive" as const },
+              },
             ],
           }
         : undefined;
@@ -191,7 +195,7 @@ export class UsersService {
         this.db.user.findMany({
           where,
           select: USER_SAFE_SELECT,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           skip,
           take: limit,
         }),
@@ -207,7 +211,7 @@ export class UsersService {
       };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'UsersService.findAll');
+      handlePrismaError(error, this.logger, "UsersService.findAll");
     }
   }
 
@@ -230,7 +234,7 @@ export class UsersService {
       return user;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'UsersService.findOneOrFail');
+      handlePrismaError(error, this.logger, "UsersService.findOneOrFail");
     }
   }
 
@@ -238,7 +242,15 @@ export class UsersService {
    * Fetch a single user by ID with summary stats (transaction, budget, goal counts).
    * Used by admin "view user details" to show full profile and activity summary.
    */
-  async findOneWithDetails(id: string): Promise<SafeUser & { stats: { transactionCount: number; budgetCount: number; goalCount: number } }> {
+  async findOneWithDetails(id: string): Promise<
+    SafeUser & {
+      stats: {
+        transactionCount: number;
+        budgetCount: number;
+        goalCount: number;
+      };
+    }
+  > {
     try {
       const user = await this.findOneOrFail(id);
 
@@ -255,7 +267,7 @@ export class UsersService {
       };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'UsersService.findOneWithDetails');
+      handlePrismaError(error, this.logger, "UsersService.findOneWithDetails");
     }
   }
 
@@ -279,7 +291,7 @@ export class UsersService {
       // Prevent an admin from locking themselves out by demoting their own account
       if (dto.role !== undefined && targetId === requesterId) {
         throw new ForbiddenException(
-          'You cannot change your own role. Ask another admin to do this.',
+          "You cannot change your own role. Ask another admin to do this.",
         );
       }
 
@@ -296,7 +308,7 @@ export class UsersService {
       return updated;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'UsersService.updateUser');
+      handlePrismaError(error, this.logger, "UsersService.updateUser");
     }
   }
 
@@ -314,7 +326,7 @@ export class UsersService {
     try {
       if (targetId === requesterId) {
         throw new ForbiddenException(
-          'You cannot delete your own account. Ask another admin to do this.',
+          "You cannot delete your own account. Ask another admin to do this.",
         );
       }
       await this.findOneOrFail(targetId);
@@ -324,7 +336,7 @@ export class UsersService {
       );
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'UsersService.deleteUser');
+      handlePrismaError(error, this.logger, "UsersService.deleteUser");
     }
   }
 
@@ -336,12 +348,12 @@ export class UsersService {
     try {
       if (targetId === requesterId) {
         throw new ForbiddenException(
-          'You cannot suspend your own account. Ask another admin to do this.',
+          "You cannot suspend your own account. Ask another admin to do this.",
         );
       }
       const user = await this.findOneOrFail(targetId);
       if (user.suspendedAt) {
-        throw new BadRequestException('This account is already suspended.');
+        throw new BadRequestException("This account is already suspended.");
       }
       const updated = await this.db.user.update({
         where: { id: targetId },
@@ -352,7 +364,7 @@ export class UsersService {
       return updated;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'UsersService.suspendUser');
+      handlePrismaError(error, this.logger, "UsersService.suspendUser");
     }
   }
 
@@ -360,16 +372,19 @@ export class UsersService {
    * Unsuspend (reactivate) a user account.
    * Admins cannot unsuspend their own account (no-op if self; we still forbid for consistency).
    */
-  async unsuspendUser(targetId: string, requesterId: string): Promise<SafeUser> {
+  async unsuspendUser(
+    targetId: string,
+    requesterId: string,
+  ): Promise<SafeUser> {
     try {
       if (targetId === requesterId) {
         throw new ForbiddenException(
-          'You cannot change suspension status on your own account.',
+          "You cannot change suspension status on your own account.",
         );
       }
       const user = await this.findOneOrFail(targetId);
       if (!user.suspendedAt) {
-        throw new BadRequestException('This account is not suspended.');
+        throw new BadRequestException("This account is not suspended.");
       }
       const updated = await this.db.user.update({
         where: { id: targetId },
@@ -380,7 +395,7 @@ export class UsersService {
       return updated;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'UsersService.unsuspendUser');
+      handlePrismaError(error, this.logger, "UsersService.unsuspendUser");
     }
   }
 
@@ -398,7 +413,7 @@ export class UsersService {
       return updatedUser;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'UsersService.updateAvatar');
+      handlePrismaError(error, this.logger, "UsersService.updateAvatar");
     }
   }
 
@@ -419,11 +434,18 @@ export class UsersService {
       });
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'UsersService.setEmailVerificationToken');
+      handlePrismaError(
+        error,
+        this.logger,
+        "UsersService.setEmailVerificationToken",
+      );
     }
   }
 
-  async findByVerificationToken(email: string, tokenHash: string): Promise<UserEntity | null> {
+  async findByVerificationToken(
+    email: string,
+    tokenHash: string,
+  ): Promise<UserEntity | null> {
     try {
       return await this.db.user.findFirst({
         where: {
@@ -434,7 +456,11 @@ export class UsersService {
       });
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'UsersService.findByVerificationToken');
+      handlePrismaError(
+        error,
+        this.logger,
+        "UsersService.findByVerificationToken",
+      );
     }
   }
 
@@ -452,7 +478,11 @@ export class UsersService {
       });
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'UsersService.findByVerificationCode');
+      handlePrismaError(
+        error,
+        this.logger,
+        "UsersService.findByVerificationCode",
+      );
     }
   }
 
@@ -470,7 +500,7 @@ export class UsersService {
       });
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'UsersService.markEmailVerified');
+      handlePrismaError(error, this.logger, "UsersService.markEmailVerified");
     }
   }
 
@@ -490,7 +520,7 @@ export class UsersService {
       });
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'UsersService.completeOnboarding');
+      handlePrismaError(error, this.logger, "UsersService.completeOnboarding");
     }
   }
 
@@ -506,7 +536,11 @@ export class UsersService {
       });
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'UsersService.clearVerificationToken');
+      handlePrismaError(
+        error,
+        this.logger,
+        "UsersService.clearVerificationToken",
+      );
     }
   }
 }

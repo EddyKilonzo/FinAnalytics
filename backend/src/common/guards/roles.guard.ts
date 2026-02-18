@@ -3,11 +3,11 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
-} from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { Role } from '../enums/role.enum';
-import { ROLES_KEY } from '../decorators/roles.decorator';
-import type { AuthUser } from '../../auth/strategies/jwt.strategy';
+} from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import { Role } from "../enums/role.enum";
+import { ROLES_KEY } from "../decorators/roles.decorator";
+import type { AuthUser } from "../../auth/strategies/jwt.strategy";
 
 interface RequestWithUser {
   user?: AuthUser;
@@ -37,13 +37,13 @@ export class RolesGuard implements CanActivate {
     const { user } = context.switchToHttp().getRequest<RequestWithUser>();
 
     if (!user) {
-      throw new ForbiddenException('Access denied. Authentication required.');
+      throw new ForbiddenException("Access denied. Authentication required.");
     }
 
     const hasRole = requiredRoles.some((role) => user.role === role);
     if (!hasRole) {
       throw new ForbiddenException(
-        `Access denied. Required role: ${requiredRoles.join(' or ')}.`,
+        `Access denied. Required role: ${requiredRoles.join(" or ")}.`,
       );
     }
 

@@ -3,8 +3,8 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
-} from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+} from "@nestjs/common";
+import { Prisma } from "@prisma/client";
 
 /**
  * Translates Prisma-specific errors into NestJS HTTP exceptions so that raw
@@ -25,19 +25,19 @@ export function handlePrismaError(
 ): never {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
-      case 'P2002': {
+      case "P2002": {
         const fields =
-          (error.meta?.target as string[] | undefined)?.join(', ') ?? 'field';
+          (error.meta?.target as string[] | undefined)?.join(", ") ?? "field";
         throw new ConflictException(
           `A record with this ${fields} already exists`,
         );
       }
-      case 'P2025':
-        throw new NotFoundException('The requested record was not found');
+      case "P2025":
+        throw new NotFoundException("The requested record was not found");
 
-      case 'P2003':
+      case "P2003":
         throw new ConflictException(
-          'Operation failed: a related record does not exist',
+          "Operation failed: a related record does not exist",
         );
 
       default:
@@ -45,20 +45,22 @@ export function handlePrismaError(
           `Prisma known error [${error.code}] in ${context}: ${error.message}`,
         );
         throw new InternalServerErrorException(
-          'A database error occurred. Please try again.',
+          "A database error occurred. Please try again.",
         );
     }
   }
 
   if (error instanceof Prisma.PrismaClientValidationError) {
     logger.error(`Prisma validation error in ${context}: ${error.message}`);
-    throw new InternalServerErrorException('Invalid data provided to the database.');
+    throw new InternalServerErrorException(
+      "Invalid data provided to the database.",
+    );
   }
 
   if (error instanceof Prisma.PrismaClientInitializationError) {
     logger.error(`Prisma connection error in ${context}: ${error.message}`);
     throw new InternalServerErrorException(
-      'Database connection failed. Please try again later.',
+      "Database connection failed. Please try again later.",
     );
   }
 
@@ -68,6 +70,6 @@ export function handlePrismaError(
     error instanceof Error ? error.stack : String(error),
   );
   throw new InternalServerErrorException(
-    'Something went wrong. Please try again later.',
+    "Something went wrong. Please try again later.",
   );
 }

@@ -1,6 +1,6 @@
-import { Injectable, Logger, HttpException } from '@nestjs/common';
-import { PrismaService } from '../common/prisma.service';
-import { handlePrismaError } from '../common/helpers/prisma-error.handler';
+import { Injectable, Logger, HttpException } from "@nestjs/common";
+import { PrismaService } from "../common/prisma.service";
+import { handlePrismaError } from "../common/helpers/prisma-error.handler";
 
 /** Query params for admin list endpoints (paginated, optional user filter). */
 export interface AdminListQuery {
@@ -31,18 +31,23 @@ export class AdminService {
     recentSignups: number;
   }> {
     try {
-      const [totalUsers, totalTransactions, totalBudgets, totalGoals, recentSignups] =
-        await Promise.all([
-          this.db.user.count(),
-          this.db.transaction.count(),
-          this.db.budget.count(),
-          this.db.goal.count(),
-          this.db.user.count({
-            where: {
-              createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
-            },
-          }),
-        ]);
+      const [
+        totalUsers,
+        totalTransactions,
+        totalBudgets,
+        totalGoals,
+        recentSignups,
+      ] = await Promise.all([
+        this.db.user.count(),
+        this.db.transaction.count(),
+        this.db.budget.count(),
+        this.db.goal.count(),
+        this.db.user.count({
+          where: {
+            createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+          },
+        }),
+      ]);
 
       return {
         totalUsers,
@@ -53,7 +58,7 @@ export class AdminService {
       };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'AdminService.getDashboard');
+      handlePrismaError(error, this.logger, "AdminService.getDashboard");
     }
   }
 
@@ -78,8 +83,11 @@ export class AdminService {
       const [transactions, total] = await Promise.all([
         this.db.transaction.findMany({
           where,
-          include: { category: true, user: { select: { id: true, email: true, name: true } } },
-          orderBy: { date: 'desc' },
+          include: {
+            category: true,
+            user: { select: { id: true, email: true, name: true } },
+          },
+          orderBy: { date: "desc" },
           skip,
           take: limit,
         }),
@@ -95,7 +103,7 @@ export class AdminService {
       };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'AdminService.getAllTransactions');
+      handlePrismaError(error, this.logger, "AdminService.getAllTransactions");
     }
   }
 
@@ -120,8 +128,11 @@ export class AdminService {
       const [budgets, total] = await Promise.all([
         this.db.budget.findMany({
           where,
-          include: { category: true, user: { select: { id: true, email: true, name: true } } },
-          orderBy: { startAt: 'desc' },
+          include: {
+            category: true,
+            user: { select: { id: true, email: true, name: true } },
+          },
+          orderBy: { startAt: "desc" },
           skip,
           take: limit,
         }),
@@ -137,7 +148,7 @@ export class AdminService {
       };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'AdminService.getAllBudgets');
+      handlePrismaError(error, this.logger, "AdminService.getAllBudgets");
     }
   }
 
@@ -163,7 +174,7 @@ export class AdminService {
         this.db.goal.findMany({
           where,
           include: { user: { select: { id: true, email: true, name: true } } },
-          orderBy: [{ deadline: 'asc' }, { createdAt: 'desc' }],
+          orderBy: [{ deadline: "asc" }, { createdAt: "desc" }],
           skip,
           take: limit,
         }),
@@ -179,7 +190,7 @@ export class AdminService {
       };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'AdminService.getAllGoals');
+      handlePrismaError(error, this.logger, "AdminService.getAllGoals");
     }
   }
 }

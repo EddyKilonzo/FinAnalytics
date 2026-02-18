@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../common/prisma.service';
-import { MlService } from '../ml/ml.service';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../common/prisma.service";
+import { MlService } from "../ml/ml.service";
 
 export interface HealthResult {
-  status: 'ok' | 'degraded';
+  status: "ok" | "degraded";
   timestamp: string;
   database: { connected: boolean };
   ml: { available: boolean; categoriesCount?: number };
@@ -35,8 +35,8 @@ export class HealthService {
 
     const mlStatus = await this.ml.ping();
 
-    const status: HealthResult['status'] =
-      databaseConnected && mlStatus.available ? 'ok' : 'degraded';
+    const status: HealthResult["status"] =
+      databaseConnected && mlStatus.available ? "ok" : "degraded";
 
     return {
       status,

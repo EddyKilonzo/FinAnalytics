@@ -1,18 +1,18 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
-import { PrismaModule } from './common/prisma.module';
-import { HealthModule } from './health/health.module';
-import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
-import { CategoriesModule } from './categories/categories.module';
-import { TransactionsModule } from './transactions/transactions.module';
-import { BudgetsModule } from './budgets/budgets.module';
-import { GoalsModule } from './goals/goals.module';
-import { LessonsModule } from './lessons/lessons.module';
-import { AnalyticsModule } from './analytics/analytics.module';
-import { AdminModule } from './admin/admin.module';
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
+import { APP_GUARD } from "@nestjs/core";
+import { PrismaModule } from "./common/prisma.module";
+import { HealthModule } from "./health/health.module";
+import { UsersModule } from "./users/users.module";
+import { AuthModule } from "./auth/auth.module";
+import { CategoriesModule } from "./categories/categories.module";
+import { TransactionsModule } from "./transactions/transactions.module";
+import { BudgetsModule } from "./budgets/budgets.module";
+import { GoalsModule } from "./goals/goals.module";
+import { LessonsModule } from "./lessons/lessons.module";
+import { AnalyticsModule } from "./analytics/analytics.module";
+import { AdminModule } from "./admin/admin.module";
 
 @Module({
   imports: [
@@ -44,4 +44,3 @@ import { AdminModule } from './admin/admin.module';
   ],
 })
 export class AppModule {}
-

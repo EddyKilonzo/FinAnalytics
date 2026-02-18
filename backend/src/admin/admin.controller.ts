@@ -8,19 +8,19 @@ import {
   Logger,
   HttpException,
   InternalServerErrorException,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
   ApiQuery,
-} from '@nestjs/swagger';
-import { AdminService } from './admin.service';
-import { AdminListQueryDto } from './dto/admin-list-query.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { AdminGuard } from '../common/guards/admin.guard';
-import { ErrorResponseDto } from '../auth/dto/auth-response.dto';
+} from "@nestjs/swagger";
+import { AdminService } from "./admin.service";
+import { AdminListQueryDto } from "./dto/admin-list-query.dto";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { AdminGuard } from "../common/guards/admin.guard";
+import { ErrorResponseDto } from "../auth/dto/auth-response.dto";
 
 /**
  * AdminController — endpoints visible and writable only by administrators.
@@ -31,25 +31,33 @@ import { ErrorResponseDto } from '../auth/dto/auth-response.dto';
  *
  * Non-admins receive 403 Forbidden.
  */
-@ApiTags('Admin')
-@ApiBearerAuth('access-token')
+@ApiTags("Admin")
+@ApiBearerAuth("access-token")
 @UseGuards(JwtAuthGuard, AdminGuard)
-@Controller('admin')
+@Controller("admin")
 export class AdminController {
   private readonly logger = new Logger(AdminController.name);
 
   constructor(private readonly adminService: AdminService) {}
 
-  @Get('dashboard')
+  @Get("dashboard")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Admin dashboard stats [ADMIN]',
+    summary: "Admin dashboard stats [ADMIN]",
     description:
-      'Returns counts: total users, transactions, budgets, goals, and recent signups (last 7 days).',
+      "Returns counts: total users, transactions, budgets, goals, and recent signups (last 7 days).",
   })
-  @ApiResponse({ status: 200, description: 'Dashboard statistics.' })
-  @ApiResponse({ status: 401, description: 'Missing or invalid token.', type: ErrorResponseDto })
-  @ApiResponse({ status: 403, description: 'Requires ADMIN role.', type: ErrorResponseDto })
+  @ApiResponse({ status: 200, description: "Dashboard statistics." })
+  @ApiResponse({
+    status: 401,
+    description: "Missing or invalid token.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Requires ADMIN role.",
+    type: ErrorResponseDto,
+  })
   async getDashboard() {
     try {
       const data = await this.adminService.getDashboard();
@@ -57,26 +65,42 @@ export class AdminController {
     } catch (error) {
       if (error instanceof HttpException) throw error;
       this.logger.error(
-        'Unexpected error in admin getDashboard',
+        "Unexpected error in admin getDashboard",
         error instanceof Error ? error.stack : String(error),
       );
-      throw new InternalServerErrorException('Could not load dashboard.');
+      throw new InternalServerErrorException("Could not load dashboard.");
     }
   }
 
-  @Get('transactions')
+  @Get("transactions")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'List all transactions [ADMIN]',
+    summary: "List all transactions [ADMIN]",
     description:
-      'Paginated list of every transaction. Use userId to filter by a single user.',
+      "Paginated list of every transaction. Use userId to filter by a single user.",
   })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'userId', required: false, type: String, description: 'Filter by user CUID' })
-  @ApiResponse({ status: 200, description: 'Paginated transactions with user info.' })
-  @ApiResponse({ status: 401, description: 'Missing or invalid token.', type: ErrorResponseDto })
-  @ApiResponse({ status: 403, description: 'Requires ADMIN role.', type: ErrorResponseDto })
+  @ApiQuery({ name: "page", required: false, type: Number })
+  @ApiQuery({ name: "limit", required: false, type: Number })
+  @ApiQuery({
+    name: "userId",
+    required: false,
+    type: String,
+    description: "Filter by user CUID",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Paginated transactions with user info.",
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Missing or invalid token.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Requires ADMIN role.",
+    type: ErrorResponseDto,
+  })
   async getAllTransactions(@Query() query: AdminListQueryDto) {
     try {
       const result = await this.adminService.getAllTransactions({
@@ -97,25 +121,39 @@ export class AdminController {
     } catch (error) {
       if (error instanceof HttpException) throw error;
       this.logger.error(
-        'Unexpected error in admin getAllTransactions',
+        "Unexpected error in admin getAllTransactions",
         error instanceof Error ? error.stack : String(error),
       );
-      throw new InternalServerErrorException('Could not retrieve transactions.');
+      throw new InternalServerErrorException(
+        "Could not retrieve transactions.",
+      );
     }
   }
 
-  @Get('budgets')
+  @Get("budgets")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'List all budgets [ADMIN]',
-    description: 'Paginated list of every budget. Use userId to filter by user.',
+    summary: "List all budgets [ADMIN]",
+    description:
+      "Paginated list of every budget. Use userId to filter by user.",
   })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'userId', required: false, type: String })
-  @ApiResponse({ status: 200, description: 'Paginated budgets with user info.' })
-  @ApiResponse({ status: 401, description: 'Missing or invalid token.', type: ErrorResponseDto })
-  @ApiResponse({ status: 403, description: 'Requires ADMIN role.', type: ErrorResponseDto })
+  @ApiQuery({ name: "page", required: false, type: Number })
+  @ApiQuery({ name: "limit", required: false, type: Number })
+  @ApiQuery({ name: "userId", required: false, type: String })
+  @ApiResponse({
+    status: 200,
+    description: "Paginated budgets with user info.",
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Missing or invalid token.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Requires ADMIN role.",
+    type: ErrorResponseDto,
+  })
   async getAllBudgets(@Query() query: AdminListQueryDto) {
     try {
       const result = await this.adminService.getAllBudgets({
@@ -136,25 +174,33 @@ export class AdminController {
     } catch (error) {
       if (error instanceof HttpException) throw error;
       this.logger.error(
-        'Unexpected error in admin getAllBudgets',
+        "Unexpected error in admin getAllBudgets",
         error instanceof Error ? error.stack : String(error),
       );
-      throw new InternalServerErrorException('Could not retrieve budgets.');
+      throw new InternalServerErrorException("Could not retrieve budgets.");
     }
   }
 
-  @Get('goals')
+  @Get("goals")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'List all goals [ADMIN]',
-    description: 'Paginated list of every goal. Use userId to filter by user.',
+    summary: "List all goals [ADMIN]",
+    description: "Paginated list of every goal. Use userId to filter by user.",
   })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'userId', required: false, type: String })
-  @ApiResponse({ status: 200, description: 'Paginated goals with user info.' })
-  @ApiResponse({ status: 401, description: 'Missing or invalid token.', type: ErrorResponseDto })
-  @ApiResponse({ status: 403, description: 'Requires ADMIN role.', type: ErrorResponseDto })
+  @ApiQuery({ name: "page", required: false, type: Number })
+  @ApiQuery({ name: "limit", required: false, type: Number })
+  @ApiQuery({ name: "userId", required: false, type: String })
+  @ApiResponse({ status: 200, description: "Paginated goals with user info." })
+  @ApiResponse({
+    status: 401,
+    description: "Missing or invalid token.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Requires ADMIN role.",
+    type: ErrorResponseDto,
+  })
   async getAllGoals(@Query() query: AdminListQueryDto) {
     try {
       const result = await this.adminService.getAllGoals({
@@ -175,10 +221,10 @@ export class AdminController {
     } catch (error) {
       if (error instanceof HttpException) throw error;
       this.logger.error(
-        'Unexpected error in admin getAllGoals',
+        "Unexpected error in admin getAllGoals",
         error instanceof Error ? error.stack : String(error),
       );
-      throw new InternalServerErrorException('Could not retrieve goals.');
+      throw new InternalServerErrorException("Could not retrieve goals.");
     }
   }
 }

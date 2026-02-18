@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 /**
  * Result returned by the Python ML service on a successful /predict call.
@@ -35,11 +35,13 @@ export class MlService {
   private readonly timeoutMs: number;
 
   constructor(private readonly config: ConfigService) {
-    this.baseUrl = (config.get<string>('ML_SERVICE_URL') ?? 'http://localhost:8000').replace(
-      /\/$/,
-      '',
+    this.baseUrl = (
+      config.get<string>("ML_SERVICE_URL") ?? "http://localhost:8000"
+    ).replace(/\/$/, "");
+    this.timeoutMs = parseInt(
+      config.get<string>("ML_TIMEOUT_MS") ?? "3000",
+      10,
     );
-    this.timeoutMs = parseInt(config.get<string>('ML_TIMEOUT_MS') ?? '3000', 10);
   }
 
   // ── Public API ───────────────────────────────────────────────────────────
@@ -51,13 +53,16 @@ export class MlService {
    * unavailable or the request times out — allowing the caller to proceed
    * without a suggestion rather than failing entirely.
    */
-  async categorise(description: string, type: string): Promise<MlPrediction | null> {
+  async categorise(
+    description: string,
+    type: string,
+  ): Promise<MlPrediction | null> {
     if (!description?.trim()) return null;
 
     try {
       const response = await this.fetchWithTimeout(`${this.baseUrl}/predict`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ description: description.trim(), type }),
       });
 
@@ -70,7 +75,10 @@ export class MlService {
 
       let data: { category_slug: string; confidence: number };
       try {
-        data = (await response.json()) as { category_slug: string; confidence: number };
+        data = (await response.json()) as {
+          category_slug: string;
+          confidence: number;
+        };
       } catch (parseErr) {
         this.logger.warn(
           `ML /predict returned invalid JSON: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`,
@@ -103,16 +111,19 @@ export class MlService {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 2000);
       const response = await fetch(`${this.baseUrl}/health`, {
-        method: 'GET',
+        method: "GET",
         signal: controller.signal,
       });
       clearTimeout(timer);
 
       if (!response.ok) return { available: false };
 
-      const data = (await response.json()) as { status?: string; categories?: string[] };
+      const data = (await response.json()) as {
+        status?: string;
+        categories?: string[];
+      };
       return {
-        available: data.status === 'ok',
+        available: data.status === "ok",
         categoriesCount: data.categories?.length,
       };
     } catch {
@@ -126,13 +137,16 @@ export class MlService {
    * Fire-and-forget: we intentionally do not await this in normal flows.
    * Errors are logged but never propagated to the caller.
    */
-  async sendFeedback(description: string, correctCategorySlug: string): Promise<void> {
+  async sendFeedback(
+    description: string,
+    correctCategorySlug: string,
+  ): Promise<void> {
     if (!description?.trim()) return;
 
     try {
       const response = await this.fetchWithTimeout(`${this.baseUrl}/feedback`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           description: description.trim(),
           correct_category_slug: correctCategorySlug,
@@ -155,7 +169,10 @@ export class MlService {
    * Wrap the native fetch with an AbortController-based timeout.
    * Node.js 18+ ships fetch globally; no extra package needed.
    */
-  private async fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
+  private async fetchWithTimeout(
+    url: string,
+    init: RequestInit,
+  ): Promise<Response> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.timeoutMs);
 

@@ -3,9 +3,9 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
-} from '@nestjs/common';
-import { Role } from '../enums/role.enum';
-import type { AuthUser } from '../../auth/strategies/jwt.strategy';
+} from "@nestjs/common";
+import { Role } from "../enums/role.enum";
+import type { AuthUser } from "../../auth/strategies/jwt.strategy";
 
 interface RequestWithUser {
   user?: AuthUser;
@@ -29,12 +29,12 @@ export class AdminGuard implements CanActivate {
     const user = req.user;
 
     if (!user) {
-      throw new ForbiddenException('Access denied. Authentication required.');
+      throw new ForbiddenException("Access denied. Authentication required.");
     }
 
     if (user.role !== Role.ADMIN) {
       throw new ForbiddenException(
-        'Access denied. This action is restricted to administrators.',
+        "Access denied. This action is restricted to administrators.",
       );
     }
 

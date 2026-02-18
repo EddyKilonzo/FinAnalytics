@@ -3,11 +3,11 @@ import {
   Logger,
   HttpException,
   NotFoundException,
-} from '@nestjs/common';
-import { PrismaService } from '../common/prisma.service';
-import { handlePrismaError } from '../common/helpers/prisma-error.handler';
-import type { CreateCategoryDto } from './dto/create-category.dto';
-import type { UpdateCategoryDto } from './dto/update-category.dto';
+} from "@nestjs/common";
+import { PrismaService } from "../common/prisma.service";
+import { handlePrismaError } from "../common/helpers/prisma-error.handler";
+import type { CreateCategoryDto } from "./dto/create-category.dto";
+import type { UpdateCategoryDto } from "./dto/update-category.dto";
 
 /** The shape we hand back to callers — no generated Prisma namespace needed. */
 export interface CategoryEntity {
@@ -41,10 +41,10 @@ export class CategoriesService {
    */
   async findAll(): Promise<CategoryEntity[]> {
     try {
-      return await this.db.category.findMany({ orderBy: { name: 'asc' } });
+      return await this.db.category.findMany({ orderBy: { name: "asc" } });
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'CategoriesService.findAll');
+      handlePrismaError(error, this.logger, "CategoriesService.findAll");
     }
   }
 
@@ -63,7 +63,7 @@ export class CategoriesService {
       return category;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'CategoriesService.findById');
+      handlePrismaError(error, this.logger, "CategoriesService.findById");
     }
   }
 
@@ -76,13 +76,15 @@ export class CategoriesService {
       const category = await this.db.category.findUnique({ where: { slug } });
 
       if (!category) {
-        throw new NotFoundException(`Category with slug "${slug}" was not found`);
+        throw new NotFoundException(
+          `Category with slug "${slug}" was not found`,
+        );
       }
 
       return category;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'CategoriesService.findBySlug');
+      handlePrismaError(error, this.logger, "CategoriesService.findBySlug");
     }
   }
 
@@ -96,11 +98,13 @@ export class CategoriesService {
   async create(dto: CreateCategoryDto): Promise<CategoryEntity> {
     try {
       const category = await this.db.category.create({ data: dto });
-      this.logger.log(`Category created: "${category.name}" (slug: ${category.slug})`);
+      this.logger.log(
+        `Category created: "${category.name}" (slug: ${category.slug})`,
+      );
       return category;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'CategoriesService.create');
+      handlePrismaError(error, this.logger, "CategoriesService.create");
     }
   }
 
@@ -113,13 +117,16 @@ export class CategoriesService {
       // Confirm the target exists — throws 404 if missing
       await this.findById(id);
 
-      const updated = await this.db.category.update({ where: { id }, data: dto });
+      const updated = await this.db.category.update({
+        where: { id },
+        data: dto,
+      });
 
       this.logger.log(`Category updated: "${updated.name}" (${id})`);
       return updated;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'CategoriesService.update');
+      handlePrismaError(error, this.logger, "CategoriesService.update");
     }
   }
 
@@ -137,7 +144,7 @@ export class CategoriesService {
       this.logger.log(`Category deleted: ${id}`);
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'CategoriesService.delete');
+      handlePrismaError(error, this.logger, "CategoriesService.delete");
     }
   }
 
@@ -146,7 +153,10 @@ export class CategoriesService {
    * Used exclusively by the seed script so re-running it never creates
    * duplicates — it just updates the existing record instead.
    */
-  async upsertBySlug(slug: string, data: Omit<CreateCategoryDto, 'slug'>): Promise<CategoryEntity> {
+  async upsertBySlug(
+    slug: string,
+    data: Omit<CreateCategoryDto, "slug">,
+  ): Promise<CategoryEntity> {
     try {
       return await this.db.category.upsert({
         where: { slug },
@@ -155,7 +165,7 @@ export class CategoriesService {
       });
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'CategoriesService.upsertBySlug');
+      handlePrismaError(error, this.logger, "CategoriesService.upsertBySlug");
     }
   }
 }

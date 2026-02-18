@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty } from 'class-validator';
+import { ApiProperty } from "@nestjs/swagger";
+import { IsString, IsNotEmpty } from "class-validator";
 
 /**
  * Body for PATCH /transactions/:id/correct-category.
@@ -10,8 +10,9 @@ import { IsString, IsNotEmpty } from 'class-validator';
  */
 export class CorrectCategoryDto {
   @ApiProperty({
-    description: 'The correct category ID (CUID) to assign to this transaction.',
-    example: 'clx1234abcdef',
+    description:
+      "The correct category ID (CUID) to assign to this transaction.",
+    example: "clx1234abcdef",
   })
   @IsString()
   @IsNotEmpty()

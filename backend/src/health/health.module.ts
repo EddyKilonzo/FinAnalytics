@@ -1,7 +1,7 @@
-import { Module } from '@nestjs/common';
-import { HealthController } from './health.controller';
-import { HealthService } from './health.service';
-import { MlModule } from '../ml/ml.module';
+import { Module } from "@nestjs/common";
+import { HealthController } from "./health.controller";
+import { HealthService } from "./health.service";
+import { MlModule } from "../ml/ml.module";
 
 /**
  * HealthModule — exposes GET /api/v1/health that reports backend + ML status.

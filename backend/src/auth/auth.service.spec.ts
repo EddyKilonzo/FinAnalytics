@@ -1,7 +1,7 @@
-import { ConflictException, UnauthorizedException } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { ConflictException, UnauthorizedException } from "@nestjs/common";
+import { AuthService } from "./auth.service";
 
-jest.mock('../common/helpers/prisma-error.handler', () => ({
+jest.mock("../common/helpers/prisma-error.handler", () => ({
   handlePrismaError: jest.fn((err: Error) => {
     throw err;
   }),
@@ -9,18 +9,18 @@ jest.mock('../common/helpers/prisma-error.handler', () => ({
 
 const mockBcryptCompare = jest.fn();
 const mockBcryptHash = jest.fn();
-jest.mock('bcryptjs', () => ({
+jest.mock("bcryptjs", () => ({
   compare: (...args: unknown[]) => mockBcryptCompare(...args),
   hash: (...args: unknown[]) => mockBcryptHash(...args),
 }));
 
 const mockUser = {
-  id: 'user-1',
-  email: 'jane@example.com',
-  password: '$2b$12$hashed',
-  name: 'Jane',
+  id: "user-1",
+  email: "jane@example.com",
+  password: "$2b$12$hashed",
+  name: "Jane",
   avatarUrl: null,
-  role: 'USER' as const,
+  role: "USER" as const,
   emailVerifiedAt: new Date(),
   userType: null,
   incomeSources: [],
@@ -33,7 +33,7 @@ const mockUser = {
   updatedAt: new Date(),
 };
 
-describe('AuthService', () => {
+describe("AuthService", () => {
   const mockUsersService = {
     findByEmail: jest.fn(),
     create: jest.fn(),
@@ -43,11 +43,11 @@ describe('AuthService', () => {
   };
 
   const mockJwtService = {
-    sign: jest.fn().mockReturnValue('fake-jwt-token'),
+    sign: jest.fn().mockReturnValue("fake-jwt-token"),
   };
 
   const mockConfig = {
-    get: jest.fn((key: string) => (key === 'PORT' ? '3000' : undefined)),
+    get: jest.fn((key: string) => (key === "PORT" ? "3000" : undefined)),
   };
 
   const mockMailerService = {
@@ -67,111 +67,111 @@ describe('AuthService', () => {
     );
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(service).toBeDefined();
   });
 
-  describe('signIn', () => {
-    it('should throw UnauthorizedException when user does not exist', async () => {
+  describe("signIn", () => {
+    it("should throw UnauthorizedException when user does not exist", async () => {
       mockUsersService.findByEmail.mockResolvedValue(null);
       await expect(
-        service.signIn({ email: 'nobody@example.com', password: 'any' }),
+        service.signIn({ email: "nobody@example.com", password: "any" }),
       ).rejects.toThrow(UnauthorizedException);
       await expect(
-        service.signIn({ email: 'nobody@example.com', password: 'any' }),
-      ).rejects.toThrow('Invalid email or password');
+        service.signIn({ email: "nobody@example.com", password: "any" }),
+      ).rejects.toThrow("Invalid email or password");
     });
 
-    it('should throw UnauthorizedException when email not verified', async () => {
+    it("should throw UnauthorizedException when email not verified", async () => {
       mockUsersService.findByEmail.mockResolvedValue({
         ...mockUser,
         emailVerifiedAt: null,
-        password: '$2b$12$same',
+        password: "$2b$12$same",
       });
       mockBcryptCompare.mockResolvedValue(true);
       await expect(
-        service.signIn({ email: 'jane@example.com', password: 'correct' }),
+        service.signIn({ email: "jane@example.com", password: "correct" }),
       ).rejects.toThrow(UnauthorizedException);
       await expect(
-        service.signIn({ email: 'jane@example.com', password: 'correct' }),
-      ).rejects.toThrow('Please verify your email');
+        service.signIn({ email: "jane@example.com", password: "correct" }),
+      ).rejects.toThrow("Please verify your email");
     });
 
-    it('should throw UnauthorizedException when account is suspended', async () => {
+    it("should throw UnauthorizedException when account is suspended", async () => {
       mockUsersService.findByEmail.mockResolvedValue({
         ...mockUser,
         suspendedAt: new Date(),
       });
       mockBcryptCompare.mockResolvedValue(true);
       await expect(
-        service.signIn({ email: 'jane@example.com', password: 'correct' }),
+        service.signIn({ email: "jane@example.com", password: "correct" }),
       ).rejects.toThrow(UnauthorizedException);
       await expect(
-        service.signIn({ email: 'jane@example.com', password: 'correct' }),
-      ).rejects.toThrow('suspended');
+        service.signIn({ email: "jane@example.com", password: "correct" }),
+      ).rejects.toThrow("suspended");
     });
 
-    it('should return user and accessToken when credentials are valid', async () => {
+    it("should return user and accessToken when credentials are valid", async () => {
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
       mockBcryptCompare.mockResolvedValue(true);
       const result = await service.signIn({
-        email: 'jane@example.com',
-        password: 'correct',
+        email: "jane@example.com",
+        password: "correct",
       });
-      expect(result).toHaveProperty('user');
+      expect(result).toHaveProperty("user");
       expect(result.user).toMatchObject({
-        id: 'user-1',
-        email: 'jane@example.com',
-        name: 'Jane',
-        role: 'USER',
+        id: "user-1",
+        email: "jane@example.com",
+        name: "Jane",
+        role: "USER",
       });
-      expect(result).toHaveProperty('accessToken', 'fake-jwt-token');
+      expect(result).toHaveProperty("accessToken", "fake-jwt-token");
       expect(mockJwtService.sign).toHaveBeenCalled();
     });
   });
 
-  describe('signUp', () => {
-    it('should throw ConflictException when email already exists', async () => {
+  describe("signUp", () => {
+    it("should throw ConflictException when email already exists", async () => {
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
       await expect(
         service.signUp({
-          email: 'jane@example.com',
-          password: 'SecurePass1',
-          name: 'Jane',
+          email: "jane@example.com",
+          password: "SecurePass1",
+          name: "Jane",
         }),
       ).rejects.toThrow(ConflictException);
       await expect(
         service.signUp({
-          email: 'jane@example.com',
-          password: 'SecurePass1',
-          name: 'Jane',
+          email: "jane@example.com",
+          password: "SecurePass1",
+          name: "Jane",
         }),
-      ).rejects.toThrow('already exists');
+      ).rejects.toThrow("already exists");
       expect(mockUsersService.create).not.toHaveBeenCalled();
     });
 
-    it('should return user and requiresEmailVerification when signup succeeds', async () => {
+    it("should return user and requiresEmailVerification when signup succeeds", async () => {
       mockUsersService.findByEmail.mockResolvedValue(null);
       mockUsersService.create.mockResolvedValue({
         ...mockUser,
-        id: 'new-user-id',
-        email: 'new@example.com',
-        name: 'New User',
+        id: "new-user-id",
+        email: "new@example.com",
+        name: "New User",
         emailVerifiedAt: null,
         onboardingCompleted: false,
       });
       mockUsersService.setEmailVerificationToken.mockResolvedValue(undefined);
-      mockBcryptHash.mockResolvedValue('$2b$12$hashed');
+      mockBcryptHash.mockResolvedValue("$2b$12$hashed");
 
       const result = await service.signUp({
-        email: 'new@example.com',
-        password: 'SecurePass1',
-        name: 'New User',
+        email: "new@example.com",
+        password: "SecurePass1",
+        name: "New User",
       });
 
-      expect(result).toHaveProperty('requiresEmailVerification', true);
-      expect(result).toHaveProperty('user');
-      expect(result.user.email).toBe('new@example.com');
+      expect(result).toHaveProperty("requiresEmailVerification", true);
+      expect(result).toHaveProperty("user");
+      expect(result.user.email).toBe("new@example.com");
       expect(mockUsersService.create).toHaveBeenCalled();
       expect(mockMailerService.sendEmailVerificationEmail).toHaveBeenCalled();
     });

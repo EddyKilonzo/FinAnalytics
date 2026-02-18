@@ -6,11 +6,11 @@ import {
   ForbiddenException,
   BadRequestException,
   ConflictException,
-} from '@nestjs/common';
-import { PrismaService } from '../common/prisma.service';
-import { handlePrismaError } from '../common/helpers/prisma-error.handler';
-import type { CreateBudgetDto } from './dto/create-budget.dto';
-import type { UpdateBudgetDto } from './dto/update-budget.dto';
+} from "@nestjs/common";
+import { PrismaService } from "../common/prisma.service";
+import { handlePrismaError } from "../common/helpers/prisma-error.handler";
+import type { CreateBudgetDto } from "./dto/create-budget.dto";
+import type { UpdateBudgetDto } from "./dto/update-budget.dto";
 
 /** Threshold at which we flag a budget as "near the limit" (80 %). */
 const NEAR_LIMIT_THRESHOLD = 80;
@@ -22,7 +22,7 @@ const UNDER_BUDGET_THRESHOLD = 85;
 const UNDER_BUDGET_MIN_PERIOD_ELAPSED = 0.25;
 
 /** Category slug used for social spending (highlighted in purple per product spec). */
-const SOCIAL_SLUG = 'social';
+const SOCIAL_SLUG = "social";
 
 /** Shape of a single nudge returned in the alerts/nudges array. */
 export interface NudgeItem {
@@ -64,14 +64,16 @@ export class BudgetsService {
         throw new NotFoundException(`Budget with id "${id}" was not found`);
       }
 
-      if (userRole !== 'ADMIN' && budget.userId !== userId) {
-        throw new ForbiddenException('You do not have permission to access this budget');
+      if (userRole !== "ADMIN" && budget.userId !== userId) {
+        throw new ForbiddenException(
+          "You do not have permission to access this budget",
+        );
       }
 
       return budget;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'BudgetsService.findAndAuthorise');
+      handlePrismaError(error, this.logger, "BudgetsService.findAndAuthorise");
     }
   }
 
@@ -96,7 +98,7 @@ export class BudgetsService {
         userId,
         categoryId: categoryId ?? null,
         startAt: { lt: endAt },
-        endAt:   { gt: startAt },
+        endAt: { gt: startAt },
       };
 
       if (excludeId) {
@@ -106,15 +108,15 @@ export class BudgetsService {
       const existing = await this.db.budget.findFirst({ where });
 
       if (existing) {
-        const scope = categoryId ? 'this category' : 'overall spending';
+        const scope = categoryId ? "this category" : "overall spending";
         throw new ConflictException(
           `You already have a budget for ${scope} that overlaps the requested date window ` +
-          `(existing budget id: "${existing.id}"). Update or delete it first.`,
+            `(existing budget id: "${existing.id}"). Update or delete it first.`,
         );
       }
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'BudgetsService.checkOverlap');
+      handlePrismaError(error, this.logger, "BudgetsService.checkOverlap");
     }
   }
 
@@ -126,18 +128,18 @@ export class BudgetsService {
     try {
       const result = await this.db.transaction.aggregate({
         where: {
-          userId:     budget.userId,
-          type:       'expense',
-          date:       { gte: budget.startAt, lte: budget.endAt },
+          userId: budget.userId,
+          type: "expense",
+          date: { gte: budget.startAt, lte: budget.endAt },
           ...(budget.categoryId ? { categoryId: budget.categoryId } : {}),
         },
         _sum: { amount: true },
       });
 
-      return +(Number(result._sum.amount ?? 0).toFixed(2));
+      return +Number(result._sum.amount ?? 0).toFixed(2);
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'BudgetsService.calcSpending');
+      handlePrismaError(error, this.logger, "BudgetsService.calcSpending");
     }
   }
 
@@ -148,14 +150,17 @@ export class BudgetsService {
    */
   private async enrichWithSummary(budget: any) {
     try {
-      const totalSpent     = await this.calcSpending(budget);
-      const limitAmount    = +Number(budget.limitAmount).toFixed(2);
+      const totalSpent = await this.calcSpending(budget);
+      const limitAmount = +Number(budget.limitAmount).toFixed(2);
       const percentageUsed =
         limitAmount > 0 ? +((totalSpent / limitAmount) * 100).toFixed(1) : 0;
 
-      const alertStatus: 'over' | 'near' | 'ok' =
-        percentageUsed >= 100 ? 'over' :
-        percentageUsed >= NEAR_LIMIT_THRESHOLD ? 'near' : 'ok';
+      const alertStatus: "over" | "near" | "ok" =
+        percentageUsed >= 100
+          ? "over"
+          : percentageUsed >= NEAR_LIMIT_THRESHOLD
+            ? "near"
+            : "ok";
 
       // Social spending is highlighted in purple per product spec
       const isSocial = budget.category?.slug === SOCIAL_SLUG;
@@ -164,14 +169,14 @@ export class BudgetsService {
         ...budget,
         limitAmount,
         totalSpent,
-        remaining:     +(limitAmount - totalSpent).toFixed(2),
+        remaining: +(limitAmount - totalSpent).toFixed(2),
         percentageUsed,
         alertStatus,
         isSocial,
       };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'BudgetsService.enrichWithSummary');
+      handlePrismaError(error, this.logger, "BudgetsService.enrichWithSummary");
     }
   }
 
@@ -188,13 +193,17 @@ export class BudgetsService {
   async create(dto: CreateBudgetDto, userId: string): Promise<any> {
     try {
       if (new Date(dto.endAt) <= new Date(dto.startAt)) {
-        throw new BadRequestException('endAt must be after startAt');
+        throw new BadRequestException("endAt must be after startAt");
       }
 
       if (dto.categoryId) {
-        const cat = await this.db.category.findUnique({ where: { id: dto.categoryId } });
+        const cat = await this.db.category.findUnique({
+          where: { id: dto.categoryId },
+        });
         if (!cat) {
-          throw new NotFoundException(`Category with id "${dto.categoryId}" was not found`);
+          throw new NotFoundException(
+            `Category with id "${dto.categoryId}" was not found`,
+          );
         }
       }
 
@@ -208,11 +217,11 @@ export class BudgetsService {
       const budget = await this.db.budget.create({
         data: {
           userId,
-          categoryId:  dto.categoryId ?? null,
+          categoryId: dto.categoryId ?? null,
           limitAmount: dto.limitAmount,
-          period:      dto.period,
-          startAt:     new Date(dto.startAt),
-          endAt:       new Date(dto.endAt),
+          period: dto.period,
+          startAt: new Date(dto.startAt),
+          endAt: new Date(dto.endAt),
         },
         include: { category: true },
       });
@@ -223,7 +232,7 @@ export class BudgetsService {
       return this.enrichWithSummary(budget);
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'BudgetsService.create');
+      handlePrismaError(error, this.logger, "BudgetsService.create");
     }
   }
 
@@ -233,18 +242,18 @@ export class BudgetsService {
    */
   async findAll(userId: string, userRole: string): Promise<any[]> {
     try {
-      const where = userRole === 'ADMIN' ? {} : { userId };
+      const where = userRole === "ADMIN" ? {} : { userId };
 
       const budgets = await this.db.budget.findMany({
         where,
         include: { category: true },
-        orderBy: { startAt: 'desc' },
+        orderBy: { startAt: "desc" },
       });
 
       return Promise.all(budgets.map((b: any) => this.enrichWithSummary(b)));
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'BudgetsService.findAll');
+      handlePrismaError(error, this.logger, "BudgetsService.findAll");
     }
   }
 
@@ -257,7 +266,7 @@ export class BudgetsService {
       return this.enrichWithSummary(budget);
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'BudgetsService.findById');
+      handlePrismaError(error, this.logger, "BudgetsService.findById");
     }
   }
 
@@ -275,34 +284,41 @@ export class BudgetsService {
       const existing = await this.findAndAuthorise(id, userId, userRole);
 
       const newStart = dto.startAt ? new Date(dto.startAt) : existing.startAt;
-      const newEnd   = dto.endAt   ? new Date(dto.endAt)   : existing.endAt;
+      const newEnd = dto.endAt ? new Date(dto.endAt) : existing.endAt;
       if (newEnd <= newStart) {
-        throw new BadRequestException('endAt must be after startAt');
+        throw new BadRequestException("endAt must be after startAt");
       }
 
-      const newCategoryId = dto.categoryId !== undefined ? dto.categoryId : existing.categoryId;
+      const newCategoryId =
+        dto.categoryId !== undefined ? dto.categoryId : existing.categoryId;
 
       if (dto.categoryId) {
-        const cat = await this.db.category.findUnique({ where: { id: dto.categoryId } });
+        const cat = await this.db.category.findUnique({
+          where: { id: dto.categoryId },
+        });
         if (!cat) {
-          throw new NotFoundException(`Category with id "${dto.categoryId}" was not found`);
+          throw new NotFoundException(
+            `Category with id "${dto.categoryId}" was not found`,
+          );
         }
       }
 
       // Only check overlap if the window or category changed
       const windowChanged =
-        dto.startAt !== undefined || dto.endAt !== undefined || dto.categoryId !== undefined;
+        dto.startAt !== undefined ||
+        dto.endAt !== undefined ||
+        dto.categoryId !== undefined;
 
       if (windowChanged) {
         await this.checkOverlap(userId, newCategoryId, newStart, newEnd, id);
       }
 
       const data: Record<string, any> = {};
-      if (dto.categoryId  !== undefined) data.categoryId  = dto.categoryId;
+      if (dto.categoryId !== undefined) data.categoryId = dto.categoryId;
       if (dto.limitAmount !== undefined) data.limitAmount = dto.limitAmount;
-      if (dto.period      !== undefined) data.period      = dto.period;
-      if (dto.startAt     !== undefined) data.startAt     = new Date(dto.startAt);
-      if (dto.endAt       !== undefined) data.endAt       = new Date(dto.endAt);
+      if (dto.period !== undefined) data.period = dto.period;
+      if (dto.startAt !== undefined) data.startAt = new Date(dto.startAt);
+      if (dto.endAt !== undefined) data.endAt = new Date(dto.endAt);
 
       const updated = await this.db.budget.update({
         where: { id },
@@ -314,7 +330,7 @@ export class BudgetsService {
       return this.enrichWithSummary(updated);
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'BudgetsService.update');
+      handlePrismaError(error, this.logger, "BudgetsService.update");
     }
   }
 
@@ -328,7 +344,7 @@ export class BudgetsService {
       this.logger.log(`Budget deleted: ${id} by user ${userId}`);
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'BudgetsService.delete');
+      handlePrismaError(error, this.logger, "BudgetsService.delete");
     }
   }
 
@@ -344,15 +360,15 @@ export class BudgetsService {
       const all = await this.findAll(userId, userRole);
 
       return (all as any[])
-        .filter((b) => b.alertStatus !== 'ok')
+        .filter((b) => b.alertStatus !== "ok")
         .sort((a, b) => {
-          if (a.alertStatus === 'over' && b.alertStatus !== 'over') return -1;
-          if (b.alertStatus === 'over' && a.alertStatus !== 'over') return  1;
+          if (a.alertStatus === "over" && b.alertStatus !== "over") return -1;
+          if (b.alertStatus === "over" && a.alertStatus !== "over") return 1;
           return b.percentageUsed - a.percentageUsed;
         });
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'BudgetsService.getBudgetAlerts');
+      handlePrismaError(error, this.logger, "BudgetsService.getBudgetAlerts");
     }
   }
 
@@ -362,7 +378,12 @@ export class BudgetsService {
    * If weekend daily average is at least WEEKEND_OVESPEND_RATIO (e.g. 1.2) times weekday average,
    * return a nudge so the app can show "You tend to spend more on weekends."
    */
-  private async getWeekendOverspendNudge(userId: string): Promise<{ id: string; type: string; message: string; severity: string } | null> {
+  private async getWeekendOverspendNudge(userId: string): Promise<{
+    id: string;
+    type: string;
+    message: string;
+    severity: string;
+  } | null> {
     const DAYS_LOOKBACK = 30;
     const WEEKEND_OVESPEND_RATIO = 1.2; // 20% higher weekend spending triggers nudge
 
@@ -374,7 +395,7 @@ export class BudgetsService {
       const expenses = await this.db.transaction.findMany({
         where: {
           userId,
-          type: 'expense',
+          type: "expense",
           date: { gte: start, lte: end },
         },
         select: { amount: true, date: true },
@@ -412,18 +433,26 @@ export class BudgetsService {
       const weekendDaily = weekendDays > 0 ? weekendTotal / weekendDays : 0;
       const weekdayDaily = weekdayDays > 0 ? weekdayTotal / weekdayDays : 0;
 
-      if (weekdayDaily > 0 && weekendDaily >= weekdayDaily * WEEKEND_OVESPEND_RATIO) {
+      if (
+        weekdayDaily > 0 &&
+        weekendDaily >= weekdayDaily * WEEKEND_OVESPEND_RATIO
+      ) {
         return {
-          id: 'weekend_overspend',
-          type: 'weekend_overspend_pattern',
-          message: 'You tend to spend more on weekends. Consider setting a small weekend budget to stay on track.',
-          severity: 'info',
+          id: "weekend_overspend",
+          type: "weekend_overspend_pattern",
+          message:
+            "You tend to spend more on weekends. Consider setting a small weekend budget to stay on track.",
+          severity: "info",
         };
       }
       return null;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'BudgetsService.getWeekendOverspendNudge');
+      handlePrismaError(
+        error,
+        this.logger,
+        "BudgetsService.getWeekendOverspendNudge",
+      );
     }
   }
 
@@ -450,7 +479,11 @@ export class BudgetsService {
 
       const msPerDay = 1000 * 60 * 60 * 24;
       const underBudgets = enriched.filter((b: any) => {
-        if (b.alertStatus !== 'ok' || b.percentageUsed >= UNDER_BUDGET_THRESHOLD) return false;
+        if (
+          b.alertStatus !== "ok" ||
+          b.percentageUsed >= UNDER_BUDGET_THRESHOLD
+        )
+          return false;
         const start = new Date(b.startAt).getTime();
         const end = new Date(b.endAt).getTime();
         const elapsed = (now.getTime() - start) / msPerDay;
@@ -461,7 +494,7 @@ export class BudgetsService {
 
       if (underBudgets.length === 0) return null;
 
-      const label = underBudgets[0].category?.name ?? 'overall spending';
+      const label = underBudgets[0].category?.name ?? "overall spending";
       const pctUnder = +(100 - underBudgets[0].percentageUsed).toFixed(0);
       const message =
         underBudgets.length === 1
@@ -469,14 +502,18 @@ export class BudgetsService {
           : `Great job! You're under budget on ${underBudgets.length} categories this period.`;
 
       return {
-        id: 'under_budget',
-        type: 'under_budget',
+        id: "under_budget",
+        type: "under_budget",
         message,
-        severity: 'info',
+        severity: "info",
       };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'BudgetsService.getUnderBudgetNudge');
+      handlePrismaError(
+        error,
+        this.logger,
+        "BudgetsService.getUnderBudgetNudge",
+      );
     }
   }
 
@@ -506,7 +543,7 @@ export class BudgetsService {
       return { budgetAlerts, nudges };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'BudgetsService.getAlerts');
+      handlePrismaError(error, this.logger, "BudgetsService.getAlerts");
     }
   }
 }

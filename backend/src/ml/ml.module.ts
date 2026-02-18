@@ -1,5 +1,5 @@
-import { Module } from '@nestjs/common';
-import { MlService } from './ml.service';
+import { Module } from "@nestjs/common";
+import { MlService } from "./ml.service";
 
 /**
  * MlModule — provides MlService to any module that imports it.

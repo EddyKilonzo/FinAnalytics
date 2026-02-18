@@ -14,7 +14,7 @@ import {
   HttpException,
   InternalServerErrorException,
   Request,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import {
   ApiTags,
   ApiOperation,
@@ -22,20 +22,20 @@ import {
   ApiBearerAuth,
   ApiParam,
   ApiQuery,
-} from '@nestjs/swagger';
-import { UsersService } from './users.service';
-import { UpdateUserDto } from './dto/update-user.dto';
+} from "@nestjs/swagger";
+import { UsersService } from "./users.service";
+import { UpdateUserDto } from "./dto/update-user.dto";
 import {
   UserListResponseDto,
   UserDetailResponseDto,
   UserDetailWithStatsResponseDto,
-} from './dto/user-response.dto';
-import { PaginationQueryDto } from '../common/dto/pagination.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { AdminGuard } from '../common/guards/admin.guard';
-import { ErrorResponseDto } from '../auth/dto/auth-response.dto';
-import { MailerService } from '../common/mailer/mailer.service';
-import type { AuthUser } from '../auth/strategies/jwt.strategy';
+} from "./dto/user-response.dto";
+import { PaginationQueryDto } from "../common/dto/pagination.dto";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { AdminGuard } from "../common/guards/admin.guard";
+import { ErrorResponseDto } from "../auth/dto/auth-response.dto";
+import { MailerService } from "../common/mailer/mailer.service";
+import type { AuthUser } from "../auth/strategies/jwt.strategy";
 
 /** Extend Express.Request so TypeScript knows req.user is an AuthUser. */
 interface AuthRequest extends Express.Request {
@@ -51,10 +51,10 @@ interface AuthRequest extends Express.Request {
  *
  * Non-admin requests receive 401 (no token) or 403 (wrong role).
  */
-@ApiTags('Users · Admin')
-@ApiBearerAuth('access-token')
+@ApiTags("Users · Admin")
+@ApiBearerAuth("access-token")
 @UseGuards(JwtAuthGuard, AdminGuard)
-@Controller('users')
+@Controller("users")
 export class UsersController {
   private readonly logger = new Logger(UsersController.name);
 
@@ -71,17 +71,29 @@ export class UsersController {
    */
   @Get()
   @ApiOperation({
-    summary: 'List all users  [ADMIN]',
+    summary: "List all users  [ADMIN]",
     description:
-      'Returns a paginated list of users. Filter with `search` (name or email). ' +
-      'Passwords are never included in the response.',
+      "Returns a paginated list of users. Filter with `search` (name or email). " +
+      "Passwords are never included in the response.",
   })
-  @ApiQuery({ name: 'page',   required: false, type: Number, example: 1  })
-  @ApiQuery({ name: 'limit',  required: false, type: Number, example: 20 })
-  @ApiQuery({ name: 'search', required: false, type: String, example: 'jane' })
-  @ApiResponse({ status: 200, description: 'Paginated user list.', type: UserListResponseDto })
-  @ApiResponse({ status: 401, description: 'Missing or invalid token.',   type: ErrorResponseDto })
-  @ApiResponse({ status: 403, description: 'Requires ADMIN role.',        type: ErrorResponseDto })
+  @ApiQuery({ name: "page", required: false, type: Number, example: 1 })
+  @ApiQuery({ name: "limit", required: false, type: Number, example: 20 })
+  @ApiQuery({ name: "search", required: false, type: String, example: "jane" })
+  @ApiResponse({
+    status: 200,
+    description: "Paginated user list.",
+    type: UserListResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Missing or invalid token.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Requires ADMIN role.",
+    type: ErrorResponseDto,
+  })
   async findAll(@Query() query: PaginationQueryDto) {
     try {
       const { users, total, page, limit, totalPages } =
@@ -100,10 +112,12 @@ export class UsersController {
       // Anything else is unexpected — log the full stack but tell the client
       // only a safe, generic message.
       this.logger.error(
-        'Unexpected error in findAll',
+        "Unexpected error in findAll",
         error instanceof Error ? error.stack : String(error),
       );
-      throw new InternalServerErrorException('Could not retrieve users. Please try again.');
+      throw new InternalServerErrorException(
+        "Could not retrieve users. Please try again.",
+      );
     }
   }
 
@@ -113,18 +127,34 @@ export class UsersController {
    * Return a single user by their CUID with full details and summary stats
    * (transaction count, budget count, goal count). Responds with 404 if the ID does not match.
    */
-  @Get(':id')
+  @Get(":id")
   @ApiOperation({
-    summary: 'Get a user by ID with details  [ADMIN]',
+    summary: "Get a user by ID with details  [ADMIN]",
     description:
-      'Returns one user record (password excluded) plus stats: transactionCount, budgetCount, goalCount.',
+      "Returns one user record (password excluded) plus stats: transactionCount, budgetCount, goalCount.",
   })
-  @ApiParam({ name: 'id', description: 'User CUID', example: 'cuid123abc' })
-  @ApiResponse({ status: 200, description: 'User found with stats.', type: UserDetailWithStatsResponseDto })
-  @ApiResponse({ status: 401, description: 'Unauthenticated.', type: ErrorResponseDto })
-  @ApiResponse({ status: 403, description: 'Requires ADMIN.', type: ErrorResponseDto })
-  @ApiResponse({ status: 404, description: 'User not found.', type: ErrorResponseDto })
-  async findOne(@Param('id') id: string) {
+  @ApiParam({ name: "id", description: "User CUID", example: "cuid123abc" })
+  @ApiResponse({
+    status: 200,
+    description: "User found with stats.",
+    type: UserDetailWithStatsResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Unauthenticated.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Requires ADMIN.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: "User not found.",
+    type: ErrorResponseDto,
+  })
+  async findOne(@Param("id") id: string) {
     try {
       const data = await this.usersService.findOneWithDetails(id);
       return { success: true, data };
@@ -135,7 +165,9 @@ export class UsersController {
         `Unexpected error fetching user [${id}]`,
         error instanceof Error ? error.stack : String(error),
       );
-      throw new InternalServerErrorException('Could not retrieve user. Please try again.');
+      throw new InternalServerErrorException(
+        "Could not retrieve user. Please try again.",
+      );
     }
   }
 
@@ -148,22 +180,42 @@ export class UsersController {
    *  - Admins cannot change their own role.
    *  - Target user must exist.
    */
-  @Patch(':id')
+  @Patch(":id")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Update a user  [ADMIN]',
+    summary: "Update a user  [ADMIN]",
     description:
-      'Update `name` and/or `role`. ' +
-      'Admins **cannot** change their own role to prevent accidental self-lockout.',
+      "Update `name` and/or `role`. " +
+      "Admins **cannot** change their own role to prevent accidental self-lockout.",
   })
-  @ApiParam({ name: 'id', description: 'User CUID', example: 'cuid123abc' })
-  @ApiResponse({ status: 200, description: 'User updated.',                          type: UserDetailResponseDto })
-  @ApiResponse({ status: 400, description: 'Validation failed.',                     type: ErrorResponseDto })
-  @ApiResponse({ status: 401, description: 'Missing or invalid token.',              type: ErrorResponseDto })
-  @ApiResponse({ status: 403, description: 'Requires ADMIN or self-role change.',    type: ErrorResponseDto })
-  @ApiResponse({ status: 404, description: 'User not found.',                        type: ErrorResponseDto })
+  @ApiParam({ name: "id", description: "User CUID", example: "cuid123abc" })
+  @ApiResponse({
+    status: 200,
+    description: "User updated.",
+    type: UserDetailResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Validation failed.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Missing or invalid token.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Requires ADMIN or self-role change.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: "User not found.",
+    type: ErrorResponseDto,
+  })
   async updateUser(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() dto: UpdateUserDto,
     @Request() req: AuthRequest,
   ) {
@@ -179,7 +231,7 @@ export class UsersController {
         });
       }
 
-      return { success: true, message: 'User updated successfully', data };
+      return { success: true, message: "User updated successfully", data };
     } catch (error) {
       if (error instanceof HttpException) throw error;
 
@@ -187,64 +239,107 @@ export class UsersController {
         `Unexpected error updating user [${id}]`,
         error instanceof Error ? error.stack : String(error),
       );
-      throw new InternalServerErrorException('Could not update user. Please try again.');
+      throw new InternalServerErrorException(
+        "Could not update user. Please try again.",
+      );
     }
   }
 
   // ─── POST /api/v1/users/:id/suspend ──────────────────────────────────────
 
-  @Post(':id/suspend')
+  @Post(":id/suspend")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Suspend a user account  [ADMIN]',
+    summary: "Suspend a user account  [ADMIN]",
     description:
-      'Suspended users cannot log in or use existing tokens. Admins cannot suspend their own account.',
+      "Suspended users cannot log in or use existing tokens. Admins cannot suspend their own account.",
   })
-  @ApiParam({ name: 'id', description: 'User CUID' })
-  @ApiResponse({ status: 200, description: 'User suspended.', type: UserDetailResponseDto })
-  @ApiResponse({ status: 400, description: 'Account already suspended.', type: ErrorResponseDto })
-  @ApiResponse({ status: 401, description: 'Missing or invalid token.', type: ErrorResponseDto })
-  @ApiResponse({ status: 403, description: 'Cannot suspend own account.', type: ErrorResponseDto })
-  @ApiResponse({ status: 404, description: 'User not found.', type: ErrorResponseDto })
-  async suspendUser(@Param('id') id: string, @Request() req: AuthRequest) {
+  @ApiParam({ name: "id", description: "User CUID" })
+  @ApiResponse({
+    status: 200,
+    description: "User suspended.",
+    type: UserDetailResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Account already suspended.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Missing or invalid token.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Cannot suspend own account.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: "User not found.",
+    type: ErrorResponseDto,
+  })
+  async suspendUser(@Param("id") id: string, @Request() req: AuthRequest) {
     try {
       const data = await this.usersService.suspendUser(id, req.user.id);
-      return { success: true, message: 'User account suspended', data };
+      return { success: true, message: "User account suspended", data };
     } catch (error) {
       if (error instanceof HttpException) throw error;
       this.logger.error(
         `Unexpected error suspending user [${id}]`,
         error instanceof Error ? error.stack : String(error),
       );
-      throw new InternalServerErrorException('Could not suspend user.');
+      throw new InternalServerErrorException("Could not suspend user.");
     }
   }
 
   // ─── POST /api/v1/users/:id/unsuspend ────────────────────────────────────
 
-  @Post(':id/unsuspend')
+  @Post(":id/unsuspend")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Unsuspend a user account  [ADMIN]',
-    description: 'Reactivates a suspended account. Admins cannot unsuspend their own account.',
+    summary: "Unsuspend a user account  [ADMIN]",
+    description:
+      "Reactivates a suspended account. Admins cannot unsuspend their own account.",
   })
-  @ApiParam({ name: 'id', description: 'User CUID' })
-  @ApiResponse({ status: 200, description: 'User unsuspended.', type: UserDetailResponseDto })
-  @ApiResponse({ status: 400, description: 'Account is not suspended.', type: ErrorResponseDto })
-  @ApiResponse({ status: 401, description: 'Missing or invalid token.', type: ErrorResponseDto })
-  @ApiResponse({ status: 403, description: 'Cannot change own suspension.', type: ErrorResponseDto })
-  @ApiResponse({ status: 404, description: 'User not found.', type: ErrorResponseDto })
-  async unsuspendUser(@Param('id') id: string, @Request() req: AuthRequest) {
+  @ApiParam({ name: "id", description: "User CUID" })
+  @ApiResponse({
+    status: 200,
+    description: "User unsuspended.",
+    type: UserDetailResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Account is not suspended.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Missing or invalid token.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Cannot change own suspension.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: "User not found.",
+    type: ErrorResponseDto,
+  })
+  async unsuspendUser(@Param("id") id: string, @Request() req: AuthRequest) {
     try {
       const data = await this.usersService.unsuspendUser(id, req.user.id);
-      return { success: true, message: 'User account unsuspended', data };
+      return { success: true, message: "User account unsuspended", data };
     } catch (error) {
       if (error instanceof HttpException) throw error;
       this.logger.error(
         `Unexpected error unsuspending user [${id}]`,
         error instanceof Error ? error.stack : String(error),
       );
-      throw new InternalServerErrorException('Could not unsuspend user.');
+      throw new InternalServerErrorException("Could not unsuspend user.");
     }
   }
 
@@ -258,20 +353,32 @@ export class UsersController {
    *  - Admins cannot delete their own account.
    *  - Target user must exist.
    */
-  @Delete(':id')
+  @Delete(":id")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Delete a user  [ADMIN]',
+    summary: "Delete a user  [ADMIN]",
     description:
-      'Permanently removes a user and all related records (cascade). ' +
-      'An admin **cannot** delete their own account.',
+      "Permanently removes a user and all related records (cascade). " +
+      "An admin **cannot** delete their own account.",
   })
-  @ApiParam({ name: 'id', description: 'User CUID', example: 'cuid123abc' })
-  @ApiResponse({ status: 200, description: 'User deleted successfully.' })
-  @ApiResponse({ status: 401, description: 'Missing or invalid token.',              type: ErrorResponseDto })
-  @ApiResponse({ status: 403, description: 'Requires ADMIN or self-delete attempt.', type: ErrorResponseDto })
-  @ApiResponse({ status: 404, description: 'User not found.',                        type: ErrorResponseDto })
-  async deleteUser(@Param('id') id: string, @Request() req: AuthRequest) {
+  @ApiParam({ name: "id", description: "User CUID", example: "cuid123abc" })
+  @ApiResponse({ status: 200, description: "User deleted successfully." })
+  @ApiResponse({
+    status: 401,
+    description: "Missing or invalid token.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Requires ADMIN or self-delete attempt.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: "User not found.",
+    type: ErrorResponseDto,
+  })
+  async deleteUser(@Param("id") id: string, @Request() req: AuthRequest) {
     try {
       const userToDelete = await this.usersService.findOneOrFail(id);
       await this.usersService.deleteUser(id, req.user.id);
@@ -279,7 +386,7 @@ export class UsersController {
         to: userToDelete.email,
         name: userToDelete.name,
       });
-      return { success: true, message: 'User deleted successfully' };
+      return { success: true, message: "User deleted successfully" };
     } catch (error) {
       if (error instanceof HttpException) throw error;
 
@@ -287,7 +394,9 @@ export class UsersController {
         `Unexpected error deleting user [${id}]`,
         error instanceof Error ? error.stack : String(error),
       );
-      throw new InternalServerErrorException('Could not delete user. Please try again.');
+      throw new InternalServerErrorException(
+        "Could not delete user. Please try again.",
+      );
     }
   }
 }

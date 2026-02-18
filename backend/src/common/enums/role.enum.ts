@@ -6,4 +6,4 @@
  * structurally different types even though the string values are identical,
  * causing "Type '"USER"' is not assignable to type 'Role'" errors.
  */
-export { Role } from '@prisma/client';
+export { Role } from "@prisma/client";

@@ -1,9 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { readFileSync } from 'fs';
-import { join } from 'path';
-import { PrismaService } from '../common/prisma.service';
-import { handlePrismaError } from '../common/helpers/prisma-error.handler';
-import { HttpException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { readFileSync } from "fs";
+import { join } from "path";
+import { PrismaService } from "../common/prisma.service";
+import { handlePrismaError } from "../common/helpers/prisma-error.handler";
+import { HttpException } from "@nestjs/common";
 
 export interface Lesson {
   id: string;
@@ -23,10 +23,10 @@ export interface SuggestedLesson {
 }
 
 /** Supported context values for GET /lessons/suggested?context=... */
-export const SUGGESTED_CONTEXTS = ['helb_income', 'first_goal'] as const;
+export const SUGGESTED_CONTEXTS = ["helb_income", "first_goal"] as const;
 export type SuggestedContext = (typeof SUGGESTED_CONTEXTS)[number];
 
-const LESSONS_PATH = join(process.cwd(), 'data', 'lessons.json');
+const LESSONS_PATH = join(process.cwd(), "data", "lessons.json");
 
 /** Days to look back for "recent" HELB income when suggesting debt-awareness lesson. */
 const HELB_INCOME_DAYS_LOOKBACK = 30;
@@ -45,7 +45,7 @@ export class LessonsService {
   private loadLessons(): Lesson[] {
     if (this.lessons) return this.lessons;
     try {
-      const raw = readFileSync(LESSONS_PATH, 'utf-8');
+      const raw = readFileSync(LESSONS_PATH, "utf-8");
       this.lessons = JSON.parse(raw) as Lesson[];
       return this.lessons;
     } catch (err) {
@@ -60,16 +60,21 @@ export class LessonsService {
   /**
    * List all lessons (metadata only; body can be fetched by id for smaller list payload).
    */
-  findAll(): Pick<Lesson, 'id' | 'title' | 'slug' | 'durationMinutes' | 'topics' | 'summary'>[] {
+  findAll(): Pick<
+    Lesson,
+    "id" | "title" | "slug" | "durationMinutes" | "topics" | "summary"
+  >[] {
     const list = this.loadLessons();
-    return list.map(({ id, title, slug, durationMinutes, topics, summary }) => ({
-      id,
-      title,
-      slug,
-      durationMinutes,
-      topics,
-      summary,
-    }));
+    return list.map(
+      ({ id, title, slug, durationMinutes, topics, summary }) => ({
+        id,
+        title,
+        slug,
+        durationMinutes,
+        topics,
+        summary,
+      }),
+    );
   }
 
   /**
@@ -79,7 +84,9 @@ export class LessonsService {
     const list = this.loadLessons();
     const lesson = list.find((l) => l.id === idOrSlug || l.slug === idOrSlug);
     if (!lesson) {
-      throw new NotFoundException(`Lesson with id or slug "${idOrSlug}" was not found`);
+      throw new NotFoundException(
+        `Lesson with id or slug "${idOrSlug}" was not found`,
+      );
     }
     return lesson;
   }
@@ -92,7 +99,10 @@ export class LessonsService {
    *  - helb_income: user has recorded income with source containing "helb" in the last 30 days → suggest debt-awareness.
    *  - first_goal: user has at least one goal → suggest saving-tips and/or budgeting-basics.
    */
-  async getSuggested(context: string, userId: string): Promise<SuggestedLesson[]> {
+  async getSuggested(
+    context: string,
+    userId: string,
+  ): Promise<SuggestedLesson[]> {
     try {
       const normalized = context?.trim().toLowerCase();
       if (!normalized) {
@@ -102,35 +112,37 @@ export class LessonsService {
       const list = this.loadLessons();
       const suggested: SuggestedLesson[] = [];
 
-      if (normalized === 'helb_income') {
+      if (normalized === "helb_income") {
         const hasRecentHelbIncome = await this.hasRecentHelbIncome(userId);
         if (hasRecentHelbIncome) {
-          const lesson = list.find((l) => l.slug === 'debt-awareness');
+          const lesson = list.find((l) => l.slug === "debt-awareness");
           if (lesson) {
             suggested.push({
               lessonId: lesson.id,
               slug: lesson.slug,
-              reason: 'You recently recorded HELB income. Here’s how to stay on top of student debt.',
+              reason:
+                "You recently recorded HELB income. Here’s how to stay on top of student debt.",
             });
           }
         }
-      } else if (normalized === 'first_goal') {
+      } else if (normalized === "first_goal") {
         const goalCount = await this.getUserGoalCount(userId);
         if (goalCount > 0) {
-          const savingTip = list.find((l) => l.slug === 'saving-tips');
+          const savingTip = list.find((l) => l.slug === "saving-tips");
           if (savingTip) {
             suggested.push({
               lessonId: savingTip.id,
               slug: savingTip.slug,
-              reason: 'You’ve set a savings goal. These tips can help you reach it faster.',
+              reason:
+                "You’ve set a savings goal. These tips can help you reach it faster.",
             });
           }
-          const budgeting = list.find((l) => l.slug === 'budgeting-basics');
+          const budgeting = list.find((l) => l.slug === "budgeting-basics");
           if (budgeting) {
             suggested.push({
               lessonId: budgeting.id,
               slug: budgeting.slug,
-              reason: 'Budgeting helps you free up money for your goals.',
+              reason: "Budgeting helps you free up money for your goals.",
             });
           }
         }
@@ -142,7 +154,7 @@ export class LessonsService {
       this.logger.warn(
         `getSuggested failed for context=${context}, userId=${userId}: ${error instanceof Error ? error.message : String(error)}`,
       );
-      handlePrismaError(error, this.logger, 'LessonsService.getSuggested');
+      handlePrismaError(error, this.logger, "LessonsService.getSuggested");
       return [];
     }
   }
@@ -159,15 +171,19 @@ export class LessonsService {
       const count = await this.db.transaction.count({
         where: {
           userId,
-          type: 'income',
+          type: "income",
           date: { gte: since },
-          incomeSource: { contains: 'helb', mode: 'insensitive' },
+          incomeSource: { contains: "helb", mode: "insensitive" },
         },
       });
       return count > 0;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'LessonsService.hasRecentHelbIncome');
+      handlePrismaError(
+        error,
+        this.logger,
+        "LessonsService.hasRecentHelbIncome",
+      );
       return false;
     }
   }
@@ -180,7 +196,7 @@ export class LessonsService {
       return await this.db.goal.count({ where: { userId } });
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'LessonsService.getUserGoalCount');
+      handlePrismaError(error, this.logger, "LessonsService.getUserGoalCount");
       return 0;
     }
   }

@@ -1,9 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { ConfigService } from '@nestjs/config';
-import { UsersService } from '../../users/users.service';
-import type { Role } from '../../common/enums/role.enum';
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { PassportStrategy } from "@nestjs/passport";
+import { ExtractJwt, Strategy } from "passport-jwt";
+import { ConfigService } from "@nestjs/config";
+import { UsersService } from "../../users/users.service";
+import type { Role } from "../../common/enums/role.enum";
 
 export interface JwtPayload {
   sub: string;
@@ -37,7 +37,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: config.getOrThrow<string>('JWT_SECRET'),
+      secretOrKey: config.getOrThrow<string>("JWT_SECRET"),
     });
   }
 
@@ -45,12 +45,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.usersService.findById(payload.sub);
     if (!user) {
       throw new UnauthorizedException(
-        'Session expired or account not found. Please log in again.',
+        "Session expired or account not found. Please log in again.",
       );
     }
     if (user.suspendedAt) {
       throw new UnauthorizedException(
-        'Your account has been suspended. Please contact support.',
+        "Your account has been suspended. Please contact support.",
       );
     }
     // Always read role fresh from DB — reflects any admin role changes immediately

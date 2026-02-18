@@ -1,13 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../common/prisma.service';
-import { handlePrismaError } from '../common/helpers/prisma-error.handler';
-import { HttpException } from '@nestjs/common';
+import { Injectable, Logger } from "@nestjs/common";
+import { PrismaService } from "../common/prisma.service";
+import { handlePrismaError } from "../common/helpers/prisma-error.handler";
+import { HttpException } from "@nestjs/common";
 
 export interface Insight {
   id: string;
   type: string;
   message: string;
-  severity?: 'info' | 'tip' | 'warning';
+  severity?: "info" | "tip" | "warning";
 }
 
 const DAYS_LOOKBACK = 30;
@@ -35,12 +35,14 @@ export class AnalyticsService {
       start.setDate(start.getDate() - DAYS_LOOKBACK);
 
       const expenses = await this.db.transaction.findMany({
-        where: { userId, type: 'expense', date: { gte: start, lte: end } },
+        where: { userId, type: "expense", date: { gte: start, lte: end } },
         select: { amount: true, date: true },
       });
 
-      let weekendTotal = 0, weekdayTotal = 0;
-      const weekendDays = new Set<string>(), weekdayDays = new Set<string>();
+      let weekendTotal = 0,
+        weekdayTotal = 0;
+      const weekendDays = new Set<string>(),
+        weekdayDays = new Set<string>();
 
       for (const t of expenses as { amount: unknown; date: Date }[]) {
         const d = new Date(t.date);
@@ -56,21 +58,27 @@ export class AnalyticsService {
         }
       }
 
-      const weekendDaily = weekendDays.size > 0 ? weekendTotal / weekendDays.size : 0;
-      const weekdayDaily = weekdayDays.size > 0 ? weekdayTotal / weekdayDays.size : 0;
+      const weekendDaily =
+        weekendDays.size > 0 ? weekendTotal / weekendDays.size : 0;
+      const weekdayDaily =
+        weekdayDays.size > 0 ? weekdayTotal / weekdayDays.size : 0;
 
-      if (weekdayDaily > 0 && weekendDaily >= weekdayDaily * WEEKEND_HIGHER_RATIO) {
+      if (
+        weekdayDaily > 0 &&
+        weekendDaily >= weekdayDaily * WEEKEND_HIGHER_RATIO
+      ) {
         return {
-          id: 'weekend_spend',
-          type: 'weekend_pattern',
-          message: 'You spend more on weekends. Try setting a small weekend budget to stay on track.',
-          severity: 'info',
+          id: "weekend_spend",
+          type: "weekend_pattern",
+          message:
+            "You spend more on weekends. Try setting a small weekend budget to stay on track.",
+          severity: "info",
         };
       }
       return null;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'AnalyticsService.weekendInsight');
+      handlePrismaError(error, this.logger, "AnalyticsService.weekendInsight");
     }
   }
 
@@ -86,18 +94,22 @@ export class AnalyticsService {
       const lastMonthEnd = new Date(thisMonthStart.getTime() - 1);
 
       const categories = await this.db.category.findMany({
-        where: { slug: { not: 'income' } },
+        where: { slug: { not: "income" } },
         select: { id: true, name: true, slug: true },
       });
 
       const insights: Insight[] = [];
 
-      for (const cat of categories as { id: string; name: string; slug: string }[]) {
+      for (const cat of categories as {
+        id: string;
+        name: string;
+        slug: string;
+      }[]) {
         const [thisSum, lastSum] = await Promise.all([
           this.db.transaction.aggregate({
             where: {
               userId,
-              type: 'expense',
+              type: "expense",
               categoryId: cat.id,
               date: { gte: thisMonthStart, lte: now },
             },
@@ -106,7 +118,7 @@ export class AnalyticsService {
           this.db.transaction.aggregate({
             where: {
               userId,
-              type: 'expense',
+              type: "expense",
               categoryId: cat.id,
               date: { gte: lastMonthStart, lte: lastMonthEnd },
             },
@@ -120,9 +132,9 @@ export class AnalyticsService {
         if (lastMonth > 0 && thisMonth >= lastMonth * CATEGORY_SPIKE_RATIO) {
           insights.push({
             id: `category_spike_${cat.slug}`,
-            type: 'category_spike',
+            type: "category_spike",
             message: `${cat.name} costs more than doubled this month compared to last month.`,
-            severity: 'tip',
+            severity: "tip",
           });
         }
       }
@@ -130,7 +142,11 @@ export class AnalyticsService {
       return insights;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'AnalyticsService.categorySpikeInsights');
+      handlePrismaError(
+        error,
+        this.logger,
+        "AnalyticsService.categorySpikeInsights",
+      );
     }
   }
 
@@ -151,7 +167,7 @@ export class AnalyticsService {
       return list;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'AnalyticsService.getInsights');
+      handlePrismaError(error, this.logger, "AnalyticsService.getInsights");
     }
   }
 }

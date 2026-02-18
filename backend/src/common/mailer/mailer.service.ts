@@ -1,28 +1,31 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
-import { renderFile } from 'ejs';
-import { join } from 'path';
+import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import * as nodemailer from "nodemailer";
+import { renderFile } from "ejs";
+import { join } from "path";
 
 @Injectable()
 export class MailerService {
   private readonly logger = new Logger(MailerService.name);
   private readonly transporter: nodemailer.Transporter | null;
   private readonly from: string;
-  private readonly templatesDir = join(__dirname, 'templates');
+  private readonly templatesDir = join(__dirname, "templates");
 
   constructor(private readonly config: ConfigService) {
-    const host = this.config.get<string>('MAIL_HOST');
-    const port = Number(this.config.get<string>('MAIL_PORT') ?? 587);
-    const secure = this.config.get<string>('MAIL_SECURE') === 'true';
-    const forceIpv4 = this.config.get<string>('MAIL_FORCE_IPV4', 'true') === 'true';
-    const user = this.config.get<string>('MAIL_USER');
-    const pass = this.config.get<string>('MAIL_PASSWORD');
-    this.from = this.config.get<string>('MAIL_FROM') ?? 'FinAnalytics <no-reply@finanalytics.app>';
+    const host = this.config.get<string>("MAIL_HOST");
+    const port = Number(this.config.get<string>("MAIL_PORT") ?? 587);
+    const secure = this.config.get<string>("MAIL_SECURE") === "true";
+    const forceIpv4 =
+      this.config.get<string>("MAIL_FORCE_IPV4", "true") === "true";
+    const user = this.config.get<string>("MAIL_USER");
+    const pass = this.config.get<string>("MAIL_PASSWORD");
+    this.from =
+      this.config.get<string>("MAIL_FROM") ??
+      "FinAnalytics <no-reply@finanalytics.app>";
 
     if (!host || !user || !pass) {
       this.logger.warn(
-        'Mailer is disabled. Missing one of MAIL_HOST, MAIL_USER, MAIL_PASSWORD.',
+        "Mailer is disabled. Missing one of MAIL_HOST, MAIL_USER, MAIL_PASSWORD.",
       );
       this.transporter = null;
       return;
@@ -89,15 +92,15 @@ export class MailerService {
     name?: string | null;
     avatarUrl: string;
   }): Promise<void> {
-    const displayName = params.name?.trim() || 'there';
+    const displayName = params.name?.trim() || "there";
     try {
-      const html = await this.renderTemplate('profile-picture-updated', {
+      const html = await this.renderTemplate("profile-picture-updated", {
         name: displayName,
         avatarUrl: params.avatarUrl,
       });
       await this.sendMail({
         to: params.to,
-        subject: 'Your FinAnalytics profile picture was updated',
+        subject: "Your FinAnalytics profile picture was updated",
         html,
         text: `Hi ${displayName}, your profile picture was updated. If this wasn't you, secure your account immediately.`,
       });
@@ -114,12 +117,12 @@ export class MailerService {
     to: string;
     name?: string | null;
   }): Promise<void> {
-    const displayName = params.name?.trim() || 'there';
+    const displayName = params.name?.trim() || "there";
     try {
-      const html = await this.renderTemplate('welcome', { name: displayName });
+      const html = await this.renderTemplate("welcome", { name: displayName });
       await this.sendMail({
         to: params.to,
-        subject: 'Welcome to FinAnalytics',
+        subject: "Welcome to FinAnalytics",
         html,
         text: `Hi ${displayName}, welcome to FinAnalytics! Your account is ready.`,
       });
@@ -138,16 +141,16 @@ export class MailerService {
     verificationLink: string;
     verificationCode: string;
   }): Promise<void> {
-    const displayName = params.name?.trim() || 'there';
+    const displayName = params.name?.trim() || "there";
     try {
-      const html = await this.renderTemplate('verify-email', {
+      const html = await this.renderTemplate("verify-email", {
         name: displayName,
         verificationLink: params.verificationLink,
         verificationCode: params.verificationCode,
       });
       await this.sendMail({
         to: params.to,
-        subject: 'Verify your FinAnalytics email',
+        subject: "Verify your FinAnalytics email",
         html,
         text: `Hi ${displayName}, verify your email: ${params.verificationLink}. Your 6-digit code is ${params.verificationCode} (expires in 24 hours).`,
       });
@@ -163,17 +166,17 @@ export class MailerService {
   async sendRoleChangedEmail(params: {
     to: string;
     name?: string | null;
-    newRole: 'USER' | 'ADMIN';
+    newRole: "USER" | "ADMIN";
   }): Promise<void> {
-    const displayName = params.name?.trim() || 'there';
+    const displayName = params.name?.trim() || "there";
     try {
-      const html = await this.renderTemplate('role-changed', {
+      const html = await this.renderTemplate("role-changed", {
         name: displayName,
         newRole: params.newRole,
       });
       await this.sendMail({
         to: params.to,
-        subject: 'Your FinAnalytics role has changed',
+        subject: "Your FinAnalytics role has changed",
         html,
         text: `Hi ${displayName}, your account role was changed to ${params.newRole}.`,
       });
@@ -190,14 +193,14 @@ export class MailerService {
     to: string;
     name?: string | null;
   }): Promise<void> {
-    const displayName = params.name?.trim() || 'there';
+    const displayName = params.name?.trim() || "there";
     try {
-      const html = await this.renderTemplate('account-deleted', {
+      const html = await this.renderTemplate("account-deleted", {
         name: displayName,
       });
       await this.sendMail({
         to: params.to,
-        subject: 'Your FinAnalytics account was deleted',
+        subject: "Your FinAnalytics account was deleted",
         html,
         text: `Hi ${displayName}, your FinAnalytics account was deleted.`,
       });

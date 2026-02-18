@@ -1,6 +1,6 @@
-import { AnalyticsService } from './analytics.service';
+import { AnalyticsService } from "./analytics.service";
 
-describe('AnalyticsService', () => {
+describe("AnalyticsService", () => {
   const mockPrisma = {
     transaction: {
       findMany: jest.fn().mockResolvedValue([]),
@@ -16,18 +16,18 @@ describe('AnalyticsService', () => {
     service = new AnalyticsService(mockPrisma as any);
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(service).toBeDefined();
   });
 
-  describe('getInsights', () => {
-    it('should return an array', async () => {
-      const result = await service.getInsights('user-1');
+  describe("getInsights", () => {
+    it("should return an array", async () => {
+      const result = await service.getInsights("user-1");
       expect(Array.isArray(result)).toBe(true);
     });
 
-    it('should return empty array when no insights match', async () => {
-      const result = await service.getInsights('user-1');
+    it("should return empty array when no insights match", async () => {
+      const result = await service.getInsights("user-1");
       expect(result).toEqual([]);
     });
   });

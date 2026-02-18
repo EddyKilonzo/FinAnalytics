@@ -5,22 +5,22 @@ import {
   InternalServerErrorException,
   HttpException,
   Logger,
-} from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import * as bcrypt from 'bcryptjs';
-import { createHash, randomBytes } from 'crypto';
-import { UsersService } from '../users/users.service';
-import { SignUpDto } from './dto/signup.dto';
-import { LoginDto } from './dto/login.dto';
-import { VerifyEmailDto } from './dto/verify-email.dto';
-import { VerifyEmailCodeDto } from './dto/verify-email-code.dto';
-import { ResendVerificationDto } from './dto/resend-verification.dto';
-import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
-import { handlePrismaError } from '../common/helpers/prisma-error.handler';
-import { MailerService } from '../common/mailer/mailer.service';
-import type { JwtPayload } from './strategies/jwt.strategy';
-import type { Role } from '../common/enums/role.enum';
+} from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
+import * as bcrypt from "bcryptjs";
+import { createHash, randomBytes } from "crypto";
+import { UsersService } from "../users/users.service";
+import { SignUpDto } from "./dto/signup.dto";
+import { LoginDto } from "./dto/login.dto";
+import { VerifyEmailDto } from "./dto/verify-email.dto";
+import { VerifyEmailCodeDto } from "./dto/verify-email-code.dto";
+import { ResendVerificationDto } from "./dto/resend-verification.dto";
+import { CompleteOnboardingDto } from "./dto/complete-onboarding.dto";
+import { handlePrismaError } from "../common/helpers/prisma-error.handler";
+import { MailerService } from "../common/mailer/mailer.service";
+import type { JwtPayload } from "./strategies/jwt.strategy";
+import type { Role } from "../common/enums/role.enum";
 
 const BCRYPT_ROUNDS = 12;
 const EMAIL_VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000; // 24h
@@ -28,7 +28,7 @@ const EMAIL_VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 // Pre-generated hash used only to keep bcrypt.compare timing consistent
 // when the requested email doesn't exist (prevents user-enumeration via timing).
 const TIMING_SAFE_DUMMY_HASH =
-  '$2b$12$LrPcb0P5NBYhtc7.v5Y5auSomeInvalidHashForTimingProtection';
+  "$2b$12$LrPcb0P5NBYhtc7.v5Y5auSomeInvalidHashForTimingProtection";
 
 @Injectable()
 export class AuthService {
@@ -45,7 +45,9 @@ export class AuthService {
     try {
       const existing = await this.usersService.findByEmail(dto.email);
       if (existing) {
-        throw new ConflictException('An account with this email already exists');
+        throw new ConflictException(
+          "An account with this email already exists",
+        );
       }
 
       const hashedPassword = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
@@ -69,7 +71,10 @@ export class AuthService {
       await this.mailerService.sendEmailVerificationEmail({
         to: user.email,
         name: user.name,
-        verificationLink: this.buildVerificationLink(user.email, verification.token),
+        verificationLink: this.buildVerificationLink(
+          user.email,
+          verification.token,
+        ),
         verificationCode: verification.code,
       });
 
@@ -89,7 +94,7 @@ export class AuthService {
       };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'AuthService.signUp');
+      handlePrismaError(error, this.logger, "AuthService.signUp");
     }
   }
 
@@ -103,18 +108,18 @@ export class AuthService {
       const passwordValid = await bcrypt.compare(dto.password, hash);
 
       if (!user || !passwordValid) {
-        throw new UnauthorizedException('Invalid email or password');
+        throw new UnauthorizedException("Invalid email or password");
       }
 
       if (!user.emailVerifiedAt) {
         throw new UnauthorizedException(
-          'Please verify your email address before logging in.',
+          "Please verify your email address before logging in.",
         );
       }
 
       if (user.suspendedAt) {
         throw new UnauthorizedException(
-          'Your account has been suspended. Please contact support.',
+          "Your account has been suspended. Please contact support.",
         );
       }
 
@@ -136,7 +141,7 @@ export class AuthService {
       };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'AuthService.signIn');
+      handlePrismaError(error, this.logger, "AuthService.signIn");
     }
   }
 
@@ -149,13 +154,16 @@ export class AuthService {
       const hashedValue = this.hashToken(dto.token);
       const user = isCode
         ? await this.usersService.findByVerificationCode(dto.email, hashedValue)
-        : await this.usersService.findByVerificationToken(dto.email, hashedValue);
+        : await this.usersService.findByVerificationToken(
+            dto.email,
+            hashedValue,
+          );
 
       if (!user) {
         throw new UnauthorizedException(
           isCode
-            ? 'Verification code is invalid or expired.'
-            : 'Verification link is invalid or expired.',
+            ? "Verification code is invalid or expired."
+            : "Verification link is invalid or expired.",
         );
       }
 
@@ -177,7 +185,7 @@ export class AuthService {
       };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'AuthService.verifyEmail');
+      handlePrismaError(error, this.logger, "AuthService.verifyEmail");
     }
   }
 
@@ -191,7 +199,7 @@ export class AuthService {
 
       if (!user) {
         throw new UnauthorizedException(
-          'Verification code is invalid or expired.',
+          "Verification code is invalid or expired.",
         );
       }
 
@@ -213,7 +221,7 @@ export class AuthService {
       };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'AuthService.verifyEmailByCode');
+      handlePrismaError(error, this.logger, "AuthService.verifyEmailByCode");
     }
   }
 
@@ -225,7 +233,7 @@ export class AuthService {
         return {
           sent: true,
           message:
-            'If this account exists and is not verified, a verification email has been sent.',
+            "If this account exists and is not verified, a verification email has been sent.",
         };
       }
 
@@ -240,18 +248,21 @@ export class AuthService {
       await this.mailerService.sendEmailVerificationEmail({
         to: user.email,
         name: user.name,
-        verificationLink: this.buildVerificationLink(user.email, verification.token),
+        verificationLink: this.buildVerificationLink(
+          user.email,
+          verification.token,
+        ),
         verificationCode: verification.code,
       });
 
       return {
         sent: true,
         message:
-          'If this account exists and is not verified, a verification email has been sent.',
+          "If this account exists and is not verified, a verification email has been sent.",
       };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'AuthService.resendVerification');
+      handlePrismaError(error, this.logger, "AuthService.resendVerification");
     }
   }
 
@@ -267,7 +278,7 @@ export class AuthService {
       return { user: updated };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      handlePrismaError(error, this.logger, 'AuthService.completeOnboarding');
+      handlePrismaError(error, this.logger, "AuthService.completeOnboarding");
     }
   }
 
@@ -277,11 +288,11 @@ export class AuthService {
       return this.jwtService.sign(payload);
     } catch (error) {
       this.logger.error(
-        'JWT signing failed',
+        "JWT signing failed",
         error instanceof Error ? error.stack : String(error),
       );
       throw new InternalServerErrorException(
-        'Could not generate access token. Please try again.',
+        "Could not generate access token. Please try again.",
       );
     }
   }
@@ -293,7 +304,7 @@ export class AuthService {
     codeHash: string;
     expiresAt: Date;
   } {
-    const token = randomBytes(32).toString('hex');
+    const token = randomBytes(32).toString("hex");
     const code = String(Math.floor(100000 + Math.random() * 900000));
     return {
       token,
@@ -305,18 +316,20 @@ export class AuthService {
   }
 
   private hashToken(token: string): string {
-    return createHash('sha256').update(token).digest('hex');
+    return createHash("sha256").update(token).digest("hex");
   }
 
   private buildVerificationLink(email: string, token: string): string {
-    const frontendVerifyUrl = this.config.get<string>('FRONTEND_VERIFY_EMAIL_URL');
+    const frontendVerifyUrl = this.config.get<string>(
+      "FRONTEND_VERIFY_EMAIL_URL",
+    );
     if (frontendVerifyUrl) {
       return `${frontendVerifyUrl}?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`;
     }
 
     const backendBaseUrl =
-      this.config.get<string>('BACKEND_URL') ??
-      `http://localhost:${this.config.get<string>('PORT', '3000')}`;
+      this.config.get<string>("BACKEND_URL") ??
+      `http://localhost:${this.config.get<string>("PORT", "3000")}`;
     return `${backendBaseUrl}/api/v1/auth/verify-email?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`;
   }
 }

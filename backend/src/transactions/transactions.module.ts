@@ -1,7 +1,7 @@
-import { Module } from '@nestjs/common';
-import { TransactionsService } from './transactions.service';
-import { TransactionsController } from './transactions.controller';
-import { MlModule } from '../ml/ml.module';
+import { Module } from "@nestjs/common";
+import { TransactionsService } from "./transactions.service";
+import { TransactionsController } from "./transactions.controller";
+import { MlModule } from "../ml/ml.module";
 
 @Module({
   imports: [

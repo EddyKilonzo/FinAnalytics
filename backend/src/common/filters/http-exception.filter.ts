@@ -5,8 +5,8 @@ import {
   HttpException,
   HttpStatus,
   Logger,
-} from '@nestjs/common';
-import type { Request, Response } from 'express';
+} from "@nestjs/common";
+import type { Request, Response } from "express";
 
 interface ErrorResponse {
   success: false;
@@ -31,18 +31,18 @@ export class AllExceptionsFilter implements ExceptionFilter {
       ? exception.getStatus()
       : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    let message: string | string[] = 'An unexpected error occurred';
+    let message: string | string[] = "An unexpected error occurred";
     let errors: string[] | undefined;
 
     if (isHttpException) {
       const raw = exception.getResponse();
-      if (typeof raw === 'string') {
+      if (typeof raw === "string") {
         message = raw;
-      } else if (typeof raw === 'object' && raw !== null) {
+      } else if (typeof raw === "object" && raw !== null) {
         const body = raw as Record<string, unknown>;
         if (Array.isArray(body.message)) {
           errors = body.message as string[];
-          message = 'Validation failed';
+          message = "Validation failed";
         } else {
           message = (body.message as string) ?? exception.message;
         }
