@@ -1,0 +1,97 @@
+/* Beams background – FinAnalytics green palette (darker) */
+.beams-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--green-800, #0B2B26);
+}
+
+.beams-svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1;
+}
+
+.beam {
+  transform-origin: center;
+  animation: beam-fade 12s ease-in-out infinite;
+}
+
+.beam-1 { animation-delay: 0s; }
+.beam-2 { animation-delay: 1.2s; }
+.beam-3 { animation-delay: 2.4s; }
+.beam-4 { animation-delay: 3.6s; }
+.beam-5 { animation-delay: 4.8s; }
+.beam-6 { animation-delay: 6s; }
+.beam-7 { animation-delay: 7.2s; }
+.beam-8 { animation-delay: 8.4s; }
+.beam-9 { animation-delay: 9.6s; }
+.beam-10 { animation-delay: 10.8s; }
+
+@keyframes beam-fade {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.9; }
+}
+
+/* Radial orbs – darker green shades */
+.beams-orbs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  animation: orb-pulse 15s ease-in-out infinite;
+}
+
+.orb-1 {
+  width: 60vmax;
+  height: 60vmax;
+  background: radial-gradient(circle, rgba(35, 83, 71, 0.55) 0%, transparent 70%);
+  top: -20%;
+  left: -10%;
+  animation-delay: 0s;
+}
+
+.orb-2 {
+  width: 50vmax;
+  height: 50vmax;
+  background: radial-gradient(circle, rgba(22, 56, 50, 0.5) 0%, transparent 70%);
+  bottom: -15%;
+  right: -10%;
+  animation-delay: -5s;
+}
+
+.orb-3 {
+  width: 40vmax;
+  height: 40vmax;
+  background: radial-gradient(circle, rgba(5, 31, 32, 0.45) 0%, transparent 70%);
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: -10s;
+}
+
+@keyframes orb-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.05); }
+}
+
+.orb-2 { animation-name: orb-pulse-2; }
+@keyframes orb-pulse-2 {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.55; }
+}
+
+.orb-3 { animation-name: orb-pulse-3; }
+@keyframes orb-pulse-3 {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.6; }
+}

@@ -1,1 +1,32 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global styles – FinAnalytics green palette */
+:root {
+  --green-900: #051F20;
+  --green-800: #0B2B26;
+  --green-700: #163832;
+  --green-600: #235347;
+  --green-400: #8EB69B;
+  --green-100: #DAF1DE;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Beams background provides texture; base matches darker beams */
+  background: var(--green-800);
+}
+
+/* Use on page containers so beams show through; cards/sections can use semi-transparent backgrounds */
+.beams-page {
+  background: transparent;
+  min-height: 100vh;
+}

@@ -1,0 +1,46 @@
+.profile {
+  padding: 1rem;
+}
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.avatar-section .avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.upload-section {
+  margin-top: 2rem;
+}
+
+.upload-section input[type="file"] {
+  display: none;
+}
+
+.error {
+  color: #c00;
+  margin-top: 0.5rem;
+}
+
+.status {
+  margin-top: 0.5rem;
+  font-style: italic;
+}

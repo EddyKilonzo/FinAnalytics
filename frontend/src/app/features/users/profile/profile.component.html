@@ -1,0 +1,43 @@
+<section class="profile">
+  <h1>Profile</h1>
+
+  <div class="profile-card">
+    <div class="avatar-section">
+      @if (user(); as u) {
+        @if (u.avatarUrl) {
+          <img [src]="u.avatarUrl" alt="Profile" class="avatar" />
+        } @else {
+          <div class="avatar-placeholder">{{ initials }}</div>
+        }
+      } @else {
+        <div class="avatar-placeholder">—</div>
+      }
+    </div>
+
+    <div class="profile-details">
+      @if (user(); as u) {
+        <p class="name">{{ u.name ?? 'No name set' }}</p>
+        <p class="email">{{ u.email }}</p>
+      } @else {
+        <p class="loading">Loading…</p>
+      }
+    </div>
+  </div>
+
+  <div class="upload-section">
+    <h2>Profile picture</h2>
+    <input
+      type="file"
+      accept="image/*"
+      (change)="onFileSelected($event)"
+      #fileInput
+    />
+    <button type="button" (click)="fileInput.click()">Choose image</button>
+    @if (uploadError()) {
+      <p class="error">{{ uploadError() }}</p>
+    }
+    @if (uploading()) {
+      <p class="status">Uploading…</p>
+    }
+  </div>
+</section>
