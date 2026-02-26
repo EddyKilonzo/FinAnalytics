@@ -4,7 +4,8 @@
   inset: 0;
   z-index: -1;
   overflow: hidden;
-  background: var(--green-800, #0B2B26);
+  background: var(--page-bg, var(--green-800, #0B2B26));
+  transition: background 0.25s ease;
 }
 
 .beams-svg {

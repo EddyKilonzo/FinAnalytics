@@ -1,285 +1,993 @@
 <div class="landing">
-  <!-- Header -->
-  <header class="header">
-    <a routerLink="/" class="logo">FinAnalytix</a>
-    <nav class="nav">
-      <a routerLink="/" class="nav-link active">Home</a>
-      <a href="#features" class="nav-link">Features</a>
-      <a href="#how-it-works" class="nav-link">How it works</a>
-      <a href="#about" class="nav-link">About</a>
-    </nav>
-    <div class="header-actions">
-      <a routerLink="/login" class="btn-text">Sign In</a>
-      <a routerLink="/register" class="btn-primary">Get Started</a>
+
+  <!-- ═══════ HEADER ═══════ -->
+  <header class="lp-header" [class.scrolled]="isScrolled">
+    <div class="lp-header-inner">
+      <a routerLink="/" class="lp-logo" aria-label="FinAnalytix home">
+        <span class="lp-logo-mark">
+          <ng-icon name="lucideTrendingUp" size="20"></ng-icon>
+        </span>
+        FinAnalytix
+      </a>
+
+      <nav class="lp-nav" aria-label="Main navigation">
+        <a href="#features" class="lp-nav-link">Features</a>
+        <a href="#how-it-works" class="lp-nav-link">How it works</a>
+        <a href="#faq" class="lp-nav-link">FAQ</a>
+      </nav>
+
+      <div class="lp-header-actions">
+        <div class="lp-social-proof">
+          <span class="lp-stars" aria-label="5 stars">
+            <ng-icon name="lucideStar" size="13"></ng-icon>
+            <ng-icon name="lucideStar" size="13"></ng-icon>
+            <ng-icon name="lucideStar" size="13"></ng-icon>
+            <ng-icon name="lucideStar" size="13"></ng-icon>
+            <ng-icon name="lucideStar" size="13"></ng-icon>
+          </span>
+          <span class="lp-reviews">4,200+ reviews</span>
+        </div>
+
+        <button type="button" class="lp-theme-btn" (click)="theme.toggle()"
+          [attr.aria-label]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'">
+          <ng-icon name="lucideSun" size="16" class="icon-sun"></ng-icon>
+          <ng-icon name="lucideMoon" size="16" class="icon-moon"></ng-icon>
+        </button>
+
+        <a routerLink="/login" class="lp-btn-signin">
+          Sign in
+          <ng-icon name="lucideArrowRight" size="15"></ng-icon>
+        </a>
+      </div>
     </div>
   </header>
 
-  <!-- Hero + ratings in one viewport -->
-  <section class="hero-viewport">
-    <div class="hero">
-      <div class="hero-left">
-      <span class="hero-pill">Finance Solutions for You</span>
-      <h1 class="hero-title">
-        Maximize Your <span class="hero-title-highlight">Financial</span> Potential
-        <span class="hero-growth-icon" aria-hidden="true">
-          <span class="growth-circle growth-circle-dark"></span>
-          <span class="growth-circle growth-circle-green">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7h-8M17 7v8"/></svg>
-          </span>
-        </span>
-      </h1>
-      <p class="hero-desc">Welcome to FinAnalytix, where financial management meets simplicity and efficiency.</p>
-      <a routerLink="/register" class="btn-hero-cta">Get Started</a>
+  <!-- ═══════ HERO ═══════ -->
+  <section class="lp-hero-section">
+    <div class="lp-hero-bg">
+      <div class="lp-hero-orb lp-hero-orb-1"></div>
+      <div class="lp-hero-orb lp-hero-orb-2"></div>
+      <div class="lp-hero-grid"></div>
     </div>
-    <div class="hero-right">
-      <div class="app-window">
-        <div class="app-window-dots">
-          <span class="dot-red"></span>
-          <span class="dot-yellow"></span>
-          <span class="dot-green"></span>
+
+    <div class="lp-hero-inner">
+      <!-- LEFT: Copy -->
+      <div class="lp-hero-copy" data-aos="fade-up" data-aos-duration="700">
+        <div class="lp-hero-badge">
+          <ng-icon name="lucideZap" size="13"></ng-icon>
+          <span>AI-powered finance tracking</span>
         </div>
-        <div class="app-window-body">
-          <div class="sub-cards">
-            <div class="sub-card sub-card-netflix">
-              <span class="sub-logo">N</span>
-              <span class="sub-name">Netflix</span>
-              <span class="sub-price">KES 1,200 /month</span>
-              <span class="sub-actions"><span class="sub-x">×</span><span class="sub-arrow">▾</span></span>
-            </div>
-            <div class="sub-card sub-card-spotify">
-              <span class="sub-logo-spotify">♫</span>
-              <span class="sub-name">Spotify</span>
-              <span class="sub-price">KES 650 /month</span>
-              <span class="sub-toggle on">✓</span>
-              <span class="sub-x">×</span>
+
+        <h1 class="lp-hero-title">
+          The <span class="lp-hero-em">easiest</span> way<br>to manage your finances
+        </h1>
+
+        <p class="lp-hero-sub">
+          Track every shilling, set smart budgets, and achieve your goals — powered by AI that learns how you spend.
+        </p>
+
+        <ul class="lp-hero-bullets" aria-label="Key benefits">
+          <li>
+            <span class="lp-check-icon"><ng-icon name="lucideCheck" size="14"></ng-icon></span>
+            All-in-one — expenses, budgets, goals, and insights.
+          </li>
+          <li>
+            <span class="lp-check-icon"><ng-icon name="lucideCheck" size="14"></ng-icon></span>
+            Your data, your rules — export anytime.
+          </li>
+          <li>
+            <span class="lp-check-icon"><ng-icon name="lucideCheck" size="14"></ng-icon></span>
+            AI categories — spend less time logging.
+          </li>
+        </ul>
+
+        <p class="lp-intent-label">I want to:</p>
+        <div class="lp-intent-grid">
+          <button type="button" class="lp-intent-btn" [class.active]="heroIntent === 'personal'"
+            (click)="setIntent('personal')" id="hero-intent-personal">
+            <span class="lp-intent-dot"></span>
+            Organize my own finances
+          </button>
+          <button type="button" class="lp-intent-btn" [class.active]="heroIntent === 'small'"
+            (click)="setIntent('small')" id="hero-intent-small">
+            <span class="lp-intent-dot"></span>
+            Manage 1–9 accounts
+          </button>
+          <button type="button" class="lp-intent-btn" [class.active]="heroIntent === 'enterprise'"
+            (click)="setIntent('enterprise')" id="hero-intent-enterprise">
+            <span class="lp-intent-dot"></span>
+            Manage 10+ accounts
+          </button>
+        </div>
+
+        <div class="lp-hero-cta-row">
+          <div class="lp-input-wrap">
+            <ng-icon name="lucideMail" size="16" class="lp-input-icon"></ng-icon>
+            <input id="hero-email" type="email" class="lp-email-input" placeholder="Enter your email"
+              [(ngModel)]="heroEmail" (keydown.enter)="getStarted()" autocomplete="email" />
+          </div>
+          <button type="button" class="lp-btn-get-started" (click)="getStarted()" id="hero-get-started-btn">
+            Get started free
+            <ng-icon name="lucideArrowRight" size="16"></ng-icon>
+          </button>
+        </div>
+
+        <p class="lp-hero-or">Or continue with</p>
+        <a href="#" class="lp-google-btn" aria-label="Sign up with Google" id="hero-google-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#4285F4"
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+            <path fill="#34A853"
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+            <path fill="#FBBC05"
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+            <path fill="#EA4335"
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+          </svg>
+          <span>Google</span>
+        </a>
+      </div>
+
+      <!-- RIGHT: Dashboard mockup -->
+      <div class="lp-hero-visual" data-aos="fade-left" data-aos-duration="800" data-aos-delay="150">
+        <div class="lp-mockup">
+          <!-- Sidebar -->
+          <div class="lp-mock-sidebar">
+            <div class="lp-mock-logo">FA</div>
+            <div class="lp-mock-nav-items">
+              <div class="lp-mock-nav-item active">
+                <ng-icon name="lucideLayoutDashboard" size="16"></ng-icon>
+              </div>
+              <div class="lp-mock-nav-item">
+                <ng-icon name="lucideCreditCard" size="16"></ng-icon>
+              </div>
+              <div class="lp-mock-nav-item">
+                <ng-icon name="lucidePieChart" size="16"></ng-icon>
+              </div>
+              <div class="lp-mock-nav-item">
+                <ng-icon name="lucideTarget" size="16"></ng-icon>
+              </div>
+              <div class="lp-mock-nav-item">
+                <ng-icon name="lucideBell" size="16"></ng-icon>
+              </div>
             </div>
           </div>
-          <div class="app-balance">
-            <span class="app-balance-label">My Balance</span>
-            <span class="app-balance-amount">KES 98,234</span>
-            <span class="app-balance-extra">You made an extra KES 12,832 this month.</span>
-            <div class="app-balance-actions">
-              <button type="button" class="app-action"><span class="app-action-icon">↑</span> Send</button>
-              <button type="button" class="app-action"><span class="app-action-icon">↓</span> Receive</button>
-              <button type="button" class="app-action"><span class="app-action-icon">⇅</span> Convert</button>
+
+          <!-- Main content -->
+          <div class="lp-mock-content">
+            <div class="lp-mock-topbar">
+              <span class="lp-mock-page-title">Dashboard</span>
+              <div class="lp-mock-avatar">JK</div>
+            </div>
+
+            <div class="lp-mock-balance-row">
+              <div class="lp-mock-balance-card">
+                <span class="lp-mock-bal-label">Total Balance</span>
+                <span class="lp-mock-bal-amount">KES 98,234</span>
+                <span class="lp-mock-bal-change positive">
+                  <ng-icon name="lucideTrendingUp" size="11"></ng-icon>
+                  +12.4% this month
+                </span>
+              </div>
+              <div class="lp-mock-stat-card">
+                <span class="lp-mock-stat-label">Spent</span>
+                <span class="lp-mock-stat-val danger">KES 23,410</span>
+              </div>
+              <div class="lp-mock-stat-card">
+                <span class="lp-mock-stat-label">Saved</span>
+                <span class="lp-mock-stat-val success">KES 15,200</span>
+              </div>
+            </div>
+
+            <div class="lp-mock-chart-title">Spending Overview</div>
+            <div class="lp-mock-bars">
+              <div class="lp-mock-bar-wrap">
+                <div class="lp-mock-bar" style="height: 55%"></div>
+                <span>Jan</span>
+              </div>
+              <div class="lp-mock-bar-wrap">
+                <div class="lp-mock-bar" style="height: 70%"></div>
+                <span>Feb</span>
+              </div>
+              <div class="lp-mock-bar-wrap">
+                <div class="lp-mock-bar" style="height: 42%"></div>
+                <span>Mar</span>
+              </div>
+              <div class="lp-mock-bar-wrap">
+                <div class="lp-mock-bar" style="height: 85%"></div>
+                <span>Apr</span>
+              </div>
+              <div class="lp-mock-bar-wrap active">
+                <div class="lp-mock-bar" style="height: 63%"></div>
+                <span>May</span>
+              </div>
+              <div class="lp-mock-bar-wrap">
+                <div class="lp-mock-bar" style="height: 50%"></div>
+                <span>Jun</span>
+              </div>
+            </div>
+
+            <div class="lp-mock-tx-list">
+              <div class="lp-mock-tx">
+                <div class="lp-mock-tx-icon food">
+                  <ng-icon name="lucideUtensilsCrossed" size="11"></ng-icon>
+                </div>
+                <div class="lp-mock-tx-info">
+                  <span class="lp-mock-tx-name">Naivas Supermarket</span>
+                  <span class="lp-mock-tx-cat">Food & Groceries</span>
+                </div>
+                <span class="lp-mock-tx-amt debit">-KES 3,420</span>
+              </div>
+              <div class="lp-mock-tx">
+                <div class="lp-mock-tx-icon transport">
+                  <ng-icon name="lucideBus" size="11"></ng-icon>
+                </div>
+                <div class="lp-mock-tx-info">
+                  <span class="lp-mock-tx-name">Uber Kenya</span>
+                  <span class="lp-mock-tx-cat">Transport</span>
+                </div>
+                <span class="lp-mock-tx-amt debit">-KES 850</span>
+              </div>
+              <div class="lp-mock-tx">
+                <div class="lp-mock-tx-icon income">
+                  <ng-icon name="lucideWallet" size="11"></ng-icon>
+                </div>
+                <div class="lp-mock-tx-info">
+                  <span class="lp-mock-tx-name">M-Pesa Received</span>
+                  <span class="lp-mock-tx-cat">Income</span>
+                </div>
+                <span class="lp-mock-tx-amt credit">+KES 15,000</span>
+              </div>
             </div>
           </div>
-          <div class="app-chart">
-            <div class="app-chart-y">
-              <span>150K</span><span>125K</span><span>100K</span>
+        </div>
+
+        <!-- Floating card popup -->
+        <div class="lp-float-card" data-aos="zoom-in" data-aos-delay="500" data-aos-duration="600">
+          <div class="lp-float-card-header">
+            <ng-icon name="lucideCreditCard" size="14"></ng-icon>
+            <span>Virtual Card</span>
+          </div>
+          <div class="lp-virtual-card">
+            <span class="lp-vc-label">FinAnalytix</span>
+            <span class="lp-vc-num">•••• •••• •••• 7823</span>
+            <div class="lp-vc-footer">
+              <span>VISA</span>
+              <span>KES 50,000 limit</span>
             </div>
-            <div class="app-chart-bars">
-              <span class="chart-bar" style="height: 45%"></span>
-              <span class="chart-bar" style="height: 70%"></span>
-              <span class="chart-bar chart-bar-tooltip" style="height: 55%">
-                <span class="chart-tooltip">KES 42,391</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trust bar -->
+    <div class="lp-trust-bar" data-aos="fade-up" data-aos-delay="300" data-aos-duration="600">
+      <div class="lp-trust-bar-inner">
+        <p class="lp-trust-label">Trusted by young Kenyans taking control of their money</p>
+        <div class="lp-trust-stats">
+          <div class="lp-trust-stat">
+            <span class="lp-trust-num">4.9</span>
+            <div class="lp-trust-stars">
+              <ng-icon name="lucideStar" size="12"></ng-icon>
+              <ng-icon name="lucideStar" size="12"></ng-icon>
+              <ng-icon name="lucideStar" size="12"></ng-icon>
+              <ng-icon name="lucideStar" size="12"></ng-icon>
+              <ng-icon name="lucideStar" size="12"></ng-icon>
+            </div>
+            <span class="lp-trust-desc">Ease of use</span>
+          </div>
+          <div class="lp-trust-divider"></div>
+          <div class="lp-trust-stat">
+            <span class="lp-trust-num">4.8</span>
+            <div class="lp-trust-stars">
+              <ng-icon name="lucideStar" size="12"></ng-icon>
+              <ng-icon name="lucideStar" size="12"></ng-icon>
+              <ng-icon name="lucideStar" size="12"></ng-icon>
+              <ng-icon name="lucideStar" size="12"></ng-icon>
+              <ng-icon name="lucideStar" size="12"></ng-icon>
+            </div>
+            <span class="lp-trust-desc">Smart categories</span>
+          </div>
+          <div class="lp-trust-divider"></div>
+          <div class="lp-trust-stat">
+            <span class="lp-trust-num">4.9</span>
+            <div class="lp-trust-stars">
+              <ng-icon name="lucideStar" size="12"></ng-icon>
+              <ng-icon name="lucideStar" size="12"></ng-icon>
+              <ng-icon name="lucideStar" size="12"></ng-icon>
+              <ng-icon name="lucideStar" size="12"></ng-icon>
+              <ng-icon name="lucideStar" size="12"></ng-icon>
+            </div>
+            <span class="lp-trust-desc">No judgment</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ FEATURES STRIP ═══════ -->
+  <section class="lp-feature-strip" aria-label="Feature highlights">
+    <div class="lp-feature-strip-inner">
+      <div class="lp-strip-item" data-aos="fade-up" data-aos-delay="0">
+        <ng-icon name="lucideShieldCheck" size="18"></ng-icon>
+        <span>Bank-grade encryption</span>
+      </div>
+      <div class="lp-strip-divider"></div>
+      <div class="lp-strip-item" data-aos="fade-up" data-aos-delay="80">
+        <ng-icon name="lucideCpu" size="18"></ng-icon>
+        <span>AI-powered categorisation</span>
+      </div>
+      <div class="lp-strip-divider"></div>
+      <div class="lp-strip-item" data-aos="fade-up" data-aos-delay="160">
+        <ng-icon name="lucideSmartphone" size="18"></ng-icon>
+        <span>Mobile first</span>
+      </div>
+      <div class="lp-strip-divider"></div>
+      <div class="lp-strip-item" data-aos="fade-up" data-aos-delay="240">
+        <ng-icon name="lucideBell" size="18"></ng-icon>
+        <span>Real-time alerts</span>
+      </div>
+      <div class="lp-strip-divider"></div>
+      <div class="lp-strip-item" data-aos="fade-up" data-aos-delay="320">
+        <ng-icon name="lucideDownload" size="18"></ng-icon>
+        <span>Export anytime</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ SECTION: Analytics Dashboard ═══════ -->
+  <section id="features" class="lp-section lp-section-light">
+    <div class="lp-section-inner lp-two-col">
+      <div class="lp-feature-visual" data-aos="fade-right" data-aos-duration="700">
+        <div class="lp-analytics-card">
+          <div class="lp-ac-header">
+            <span>Financial Overview</span>
+            <div class="lp-ac-filters">
+              <button class="lp-ac-filter active">Monthly</button>
+              <button class="lp-ac-filter">Yearly</button>
+            </div>
+          </div>
+          <div class="lp-ac-amount">KES 98,234</div>
+          <div class="lp-ac-change">
+            <ng-icon name="lucideTrendingUp" size="14"></ng-icon>
+            <span>Up 12.4% from last month</span>
+          </div>
+          <div class="lp-ac-area-chart">
+            <svg viewBox="0 0 300 80" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#22c55e" stop-opacity="0.35" />
+                  <stop offset="100%" stop-color="#22c55e" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+              <path d="M0,65 C30,55 60,30 90,40 C120,50 150,20 180,25 C210,30 240,45 270,35 L300,30 L300,80 L0,80 Z"
+                fill="url(#areaGrad)" />
+              <path d="M0,65 C30,55 60,30 90,40 C120,50 150,20 180,25 C210,30 240,45 270,35 L300,30" fill="none"
+                stroke="#22c55e" stroke-width="2" stroke-linejoin="round" />
+              <circle cx="270" cy="35" r="4" fill="#22c55e" />
+            </svg>
+          </div>
+          <div class="lp-ac-row">
+            <div class="lp-ac-item">
+              <span class="lp-ac-item-label">
+                <span class="lp-ac-dot income-dot"></span>Income
               </span>
-              <span class="chart-bar" style="height: 85%"></span>
-              <span class="chart-bar" style="height: 60%"></span>
+              <span class="lp-ac-item-val">KES 45,000</span>
+            </div>
+            <div class="lp-ac-item">
+              <span class="lp-ac-item-label">
+                <span class="lp-ac-dot expense-dot"></span>Expenses
+              </span>
+              <span class="lp-ac-item-val">KES 23,410</span>
+            </div>
+            <div class="lp-ac-item">
+              <span class="lp-ac-item-label">
+                <span class="lp-ac-dot savings-dot"></span>Savings
+              </span>
+              <span class="lp-ac-item-val">KES 15,200</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lp-feature-copy" data-aos="fade-left" data-aos-duration="700" data-aos-delay="100">
+        <div class="lp-section-tag">
+          <ng-icon name="lucideBarChart3" size="14"></ng-icon>
+          Analytics
+        </div>
+        <h2 class="lp-section-title">
+          Comprehensive <span class="lp-highlight">Financial Analytics</span> Dashboard
+        </h2>
+        <p class="lp-section-desc">
+          See where your money goes at a glance. Real-time spending by category, custom reports, and a crystal-clear
+          view of your cash flow.
+        </p>
+        <ul class="lp-feature-list">
+          <li>
+            <span class="lp-feat-check"><ng-icon name="lucideCheck" size="13"></ng-icon></span>
+            Real-time data updates
+          </li>
+          <li>
+            <span class="lp-feat-check"><ng-icon name="lucideCheck" size="13"></ng-icon></span>
+            Customizable reports & charts
+          </li>
+          <li>
+            <span class="lp-feat-check"><ng-icon name="lucideCheck" size="13"></ng-icon></span>
+            Secure &amp; fully private
+          </li>
+          <li>
+            <span class="lp-feat-check"><ng-icon name="lucideCheck" size="13"></ng-icon></span>
+            Beautiful, simple interface
+          </li>
+        </ul>
+        <a href="#" class="lp-btn-primary" id="features-analytics-cta">
+          Explore analytics
+          <ng-icon name="lucideArrowRight" size="16"></ng-icon>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ SECTION: Expense Tracking ═══════ -->
+  <section class="lp-section">
+    <div class="lp-section-inner lp-two-col lp-reverse">
+      <div class="lp-feature-copy" data-aos="fade-right" data-aos-duration="700">
+        <div class="lp-section-tag">
+          <ng-icon name="lucideReceipt" size="14"></ng-icon>
+          Expense Tracking
+        </div>
+        <h2 class="lp-section-title">
+          Track Every <span class="lp-highlight">Expense</span> Effortlessly
+        </h2>
+        <p class="lp-section-desc">
+          Quick manual entry or future M-Pesa sync. Our AI suggests categories so you spend less time logging and more
+          time living.
+        </p>
+        <a href="#" class="lp-btn-primary" id="features-tracking-cta">
+          Start tracking
+          <ng-icon name="lucideArrowRight" size="16"></ng-icon>
+        </a>
+      </div>
+
+      <div class="lp-feature-visual" data-aos="fade-left" data-aos-duration="700" data-aos-delay="100">
+        <div class="lp-expense-card">
+          <div class="lp-ec-header">
+            <span>Recent Transactions</span>
+            <a href="#" class="lp-ec-all">View all</a>
+          </div>
+          <div class="lp-ec-tx-list">
+            <div class="lp-ec-tx">
+              <div class="lp-ec-tx-icon food">
+                <ng-icon name="lucideUtensilsCrossed" size="14"></ng-icon>
+              </div>
+              <div class="lp-ec-tx-body">
+                <div class="lp-ec-tx-name">Java House</div>
+                <div class="lp-ec-tx-meta">Food &nbsp;·&nbsp; Today, 2:14pm</div>
+              </div>
+              <div class="lp-ec-tx-right">
+                <span class="lp-ec-tx-amt debit">-1,200</span>
+                <span class="lp-ec-tag">AI verified</span>
+              </div>
+            </div>
+            <div class="lp-ec-tx">
+              <div class="lp-ec-tx-icon transport">
+                <ng-icon name="lucideBus" size="14"></ng-icon>
+              </div>
+              <div class="lp-ec-tx-body">
+                <div class="lp-ec-tx-name">Matatu – CBD</div>
+                <div class="lp-ec-tx-meta">Transport &nbsp;·&nbsp; Yesterday</div>
+              </div>
+              <div class="lp-ec-tx-right">
+                <span class="lp-ec-tx-amt debit">-60</span>
+                <span class="lp-ec-tag">AI verified</span>
+              </div>
+            </div>
+            <div class="lp-ec-tx">
+              <div class="lp-ec-tx-icon social">
+                <ng-icon name="lucideUsers" size="14"></ng-icon>
+              </div>
+              <div class="lp-ec-tx-body">
+                <div class="lp-ec-tx-name">Night out – Westlands</div>
+                <div class="lp-ec-tx-meta">Social &nbsp;·&nbsp; Mon</div>
+              </div>
+              <div class="lp-ec-tx-right">
+                <span class="lp-ec-tx-amt debit">-3,450</span>
+                <span class="lp-ec-tag">Social</span>
+              </div>
+            </div>
+            <div class="lp-ec-tx">
+              <div class="lp-ec-tx-icon income">
+                <ng-icon name="lucideWallet" size="14"></ng-icon>
+              </div>
+              <div class="lp-ec-tx-body">
+                <div class="lp-ec-tx-name">Salary – Safaricom</div>
+                <div class="lp-ec-tx-meta">Income &nbsp;·&nbsp; 1st May</div>
+              </div>
+              <div class="lp-ec-tx-right">
+                <span class="lp-ec-tx-amt credit">+45,000</span>
+                <span class="lp-ec-tag income">Income</span>
+              </div>
+            </div>
+          </div>
+          <!-- Category breakdown -->
+          <div class="lp-ec-breakdown">
+            <div class="lp-ec-bk-bar">
+              <div class="lp-ec-bk-seg food" style="width: 35%"></div>
+              <div class="lp-ec-bk-seg transport" style="width: 20%"></div>
+              <div class="lp-ec-bk-seg social" style="width: 28%"></div>
+              <div class="lp-ec-bk-seg other" style="width: 17%"></div>
+            </div>
+            <div class="lp-ec-bk-legend">
+              <span><em class="dot food"></em>Food 35%</span>
+              <span><em class="dot transport"></em>Transport 20%</span>
+              <span><em class="dot social"></em>Social 28%</span>
+              <span><em class="dot other"></em>Other 17%</span>
             </div>
           </div>
         </div>
       </div>
     </div>
-    </div>
-    <div class="hero-ratings">
-      <p class="hero-ratings-text">Trusted by young Kenyans taking control of their money</p>
-      <div class="ratings">
-        <div class="rating-block">
-          <span class="rating-value">4.9</span>
-          <span class="stars">★★★★★</span>
-          <span class="rating-label">Ease of use</span>
-        </div>
-        <div class="rating-block">
-          <span class="rating-value">4.8</span>
-          <span class="stars">★★★★★</span>
-          <span class="rating-label">Smart categories</span>
-        </div>
-        <div class="rating-block">
-          <span class="rating-value">4.9</span>
-          <span class="stars">★★★★★</span>
-          <span class="rating-label">No judgment</span>
-        </div>
-      </div>
-    </div>
   </section>
 
-  <!-- Features -->
-  <section id="features" class="section section-alt">
-    <div class="section-inner two-col">
-      <div class="feature-visual card-visual">
-        <div class="card-visual-header">KES 98,234</div>
-        <div class="card-visual-dots">
-          <span></span><span></span><span></span>
+  <!-- ═══════ CAPABILITY CARDS ═══════ -->
+  <section class="lp-section lp-caps-section" aria-labelledby="caps-title">
+    <div class="lp-section-inner">
+      <div class="lp-caps-head" data-aos="fade-up" data-aos-duration="600">
+        <div class="lp-section-tag">
+          <ng-icon name="lucideLayout" size="14"></ng-icon>
+          Capabilities
         </div>
-        <div class="mini-chart">
-          <span class="bar" style="height: 35%"></span>
-          <span class="bar" style="height: 60%"></span>
-          <span class="bar" style="height: 45%"></span>
-          <span class="bar" style="height: 80%"></span>
-        </div>
+        <h2 id="caps-title" class="lp-section-title center">
+          Built for <span class="lp-highlight">Your Life</span>
+        </h2>
+        <p class="lp-caps-sub">
+          Everything you need to take full control of your financial life — in one place.
+        </p>
       </div>
-      <div class="feature-copy">
-        <h2 class="section-title">Comprehensive <span class="dark">Financial Analytics</span> Dashboard</h2>
-        <p>See where your money goes at a glance. Real-time spending by category, custom reports, and a clear view of your cash flow.</p>
-        <ul class="feature-list">
-          <li><span class="check">✓</span> Real-time data</li>
-          <li><span class="check">✓</span> Customizable reports</li>
-          <li><span class="check">✓</span> Secure & private</li>
-          <li><span class="check">✓</span> Simple interface</li>
-        </ul>
-      </div>
-    </div>
-  </section>
 
-  <section class="section">
-    <div class="section-inner two-col reverse">
-      <div class="feature-copy">
-        <h2 class="section-title">Track Every <span class="dark">Expense</span> Easily</h2>
-        <p>Quick manual entry or future bank sync. AI suggests categories so you spend less time logging and more time living.</p>
-        <a href="#features" class="btn-primary">Learn More</a>
-      </div>
-      <div class="feature-visual pie-visual">
-        <div class="pie-legend">
-          <span class="dot food"></span> Food
-          <span class="dot transport"></span> Transport
-          <span class="dot social"></span> Social
-          <span class="dot other"></span> Other
+      <div class="lp-caps-grid">
+        <div class="lp-cap-card" data-aos="fade-up" data-aos-duration="600" data-aos-delay="0">
+          <div class="lp-cap-icon-wrap budgets">
+            <ng-icon name="lucideGauge" size="24"></ng-icon>
+          </div>
+          <h3>Budgets &amp; Alerts</h3>
+          <p>Set limits per category — Food, Transport, Social. Get smart nudges at 80% and 100% spend before you
+            overspend.</p>
+          <a href="#" class="lp-cap-link">
+            Learn more <ng-icon name="lucideChevronRight" size="14"></ng-icon>
+          </a>
         </div>
-        <div class="pie-chart">
-          <div class="pie-segment" style="--i: 0; --p: 35"></div>
-          <div class="pie-segment" style="--i: 1; --p: 25"></div>
-          <div class="pie-segment" style="--i: 2; --p: 25"></div>
-          <div class="pie-segment" style="--i: 3; --p: 15"></div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <section class="section section-alt">
-    <div class="section-inner">
-      <h2 class="section-title center">Built for <span class="dark">Your Life</span></h2>
-      <div class="three-cards">
-        <div class="capability-card">
-          <div class="cap-icon">📊</div>
-          <h3>Budgets & Alerts</h3>
-          <p>Set limits per category (Food, Transport, Social). Get nudges at 80% and 100%—before you overspend.</p>
+        <div class="lp-cap-card featured" data-aos="fade-up" data-aos-duration="600" data-aos-delay="100">
+          <div class="lp-cap-icon-wrap goals">
+            <ng-icon name="lucideTarget" size="24"></ng-icon>
+          </div>
+          <h3>Goals &amp; Savings</h3>
+          <p>Set targets and deadlines. Get real-time progress and "on track" nudges — "Save KES X more per week to hit
+            your goal early."</p>
+          <a href="#" class="lp-cap-link">
+            Learn more <ng-icon name="lucideChevronRight" size="14"></ng-icon>
+          </a>
         </div>
-        <div class="capability-card">
-          <div class="cap-icon">🎯</div>
-          <h3>Goals & Savings</h3>
-          <p>Set targets and deadlines. See progress and get “on track” nudges: “Save KES X more per week to hit your goal early.”</p>
-        </div>
-        <div class="capability-card">
-          <div class="cap-icon">🤝</div>
+
+        <div class="lp-cap-card" data-aos="fade-up" data-aos-duration="600" data-aos-delay="200">
+          <div class="lp-cap-icon-wrap social">
+            <ng-icon name="lucideUsers" size="24"></ng-icon>
+          </div>
           <h3>Social Spending</h3>
-          <p>Social spending tracked distinctly and highlighted so you stay aware without feeling judged.</p>
+          <p>Social spending tracked distinctly and highlighted so you stay aware of shared expenses without feeling
+            judged.</p>
+          <a href="#" class="lp-cap-link">
+            Learn more <ng-icon name="lucideChevronRight" size="14"></ng-icon>
+          </a>
+        </div>
+
+        <div class="lp-cap-card" data-aos="fade-up" data-aos-duration="600" data-aos-delay="50">
+          <div class="lp-cap-icon-wrap ai">
+            <ng-icon name="lucideCpu" size="24"></ng-icon>
+          </div>
+          <h3>AI Categorisation</h3>
+          <p>Transactions are auto-categorized with confidence scores. Correct once and the system permanently learns
+            your preferences.</p>
+          <a href="#" class="lp-cap-link">
+            Learn more <ng-icon name="lucideChevronRight" size="14"></ng-icon>
+          </a>
+        </div>
+
+        <div class="lp-cap-card" data-aos="fade-up" data-aos-duration="600" data-aos-delay="150">
+          <div class="lp-cap-icon-wrap lessons">
+            <ng-icon name="lucideGraduationCap" size="24"></ng-icon>
+          </div>
+          <h3>Financial Lessons</h3>
+          <p>Short 5–7 minute lessons on budgeting, saving, and debt — surfaced when most relevant to your spending
+            patterns.</p>
+          <a href="#" class="lp-cap-link">
+            Learn more <ng-icon name="lucideChevronRight" size="14"></ng-icon>
+          </a>
+        </div>
+
+        <div class="lp-cap-card" data-aos="fade-up" data-aos-duration="600" data-aos-delay="250">
+          <div class="lp-cap-icon-wrap reports">
+            <ng-icon name="lucideFileText" size="24"></ng-icon>
+          </div>
+          <h3>Reports &amp; Export</h3>
+          <p>Generate detailed spending reports and export your data anytime in formats that work with your favorite
+            tools.</p>
+          <a href="#" class="lp-cap-link">
+            Learn more <ng-icon name="lucideChevronRight" size="14"></ng-icon>
+          </a>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section">
-    <div class="section-inner two-col">
-      <div class="feature-visual cards-stack">
-        <div class="stack-card card-1"></div>
-        <div class="stack-card card-2"></div>
+  <!-- ═══════ SECTION: AI ═══════ -->
+  <section class="lp-section lp-section-light" id="how-it-works">
+    <div class="lp-section-inner lp-two-col">
+      <div class="lp-feature-visual" data-aos="fade-right" data-aos-duration="700">
+        <div class="lp-ai-card">
+          <div class="lp-ai-header">
+            <div class="lp-ai-dot ai"></div>
+            <span>AI Engine</span>
+            <span class="lp-ai-badge">Active</span>
+          </div>
+          <div class="lp-ai-tx-process">
+            <div class="lp-ai-tx">
+              <span class="lp-ai-tx-label">Transaction detected</span>
+              <span class="lp-ai-tx-val">KES 1,200 – Java House</span>
+            </div>
+            <div class="lp-ai-arrow">
+              <ng-icon name="lucideArrowDown" size="16"></ng-icon>
+            </div>
+            <div class="lp-ai-analysis">
+              <div class="lp-ai-analysis-row">
+                <span>Food &amp; Dining</span>
+                <div class="lp-ai-bar-row">
+                  <div class="lp-ai-bar-fill" style="width: 94%"></div>
+                </div>
+                <span>94%</span>
+              </div>
+              <div class="lp-ai-analysis-row dim">
+                <span>Entertainment</span>
+                <div class="lp-ai-bar-row">
+                  <div class="lp-ai-bar-fill dim" style="width: 4%"></div>
+                </div>
+                <span>4%</span>
+              </div>
+              <div class="lp-ai-analysis-row dim">
+                <span>Other</span>
+                <div class="lp-ai-bar-row">
+                  <div class="lp-ai-bar-fill dim" style="width: 2%"></div>
+                </div>
+                <span>2%</span>
+              </div>
+            </div>
+            <div class="lp-ai-arrow">
+              <ng-icon name="lucideArrowDown" size="16"></ng-icon>
+            </div>
+            <div class="lp-ai-result">
+              <ng-icon name="lucideCheckCircle" size="16"></ng-icon>
+              <span>Categorised as <strong>Food &amp; Dining</strong></span>
+            </div>
+          </div>
+          <div class="lp-ai-integrations">
+            <div class="lp-ai-int-item">
+              <ng-icon name="lucideSmartphone" size="14"></ng-icon>
+              <span>M-Pesa</span>
+            </div>
+            <div class="lp-ai-int-item">
+              <ng-icon name="lucideBanknote" size="14"></ng-icon>
+              <span>Banks</span>
+            </div>
+            <div class="lp-ai-int-item">
+              <ng-icon name="lucideReceipt" size="14"></ng-icon>
+              <span>Receipts</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="feature-copy">
-        <h2 class="section-title">Achieve <span class="dark">Financial Excellence</span></h2>
-        <p>One place for your money story. Clear view, full control, and a path to your goals.</p>
-        <ul class="feature-list">
-          <li><span class="check">✓</span> Clear view of your money</li>
-          <li><span class="check">✓</span> Track all expenses</li>
-          <li><span class="check">✓</span> Set budgets and goals</li>
-          <li><span class="check">✓</span> Invest in your future</li>
+
+      <div class="lp-feature-copy" data-aos="fade-left" data-aos-duration="700" data-aos-delay="100">
+        <div class="lp-section-tag">
+          <ng-icon name="lucideCpu" size="14"></ng-icon>
+          Smart AI
+        </div>
+        <h2 class="lp-section-title">
+          AI That <span class="lp-highlight">Learns From You</span>
+        </h2>
+        <p class="lp-section-desc">
+          Transactions are auto-categorized with confidence scores the moment they hit. Correct a category once and the
+          system gets smarter for every future transaction.
+        </p>
+        <ul class="lp-feature-list">
+          <li>
+            <span class="lp-feat-check"><ng-icon name="lucideCheck" size="13"></ng-icon></span>
+            94%+ categorisation accuracy
+          </li>
+          <li>
+            <span class="lp-feat-check"><ng-icon name="lucideCheck" size="13"></ng-icon></span>
+            Learns from your corrections
+          </li>
+          <li>
+            <span class="lp-feat-check"><ng-icon name="lucideCheck" size="13"></ng-icon></span>
+            Works with M-Pesa &amp; banks
+          </li>
+          <li>
+            <span class="lp-feat-check"><ng-icon name="lucideCheck" size="13"></ng-icon></span>
+            Zero manual category work
+          </li>
         </ul>
+        <a href="#" class="lp-btn-primary" id="features-ai-cta">
+          See AI in action
+          <ng-icon name="lucideArrowRight" size="16"></ng-icon>
+        </a>
       </div>
     </div>
   </section>
 
-  <section class="section section-alt">
-    <div class="section-inner two-col reverse">
-      <div class="feature-copy">
-        <h2 class="section-title">AI That <span class="dark">Learns From You</span></h2>
-        <p>Transactions are auto-categorized with confidence scores. Correct a category once and the system gets smarter for next time.</p>
-        <a href="#features" class="btn-primary">Learn More</a>
+  <!-- ═══════ TESTIMONIAL ═══════ -->
+  <section class="lp-testimonial-section" aria-labelledby="testimonial-title">
+    <div class="lp-testimonial-inner">
+      <div class="lp-testimonial-head" data-aos="fade-up" data-aos-duration="600">
+        <div class="lp-section-tag">
+          <ng-icon name="lucideMessageSquare" size="14"></ng-icon>
+          Testimonials
+        </div>
+        <h2 id="testimonial-title" class="lp-section-title center">
+          What our users <span class="lp-highlight">say</span>
+        </h2>
       </div>
-      <div class="feature-visual integrate-visual">
-        <div class="integrate-center">AI</div>
-        <div class="integrate-icons">
-          <span class="icon">📱</span>
-          <span class="icon">🏦</span>
-          <span class="icon">📝</span>
+
+      <div class="lp-testimonial-grid">
+        <div class="lp-testimonial-card" data-aos="fade-up" data-aos-delay="0" data-aos-duration="600">
+          <div class="lp-tc-stars">
+            <ng-icon name="lucideStar" size="14"></ng-icon>
+            <ng-icon name="lucideStar" size="14"></ng-icon>
+            <ng-icon name="lucideStar" size="14"></ng-icon>
+            <ng-icon name="lucideStar" size="14"></ng-icon>
+            <ng-icon name="lucideStar" size="14"></ng-icon>
+          </div>
+          <p class="lp-tc-text">"FinAnalytix changed how I think about money. I went from spending blindly to having KES
+            40k saved in 3 months. The AI categories are scarily accurate."</p>
+          <div class="lp-tc-author">
+            <div class="lp-tc-avatar">WM</div>
+            <div>
+              <div class="lp-tc-name">Weston M.</div>
+              <div class="lp-tc-role">Software Engineer, Nairobi</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lp-testimonial-card featured" data-aos="fade-up" data-aos-delay="100" data-aos-duration="600">
+          <div class="lp-tc-stars">
+            <ng-icon name="lucideStar" size="14"></ng-icon>
+            <ng-icon name="lucideStar" size="14"></ng-icon>
+            <ng-icon name="lucideStar" size="14"></ng-icon>
+            <ng-icon name="lucideStar" size="14"></ng-icon>
+            <ng-icon name="lucideStar" size="14"></ng-icon>
+          </div>
+          <p class="lp-tc-text">"I used to dread looking at my M-Pesa statement. Now with FinAnalytix, I actually look
+            forward to my weekly money review. The dashboard is beautiful and so intuitive."</p>
+          <div class="lp-tc-author">
+            <div class="lp-tc-avatar">AK</div>
+            <div>
+              <div class="lp-tc-name">Amina K.</div>
+              <div class="lp-tc-role">Product Manager, Mombasa</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lp-testimonial-card" data-aos="fade-up" data-aos-delay="200" data-aos-duration="600">
+          <div class="lp-tc-stars">
+            <ng-icon name="lucideStar" size="14"></ng-icon>
+            <ng-icon name="lucideStar" size="14"></ng-icon>
+            <ng-icon name="lucideStar" size="14"></ng-icon>
+            <ng-icon name="lucideStar" size="14"></ng-icon>
+            <ng-icon name="lucideStar" size="14"></ng-icon>
+          </div>
+          <p class="lp-tc-text">"The budget alerts are a game-changer. Getting a nudge at 80% spend reminded me to slow
+            down before I went over. My savings rate jumped from 5% to 25% in 2 months."</p>
+          <div class="lp-tc-author">
+            <div class="lp-tc-avatar">DO</div>
+            <div>
+              <div class="lp-tc-name">David O.</div>
+              <div class="lp-tc-role">Medical Officer, Kisumu</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CTA -->
-  <section class="cta">
-    <div class="cta-inner">
-      <div class="cta-visual">
-        <div class="cta-card"></div>
-        <div class="cta-chart"></div>
+  <!-- ═══════ FAQ ═══════ -->
+  <section id="faq" class="lp-section lp-section-light" aria-labelledby="faq-title">
+    <div class="lp-section-inner lp-faq-inner">
+      <div class="lp-faq-head" data-aos="fade-up" data-aos-duration="600">
+        <div class="lp-section-tag">
+          <ng-icon name="lucideHelpCircle" size="14"></ng-icon>
+          FAQ
+        </div>
+        <h2 id="faq-title" class="lp-section-title center">
+          Frequently asked <span class="lp-highlight">questions</span>
+        </h2>
       </div>
-      <div class="cta-copy">
-        <h2 class="cta-title">Ready to take control of your money <span class="highlight-w">better</span>?</h2>
-        <p>Join young Kenyans who track, budget, and save with confidence. No ads, no selling your data—just your finances, simplified.</p>
-        <a routerLink="/register" class="btn-cta">Start Now</a>
+
+      <div class="lp-faq-grid">
+        <div class="lp-faq-item" data-aos="fade-up" data-aos-delay="0" data-aos-duration="500">
+          <div class="lp-faq-q">
+            <ng-icon name="lucideChevronRight" size="16" class="lp-faq-chevron"></ng-icon>
+            What is FinAnalytix?
+          </div>
+          <p class="lp-faq-a">FinAnalytix is an AI-powered personal finance platform built for young Kenyans. Track
+            expenses, set budgets, reach savings goals, and gain deep insights into your money habits — all in one
+            beautiful app.</p>
+        </div>
+
+        <div class="lp-faq-item" data-aos="fade-up" data-aos-delay="80" data-aos-duration="500">
+          <div class="lp-faq-q">
+            <ng-icon name="lucideChevronRight" size="16" class="lp-faq-chevron"></ng-icon>
+            Is my financial data secure?
+          </div>
+          <p class="lp-faq-a">Absolutely. We use bank-grade AES-256 encryption for all data at rest and in transit. We
+            never sell your data or show you ads. Your data is yours — export it anytime.</p>
+        </div>
+
+        <div class="lp-faq-item" data-aos="fade-up" data-aos-delay="160" data-aos-duration="500">
+          <div class="lp-faq-q">
+            <ng-icon name="lucideChevronRight" size="16" class="lp-faq-chevron"></ng-icon>
+            How does the AI categorisation work?
+          </div>
+          <p class="lp-faq-a">Our AI reads transaction descriptions and assigns categories with confidence scores. It
+            learns permanently from your corrections, achieving 94%+ accuracy within a few weeks of use.</p>
+        </div>
+
+        <div class="lp-faq-item" data-aos="fade-up" data-aos-delay="0" data-aos-duration="500">
+          <div class="lp-faq-q">
+            <ng-icon name="lucideChevronRight" size="16" class="lp-faq-chevron"></ng-icon>
+            Does it work with M-Pesa?
+          </div>
+          <p class="lp-faq-a">Yes! You can manually log M-Pesa transactions now, and we're actively building direct
+            M-Pesa statement integration. Bank sync is also on our roadmap for later this year.</p>
+        </div>
+
+        <div class="lp-faq-item" data-aos="fade-up" data-aos-delay="80" data-aos-duration="500">
+          <div class="lp-faq-q">
+            <ng-icon name="lucideChevronRight" size="16" class="lp-faq-chevron"></ng-icon>
+            How quickly can I get set up?
+          </div>
+          <p class="lp-faq-a">You can be up and running in under 5 minutes. Sign up, add your first transaction, set a
+            budget — and you'll immediately see your dashboard come to life.</p>
+        </div>
+
+        <div class="lp-faq-item" data-aos="fade-up" data-aos-delay="160" data-aos-duration="500">
+          <div class="lp-faq-q">
+            <ng-icon name="lucideChevronRight" size="16" class="lp-faq-chevron"></ng-icon>
+            How much does it cost?
+          </div>
+          <p class="lp-faq-a">FinAnalytix is currently free during our beta. We plan to introduce a generous free tier
+            permanently, with optional premium features for power users. No surprise charges.</p>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Engagement blocks -->
-  <section class="engagement">
-    <div class="engagement-card chat">
-      <div class="engagement-icon">💬</div>
-      <h3>Questions?</h3>
-      <p>We’re here to help you get started.</p>
-      <a href="#about" class="btn-outline">Contact Us</a>
+  <!-- ═══════ CTA ═══════ -->
+  <section class="lp-cta-section" aria-labelledby="cta-title">
+    <div class="lp-cta-bg">
+      <div class="lp-cta-orb lp-cta-orb-1"></div>
+      <div class="lp-cta-orb lp-cta-orb-2"></div>
     </div>
-    <div class="engagement-card demo">
-      <div class="engagement-icon">📖</div>
-      <h3>Learn as you go</h3>
-      <p>Short 5–7 minute lessons on budgeting, saving, and debt—when they’re most relevant.</p>
-      <a href="#features" class="btn-outline green">Read More</a>
+    <div class="lp-cta-inner" data-aos="fade-up" data-aos-duration="700">
+      <div class="lp-cta-badge">
+        <ng-icon name="lucideRocket" size="14"></ng-icon>
+        <span>Start free today</span>
+      </div>
+      <h2 id="cta-title" class="lp-cta-title">
+        Ready to take control of<br><span class="lp-cta-em">your money</span>?
+      </h2>
+      <p class="lp-cta-sub">
+        Join thousands of Kenyans who track, budget, and save with confidence.
+        No ads. No selling your data. Just your finances, simplified.
+      </p>
+      <div class="lp-cta-actions">
+        <a routerLink="/register" class="lp-btn-cta-primary" id="cta-register-btn">
+          Create free account
+          <ng-icon name="lucideArrowRight" size="18"></ng-icon>
+        </a>
+        <a routerLink="/login" class="lp-btn-cta-ghost" id="cta-signin-btn">
+          Sign in
+        </a>
+      </div>
+      <p class="lp-cta-note">
+        <ng-icon name="lucideLock" size="13"></ng-icon>
+        No credit card required &nbsp;·&nbsp; Free forever plan available
+      </p>
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-inner">
-      <div class="footer-brand">
-        <a routerLink="/" class="logo">FinAnalytix</a>
+  <!-- ═══════ ENGAGEMENT ═══════ -->
+  <section class="lp-engagement" aria-label="Support and resources">
+    <div class="lp-engagement-inner">
+      <div class="lp-eng-card chat" data-aos="fade-up" data-aos-delay="0" data-aos-duration="600">
+        <div class="lp-eng-icon">
+          <ng-icon name="lucideMessageCircle" size="28"></ng-icon>
+        </div>
+        <h3>Questions?</h3>
+        <p>Our team is ready to help you get set up and make the most of FinAnalytix.</p>
+        <a href="#" class="lp-btn-outline" id="engagement-contact-btn">
+          Contact us
+          <ng-icon name="lucideArrowRight" size="15"></ng-icon>
+        </a>
+      </div>
+
+      <div class="lp-eng-card learn" data-aos="fade-up" data-aos-delay="120" data-aos-duration="600">
+        <div class="lp-eng-icon">
+          <ng-icon name="lucideGraduationCap" size="28"></ng-icon>
+        </div>
+        <h3>Learn as you go</h3>
+        <p>Short 5–7 minute lessons on budgeting, saving, and debt — surfaced when they're most relevant.</p>
+        <a href="#" class="lp-btn-outline green" id="engagement-lessons-btn">
+          Browse lessons
+          <ng-icon name="lucideArrowRight" size="15"></ng-icon>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ FOOTER ═══════ -->
+  <footer class="lp-footer">
+    <div class="lp-footer-inner">
+      <div class="lp-footer-brand">
+        <a routerLink="/" class="lp-footer-logo">
+          <span class="lp-logo-mark">
+            <ng-icon name="lucideTrendingUp" size="18"></ng-icon>
+          </span>
+          FinAnalytix
+        </a>
         <p>Smart money management for young Kenyans. No judgment, no spam, no ads.</p>
-        <div class="social-links">
-          <a href="#" aria-label="Facebook">f</a>
-          <a href="#" aria-label="Twitter">𝕏</a>
-          <a href="#" aria-label="Instagram">📷</a>
-          <a href="#" aria-label="LinkedIn">in</a>
+        <div class="lp-footer-social">
+          <a href="#" class="lp-social-link" aria-label="Twitter / X">
+            <ng-icon name="lucideTwitter" size="16"></ng-icon>
+          </a>
+          <a href="#" class="lp-social-link" aria-label="LinkedIn">
+            <ng-icon name="lucideLinkedin" size="16"></ng-icon>
+          </a>
+          <a href="#" class="lp-social-link" aria-label="Instagram">
+            <ng-icon name="lucideInstagram" size="16"></ng-icon>
+          </a>
+          <a href="#" class="lp-social-link" aria-label="GitHub">
+            <ng-icon name="lucideGithub" size="16"></ng-icon>
+          </a>
         </div>
       </div>
-      <div class="footer-col">
+
+      <div class="lp-footer-col">
         <h4>Product</h4>
         <a routerLink="/login">Dashboard</a>
         <a href="#features">Features</a>
         <a href="#">Pricing</a>
+        <a href="#">Changelog</a>
       </div>
-      <div class="footer-col">
+
+      <div class="lp-footer-col">
         <h4>Company</h4>
-        <a href="#about">About</a>
+        <a href="#">About</a>
         <a href="#">Blog</a>
         <a href="#">Careers</a>
+        <a href="#">Press</a>
       </div>
-      <div class="footer-col">
+
+      <div class="lp-footer-col">
         <h4>Legal</h4>
-        <a href="#">Privacy</a>
-        <a href="#">Terms</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Cookie Policy</a>
       </div>
     </div>
-    <div class="footer-bottom">
-      © {{ currentYear }} FinAnalytix. All rights reserved.
+
+    <div class="lp-footer-bottom">
+      <span>&copy; {{ currentYear }} FinAnalytix. All rights reserved.</span>
+      <span>Made with <ng-icon name="lucideHeart" size="13" class="lp-heart"></ng-icon> in Nairobi</span>
     </div>
   </footer>
 </div>

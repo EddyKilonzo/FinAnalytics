@@ -1,11 +1,49 @@
+@import "tailwindcss";
+
+/* Optional: extend Tailwind with FinAnalytics green palette (use as bg-[--green-400] etc.) */
+@theme {
+  --color-green-900: #051F20;
+  --color-green-800: #0B2B26;
+  --color-green-700: #163832;
+  --color-green-600: #235347;
+  --color-green-400: #8EB69B;
+  --color-green-100: #DAF1DE;
+}
+
 /* Global styles – FinAnalytics green palette */
-:root {
+:root,
+html.dark {
   --green-900: #051F20;
   --green-800: #0B2B26;
   --green-700: #163832;
   --green-600: #235347;
   --green-400: #8EB69B;
   --green-100: #DAF1DE;
+  /* Semantic theme tokens (dark mode) */
+  --page-bg: #0B2B26;
+  --surface: rgba(5, 31, 32, 0.75);
+  --surface-alt: rgba(5, 31, 32, 0.4);
+  --text-primary: #DAF1DE;
+  --text-secondary: #8EB69B;
+  --card-bg: rgba(11, 43, 38, 0.7);
+  --border-subtle: rgba(218, 241, 222, 0.15);
+}
+
+/* Light mode */
+html.light {
+  --green-900: #051F20;
+  --green-800: #0B2B26;
+  --green-700: #163832;
+  --green-600: #235347;
+  --green-400: #2d6b5c;
+  --green-100: #0d332e;
+  --page-bg: #e8f0ec;
+  --surface: rgba(255, 255, 255, 0.9);
+  --surface-alt: rgba(255, 255, 255, 0.7);
+  --text-primary: #051F20;
+  --text-secondary: #235347;
+  --card-bg: rgba(255, 255, 255, 0.95);
+  --border-subtle: rgba(5, 31, 32, 0.12);
 }
 
 * {
@@ -21,12 +59,35 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Beams background provides texture; base matches darker beams */
-  background: var(--green-800);
+  background: var(--page-bg);
+  color: var(--text-primary);
+  transition: background-color 0.25s ease, color 0.2s ease;
 }
 
 /* Use on page containers so beams show through; cards/sections can use semi-transparent backgrounds */
 .beams-page {
   background: transparent;
   min-height: 100vh;
+}
+
+/* Light mode overrides for shared/landing UI */
+html.light .header {
+  background: var(--surface);
+}
+html.light .section-alt {
+  background: var(--surface-alt);
+}
+html.light .hero-ratings-dark {
+  background: var(--surface-alt) !important;
+  border-color: var(--border-subtle) !important;
+}
+html.light .capability-card {
+  background: var(--surface-alt);
+}
+html.light .integrate-visual {
+  background: var(--surface-alt);
+}
+html.light .footer {
+  background: var(--green-900);
+  color: var(--green-100);
 }

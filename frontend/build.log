@@ -1,0 +1,23 @@
+[33mΓ¥»[39m Building...
+[32mΓ£ö[39m Building...
+[1mInitial chunk files[22m  [2m | [22m[1mNames[22m        [2m | [22m [1mRaw size[22m[2m | [22m[1mEstimated transfer size[22m
+[32mmain-XSOEWFL6.js[39m     [2m | [22m[2mmain[22m         [2m | [22m[36m359.35 kB[39m[2m | [22m               [36m88.56 kB[39m
+[32mpolyfills-5CFQRCPP.js[39m[2m | [22m[2mpolyfills[22m    [2m | [22m [36m34.59 kB[39m[2m | [22m               [36m11.33 kB[39m
+[32mstyles-URYU62WL.css[39m  [2m | [22m[2mstyles[22m       [2m | [22m [36m32.50 kB[39m[2m | [22m                [36m3.21 kB[39m
+
+[1m [22m                    [2m | [22m[1mInitial total[22m[2m | [22m[1m426.44 kB[22m[2m | [22m              [1m103.11 kB[22m
+
+Application bundle generation failed. [6.268 seconds] - 2026-02-26T14:08:12.148Z
+
+Γû▓ [WARNING] src/app/features/home/landing.component.css exceeded maximum budget. Budget 12.00 kB was not met by 18.38 kB with a total of 30.38 kB.
+
+
+Γû▓ [WARNING] Module 'aos' used by 'src/app/app.ts' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+X [ERROR] src/app/features/home/landing.component.css exceeded maximum budget. Budget 24.00 kB was not met by 6.38 kB with a total of 30.38 kB.
+
+
