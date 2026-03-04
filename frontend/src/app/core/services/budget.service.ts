@@ -14,6 +14,12 @@ export class BudgetService {
     return this.http.get<any>(this.apiUrl);
   }
 
+  getAlerts(): Observable<{ success: boolean; data: { budgetAlerts: any[]; nudges: any[] } }> {
+    return this.http.get<{ success: boolean; data: { budgetAlerts: any[]; nudges: any[] } }>(
+      `${this.apiUrl}/alerts`
+    );
+  }
+
   getBudget(id: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${id}`);
   }

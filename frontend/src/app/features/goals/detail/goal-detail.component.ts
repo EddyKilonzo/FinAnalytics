@@ -7,6 +7,7 @@ import { lucideArrowLeft, lucidePiggyBank, lucideWallet, lucideCalendar, lucideT
 import { GoalService } from '../../../core/services/goal.service';
 import { TransactionService } from '../../../core/services/transaction.service';
 import { ToastService } from '../../../shared/toast/toast.service';
+import { ConfirmModalComponent } from '../../../shared/confirm-modal/confirm-modal.component';
 import { getBackendErrorMessage } from '../../../core/utils/backend-error';
 
 interface Goal {
@@ -20,7 +21,7 @@ interface Goal {
 @Component({
   selector: 'app-goal-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, NgIconComponent],
+  imports: [CommonModule, RouterModule, FormsModule, NgIconComponent, ConfirmModalComponent],
   templateUrl: './goal-detail.component.html',
   styleUrls: ['./goal-detail.component.css'],
   viewProviders: [provideIcons({ lucideArrowLeft, lucidePiggyBank, lucideWallet, lucideCalendar, lucideTarget, lucideTrash2 })]
@@ -41,6 +42,7 @@ export class GoalDetailComponent implements OnInit {
   loading = true;
   actionLoading = false;
   deleting = false;
+  showDeleteConfirm = false;
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -135,9 +137,18 @@ export class GoalDetailComponent implements OnInit {
     });
   }
 
+  openDeleteConfirm() {
+    if (!this.goal?.id || this.deleting) return;
+    this.showDeleteConfirm = true;
+  }
+
+  closeDeleteConfirm() {
+    this.showDeleteConfirm = false;
+  }
+
   confirmDelete() {
     if (!this.goal?.id || this.deleting) return;
-    if (!confirm('Delete this goal? This cannot be undone.')) return;
+    this.showDeleteConfirm = false;
     this.deleting = true;
     this.goalService.deleteGoal(this.goal.id).subscribe({
       next: () => {

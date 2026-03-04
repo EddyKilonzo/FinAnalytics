@@ -27,6 +27,18 @@ export class TransactionsService {
     return this.prisma as any;
   }
 
+  /** Parse YYYY-MM-DD as start of day UTC for consistent range queries. */
+  private static toStartOfDayUTC(dateFrom: string): Date {
+    const s = String(dateFrom ?? "").trim().slice(0, 10);
+    return s.length === 10 ? new Date(s + "T00:00:00.000Z") : new Date(dateFrom);
+  }
+
+  /** Treat dateTo as end-of-day UTC (inclusive) so the full last day is included. */
+  private static toEndOfDay(dateTo: string): Date {
+    const s = String(dateTo ?? "").trim().slice(0, 10);
+    return s.length === 10 ? new Date(s + "T23:59:59.999Z") : new Date(dateTo);
+  }
+
   // ─── Internal helpers ──────────────────────────────────────────────────────
 
   /**
@@ -46,8 +58,8 @@ export class TransactionsService {
 
     if (query.dateFrom || query.dateTo) {
       where.date = {
-        ...(query.dateFrom ? { gte: new Date(query.dateFrom) } : {}),
-        ...(query.dateTo ? { lte: new Date(query.dateTo) } : {}),
+        ...(query.dateFrom ? { gte: TransactionsService.toStartOfDayUTC(query.dateFrom) } : {}),
+        ...(query.dateTo ? { lte: TransactionsService.toEndOfDay(query.dateTo) } : {}),
       };
     }
 
@@ -402,8 +414,8 @@ export class TransactionsService {
       const dateFilter =
         dateFrom || dateTo
           ? {
-              ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
-              ...(dateTo ? { lte: new Date(dateTo) } : {}),
+              ...(dateFrom ? { gte: TransactionsService.toStartOfDayUTC(dateFrom) } : {}),
+              ...(dateTo ? { lte: TransactionsService.toEndOfDay(dateTo) } : {}),
             }
           : undefined;
 
@@ -451,8 +463,8 @@ export class TransactionsService {
       const dateFilter =
         dateFrom || dateTo
           ? {
-              ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
-              ...(dateTo ? { lte: new Date(dateTo) } : {}),
+              ...(dateFrom ? { gte: TransactionsService.toStartOfDayUTC(dateFrom) } : {}),
+              ...(dateTo ? { lte: TransactionsService.toEndOfDay(dateTo) } : {}),
             }
           : undefined;
 
@@ -501,8 +513,8 @@ export class TransactionsService {
       const dateFilter =
         dateFrom || dateTo
           ? {
-              ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
-              ...(dateTo ? { lte: new Date(dateTo) } : {}),
+              ...(dateFrom ? { gte: TransactionsService.toStartOfDayUTC(dateFrom) } : {}),
+              ...(dateTo ? { lte: TransactionsService.toEndOfDay(dateTo) } : {}),
             }
           : undefined;
 

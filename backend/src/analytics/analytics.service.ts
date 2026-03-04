@@ -151,17 +151,145 @@ export class AnalyticsService {
   }
 
   /**
-   * Returns precomputed insights for the authenticated user: weekend pattern,
-   * category spikes (e.g. "Food costs doubled this month"), etc.
+   * Insight that always appears when the user has any expenses this month:
+   * e.g. "You've spent KSh 5,200 across 8 transactions this month."
+   */
+  private async thisMonthSummaryInsight(userId: string): Promise<Insight | null> {
+    try {
+      const now = new Date();
+      const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      const [sumResult, countResult] = await Promise.all([
+        this.db.transaction.aggregate({
+          where: {
+            userId,
+            type: "expense",
+            date: { gte: thisMonthStart, lte: now },
+          },
+          _sum: { amount: true },
+        }),
+        this.db.transaction.count({
+          where: {
+            userId,
+            type: "expense",
+            date: { gte: thisMonthStart, lte: now },
+          },
+        }),
+      ]);
+
+      const total = Number(sumResult._sum?.amount ?? 0);
+      const count = countResult ?? 0;
+      if (count === 0 && total <= 0) return null;
+
+      const formatted = new Intl.NumberFormat("en-KE", {
+        style: "currency",
+        currency: "KES",
+        maximumFractionDigits: 0,
+      }).format(total);
+      const message =
+        count === 1
+          ? `You've logged 1 expense this month (${formatted}). Keep logging to see more insights.`
+          : `You've spent ${formatted} across ${count} transactions this month.`;
+
+      return {
+        id: "this_month_summary",
+        type: "monthly_summary",
+        message,
+        severity: "info",
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      handlePrismaError(
+        error,
+        this.logger,
+        "AnalyticsService.thisMonthSummaryInsight",
+      );
+    }
+  }
+
+  /**
+   * Top spending category this month — shows whenever there is at least one
+   * category with spending.
+   */
+  private async topCategoryInsight(userId: string): Promise<Insight | null> {
+    try {
+      const now = new Date();
+      const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      const expenses = await this.db.transaction.findMany({
+        where: {
+          userId,
+          type: "expense",
+          date: { gte: thisMonthStart, lte: now },
+          categoryId: { not: null },
+        },
+        select: { amount: true, categoryId: true },
+      });
+
+      const byCategory: Record<string, { total: number; name?: string }> = {};
+      for (const t of expenses as { amount: unknown; categoryId: string | null }[]) {
+        const cid = t.categoryId ?? "uncategorized";
+        if (!byCategory[cid]) byCategory[cid] = { total: 0 };
+        byCategory[cid].total += Number(t.amount);
+      }
+
+      const categoryIds = Object.keys(byCategory).filter((k) => k !== "uncategorized");
+      if (categoryIds.length === 0) return null;
+
+      const categories = await this.db.category.findMany({
+        where: { id: { in: categoryIds } },
+        select: { id: true, name: true },
+      });
+      const nameById = new Map(categories.map((c: { id: string; name: string }) => [c.id, c.name]));
+      for (const id of categoryIds) {
+        byCategory[id].name = nameById.get(id) ?? "Other";
+      }
+
+      const top = Object.entries(byCategory)
+        .filter(([, v]) => v.total > 0)
+        .sort((a, b) => b[1].total - a[1].total)[0];
+      if (!top) return null;
+
+      const [_, { total, name }] = top;
+      const formatted = new Intl.NumberFormat("en-KE", {
+        style: "currency",
+        currency: "KES",
+        maximumFractionDigits: 0,
+      }).format(total);
+
+      return {
+        id: "top_category",
+        type: "top_category",
+        message: `Your top spending category this month is ${name ?? "Other"} (${formatted}).`,
+        severity: "tip",
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      handlePrismaError(
+        error,
+        this.logger,
+        "AnalyticsService.topCategoryInsight",
+      );
+    }
+  }
+
+  /**
+   * Returns precomputed insights for the authenticated user: this month summary,
+   * top category, weekend pattern, category spikes, etc. Always includes at least
+   * one insight when the user has any expense data this month.
    */
   async getInsights(userId: string): Promise<Insight[]> {
     try {
-      const [weekend, categorySpikes] = await Promise.all([
+      const [summary, topCat, weekend, categorySpikes] = await Promise.all([
+        this.thisMonthSummaryInsight(userId),
+        this.topCategoryInsight(userId),
         this.weekendInsight(userId),
         this.categorySpikeInsights(userId),
       ]);
 
       const list: Insight[] = [];
+      if (summary) list.push(summary);
+      if (topCat) list.push(topCat);
       if (weekend) list.push(weekend);
       list.push(...(categorySpikes ?? []));
       return list;

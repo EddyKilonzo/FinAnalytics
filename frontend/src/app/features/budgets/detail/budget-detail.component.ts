@@ -6,6 +6,7 @@ import { lucideArrowLeft, lucideEdit3, lucideTrash2, lucideShoppingBag, lucideCo
 import { BudgetService } from '../../../core/services/budget.service';
 import { TransactionService } from '../../../core/services/transaction.service';
 import { ToastService } from '../../../shared/toast/toast.service';
+import { ConfirmModalComponent } from '../../../shared/confirm-modal/confirm-modal.component';
 import { getBackendErrorMessage } from '../../../core/utils/backend-error';
 
 interface Transaction {
@@ -19,7 +20,7 @@ interface Transaction {
 @Component({
   selector: 'app-budget-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, NgIconComponent],
+  imports: [CommonModule, RouterLink, NgIconComponent, ConfirmModalComponent],
   viewProviders: [
     provideIcons({ lucideArrowLeft, lucideEdit3, lucideTrash2, lucideShoppingBag, lucideCoffee, lucideZap })
   ],
@@ -32,130 +33,166 @@ interface Transaction {
       }
       @if (!isLoading && budget) {
       <header class="flex justify-between items-center mb-8">
-        <button routerLink=".." class="budget-detail-back inline-flex items-center gap-2 bg-white border-2 border-white py-2.5 px-4 rounded-xl font-medium text-sm shadow-sm transition-colors">
+        <button routerLink=".." class="budget-detail-back inline-flex items-center gap-2 bg-white border-2 border-emerald-500 text-emerald-600 py-2.5 px-5 rounded-xl font-semibold text-sm shadow-sm hover:bg-emerald-50 hover:shadow-md transition-all duration-200">
           <ng-icon name="lucideArrowLeft" size="20"></ng-icon>
           <span>Back</span>
         </button>
-        <div class="flex gap-4">
-          <button class="w-12 h-12 rounded-full flex items-center justify-center bg-(--surface-alt) hover:bg-(--surface) text-(--text-primary) transition-colors shadow-sm">
+        <div class="flex gap-3">
+          <button class="w-12 h-12 rounded-full flex items-center justify-center bg-white border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:shadow-md transition-all duration-200 shadow-sm" title="Edit budget">
             <ng-icon name="lucideEdit3" size="20"></ng-icon>
           </button>
-          <button type="button" (click)="confirmDelete()" [disabled]="deleting" class="w-12 h-12 rounded-full flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-colors shadow-sm disabled:opacity-50">
+          <button type="button" (click)="openDeleteConfirm()" [disabled]="deleting" class="w-12 h-12 rounded-full flex items-center justify-center bg-white border-2 border-red-400 text-red-500 hover:bg-red-50 hover:shadow-md transition-all duration-200 shadow-sm disabled:opacity-50" title="Delete budget">
             <ng-icon name="lucideTrash2" size="20"></ng-icon>
           </button>
         </div>
       </header>
 
-      <div class="hero-card p-8 md:p-12 rounded-[40px] bg-(--card-bg-solid) border border-(--border-subtle) mb-12 relative overflow-hidden shadow-xl">
-        <div class="absolute top-0 left-0 right-0 h-2 rounded-t-[40px] overflow-hidden">
-          <div class="h-full transition-all duration-1000 ease-out relative"
+      <div class="hero-card p-8 md:p-12 rounded-[32px] bg-white border-2 border-emerald-500/30 hero-card-inner mb-12 relative overflow-hidden">
+        <!-- Decorative corner accent -->
+        <div class="hero-card-accent" aria-hidden="true"></div>
+        <!-- Top progress strip -->
+        <div class="absolute top-0 left-0 right-0 h-1.5 rounded-t-[30px] overflow-hidden bg-emerald-100">
+          <div class="h-full transition-all duration-1000 ease-out relative rounded-r-full progress-fill"
                 [ngClass]="getProgressBarColor(budget.spent, budget.total)"
                 [style.width.%]="getUtilization(budget.spent, budget.total)">
-                <div class="absolute top-0 right-0 bottom-0 w-8 bg-white/20 blur-md"></div>
-           </div>
+            <div class="absolute top-0 right-0 bottom-0 w-12 bg-white/30 blur-lg"></div>
+          </div>
         </div>
-        
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10 pt-4">
+
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10 pt-6">
           <div>
-            <div class="inline-block px-5 py-2 rounded-full budget-detail-category text-sm font-bold tracking-widest mb-6 uppercase">
+            <div class="inline-block px-4 py-2 rounded-full bg-white border-2 border-emerald-500/50 text-emerald-700 text-xs font-bold tracking-widest mb-5 uppercase shadow-sm">
               {{ budget.category }}
             </div>
-            <h1 class="text-6xl font-extrabold tracking-tight budget-detail-title">{{ budget.name }}</h1>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-800 hero-title">{{ budget.name }}</h1>
           </div>
           <div class="text-left md:text-right">
-            <p class="text-sm font-bold uppercase tracking-widest budget-detail-label mb-2">Total Spent</p>
+            <p class="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-2">Total Spent</p>
             <div class="flex items-baseline md:justify-end gap-2 flex-wrap">
-              <span class="text-5xl md:text-6xl font-extrabold tracking-tight budget-detail-spent">{{ budget.spent | currency:'KES':'symbol':'1.0-0' }}</span>
-              <span class="text-2xl budget-detail-total font-medium">/ {{ budget.total | currency:'KES':'symbol':'1.0-0' }}</span>
+              <span class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-emerald-600 hero-amount">{{ budget.spent | currency:'KES':'symbol':'1.0-0' }}</span>
+              <span class="text-xl md:text-2xl text-gray-500 font-medium">/ {{ budget.total | currency:'KES':'symbol':'1.0-0' }}</span>
             </div>
           </div>
         </div>
 
-        <div class="progress-container h-3 w-full bg-(--surface-alt) rounded-full overflow-hidden mb-6">
-          <div class="progress-bar h-full rounded-full transition-all duration-1000 ease-out relative" 
+        <div class="progress-wrapper h-4 w-full rounded-full overflow-hidden mb-5 bg-gray-100 border border-gray-200/80">
+          <div class="h-full rounded-full transition-all duration-1000 ease-out relative progress-fill"
                [ngClass]="getProgressBarColor(budget.spent, budget.total)"
                [style.width.%]="getUtilization(budget.spent, budget.total)">
-            <div class="absolute top-0 right-0 bottom-0 w-8 bg-white/20 blur-md"></div>
+            <div class="absolute top-0 right-0 bottom-0 w-10 bg-white/40 blur-md rounded-r-full"></div>
           </div>
         </div>
-        <div class="flex justify-between text-sm font-semibold budget-detail-meta">
+        <div class="flex justify-between items-center text-sm font-semibold text-gray-600">
           <span>{{ getUtilization(budget.spent, budget.total) | number:'1.0-0' }}% utilized</span>
-          <span [class.text-red-500]="(budget.total - budget.spent) < 0" [class.bg-red-500]="(budget.total - budget.spent) < 0" [class.bg-opacity-10]="(budget.total - budget.spent) < 0" class="px-4 py-1 rounded-full budget-detail-remaining">
+          <span [class]="(budget.total - budget.spent) < 0 ? 'px-4 py-2 rounded-full bg-red-50 border-2 border-red-300 text-red-600 font-bold' : 'px-4 py-2 rounded-full bg-white border-2 border-emerald-500/50 text-emerald-700 font-bold shadow-sm budget-detail-remaining'">
             {{ (budget.total - budget.spent) >= 0 ? ((budget.total - budget.spent) | currency:'KES':'symbol':'1.0-0') + ' left' : 'Over budget by ' + ((budget.spent - budget.total) | currency:'KES':'symbol':'1.0-0') }}
           </span>
         </div>
       </div>
 
       <div class="transactions-section animation-slide-up" style="animation-delay: 0.2s; animation-fill-mode: both;">
-        <h2 class="text-2xl md:text-3xl font-extrabold text-(--text-primary) mb-6">Recent Transactions</h2>
-        <div class="fin-list bg-(--card-bg-solid) rounded-[32px] border border-(--border-subtle) overflow-hidden">
+        <h2 class="text-2xl md:text-3xl font-extrabold text-gray-800 mb-6">Recent Transactions</h2>
+        <div class="fin-list bg-white rounded-[24px] border-2 border-emerald-500/20 overflow-hidden shadow-lg">
           @for (tx of transactions; track tx.id; let last = $last) {
-            <div class="flex items-center justify-between p-6 md:p-8 transition-colors hover:bg-(--surface-alt)" [ngClass]="{'border-b border-(--border-medium)': !last}">
-              <div class="flex items-center gap-6">
-                <div class="w-14 h-14 rounded-2xl bg-white border-2 flex items-center justify-center shadow-sm budget-detail-tx-icon">
+            <div class="flex items-center justify-between p-5 md:p-6 transition-all duration-200 hover:bg-emerald-50/50 hover:shadow-inner fin-list-item" [ngClass]="{'border-b border-gray-200': !last}">
+              <div class="flex items-center gap-5">
+                <div class="w-14 h-14 rounded-2xl bg-white border-2 border-emerald-500/50 flex items-center justify-center text-emerald-600 shadow-sm">
                   <ng-icon [name]="tx.icon" size="28"></ng-icon>
                 </div>
                 <div>
-                  <h3 class="font-bold text-(--text-primary) text-xl">{{ tx.merchant }}</h3>
-                  <p class="text-base text-(--text-secondary) font-medium mt-1">{{ tx.date | date:'mediumDate' }}</p>
+                  <h3 class="font-bold text-gray-800 text-lg">{{ tx.merchant }}</h3>
+                  <p class="text-sm text-gray-500 font-medium mt-0.5">{{ tx.date | date:'mediumDate' }}</p>
                 </div>
               </div>
               <div class="text-right">
-                <span class="font-bold text-2xl budget-detail-tx-amount">-{{ tx.amount | currency:'KES':'symbol':'1.0-0' }}</span>
+                <span class="font-bold text-xl text-emerald-600">-{{ tx.amount | currency:'KES':'symbol':'1.0-0' }}</span>
               </div>
             </div>
           }
           @if (transactions.length === 0) {
-            <div class="p-12 text-center text-(--text-secondary)">
+            <div class="p-12 text-center text-gray-500">
               <p class="text-xl font-medium">No transactions found for this budget.</p>
             </div>
           }
         </div>
       </div>
       } <!-- end !isLoading && budget -->
+      <app-confirm-modal
+        [open]="showDeleteConfirm"
+        title="Delete this budget?"
+        message="This cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        [danger]="true"
+        (confirm)="confirmDelete()"
+        (cancel)="closeDeleteConfirm()">
+      </app-confirm-modal>
     </div>
   `,
   styles: [`
     .hero-card {
-      box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+      box-shadow:
+        0 4px 6px -1px rgba(5, 150, 105, 0.06),
+        0 10px 20px -5px rgba(5, 150, 105, 0.08),
+        0 20px 40px -10px rgba(0, 0, 0, 0.08);
+      transition: box-shadow 0.25s ease, transform 0.25s ease;
+    }
+    .hero-card:hover {
+      box-shadow:
+        0 8px 15px -3px rgba(5, 150, 105, 0.08),
+        0 20px 35px -10px rgba(5, 150, 105, 0.1),
+        0 25px 50px -15px rgba(0, 0, 0, 0.1);
+    }
+    .hero-card-accent {
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(5, 150, 105, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-title { color: #1f2937; }
+    .hero-amount { color: #059669; }
+
+    .progress-fill.budget-detail-progress {
+      background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+    }
+    .progress-fill.bg-amber-400 {
+      background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+    }
+    .progress-fill.bg-red-500 {
+      background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%);
     }
 
     .fin-list {
-      box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+      box-shadow:
+        0 2px 8px rgba(5, 150, 105, 0.06),
+        0 12px 24px -8px rgba(0, 0, 0, 0.06);
+    }
+    .fin-list-item:hover {
+      border-color: rgba(5, 150, 105, 0.2);
     }
 
     .animation-fade-in {
       animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
-
     .animation-slide-up {
       opacity: 0;
       transform: translateY(40px);
       animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
-
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
     }
-
     @keyframes slideUp {
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .budget-detail-spinner { border-color: #16a34a; }
-    .budget-detail-back { color: #16a34a; }
-    .budget-detail-back:hover { background: rgba(22, 163, 74, 0.12); border-color: #16a34a !important; }
-    .budget-detail-category { background: rgba(22, 163, 74, 0.12); color: #16a34a; }
-    .budget-detail-title { color: var(--text-primary); }
-    .budget-detail-label { color: #059669; letter-spacing: 0.08em; }
-    .budget-detail-spent { color: #16a34a !important; }
-    .budget-detail-total { color: #059669; opacity: 0.9; }
-    .budget-detail-meta { color: var(--text-secondary, #6b7280); }
-    .budget-detail-remaining:not(.text-red-500) { color: #16a34a; background: rgba(22, 163, 74, 0.1); }
-    .budget-detail-progress { background: var(--accent); }
-    .budget-detail-tx-icon { border-color: #16a34a; color: #16a34a; }
-    .budget-detail-tx-amount { color: #16a34a; }
+    .budget-detail-spinner { border-color: #059669; }
+    .budget-detail-remaining { }
   `]
 })
 export class BudgetDetailComponent implements OnInit {
@@ -169,6 +206,7 @@ export class BudgetDetailComponent implements OnInit {
   budget: any = null;
   transactions: Transaction[] = [];
   deleting = false;
+  showDeleteConfirm = false;
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -217,9 +255,18 @@ export class BudgetDetailComponent implements OnInit {
     return 'budget-detail-progress';
   }
 
+  openDeleteConfirm() {
+    if (!this.budget?.id || this.deleting) return;
+    this.showDeleteConfirm = true;
+  }
+
+  closeDeleteConfirm() {
+    this.showDeleteConfirm = false;
+  }
+
   confirmDelete() {
     if (!this.budget?.id || this.deleting) return;
-    if (!confirm('Delete this budget? This cannot be undone.')) return;
+    this.showDeleteConfirm = false;
     this.deleting = true;
     this.budgetService.deleteBudget(this.budget.id).subscribe({
       next: () => {

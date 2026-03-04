@@ -10,11 +10,22 @@
       <ng-icon name="lucideArrowLeft"></ng-icon>
       Back to Goals
     </button>
-    <button type="button" (click)="confirmDelete()" [disabled]="deleting" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-red-200 text-red-600 hover:bg-red-50 font-medium text-sm disabled:opacity-50">
+    <button type="button" (click)="openDeleteConfirm()" [disabled]="deleting" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-red-200 text-red-600 hover:bg-red-50 font-medium text-sm disabled:opacity-50">
       <ng-icon name="lucideTrash2" size="18"></ng-icon>
       Delete goal
     </button>
   </div>
+
+  <app-confirm-modal
+    [open]="showDeleteConfirm"
+    title="Delete goal?"
+    message="This cannot be undone."
+    confirmLabel="Delete"
+    cancelLabel="Cancel"
+    [danger]="true"
+    (confirm)="confirmDelete()"
+    (cancel)="closeDeleteConfirm()">
+  </app-confirm-modal>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     <!-- Goal Status Card -->
@@ -82,7 +93,7 @@
         <p class="text-sm text-slate-600 mb-4">Total Balance: <span class="font-semibold">{{ availableBalance | currency:'KES':'symbol':'1.0-0' }}</span></p>
         <div class="form-group mb-6">
           <label class="block text-sm font-medium mb-2 goal-label">Amount (KES)</label>
-          <input type="number" [(ngModel)]="allocationAmount" class="w-full p-4 rounded-xl border-2 border-slate-200 bg-slate-50 text-slate-800 focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none transition-all" placeholder="0" min="0">
+          <input type="number" [(ngModel)]="allocationAmount" class="w-full p-4 rounded-xl border-2 border-slate-200 bg-slate-50 text-slate-800 focus:ring-2 focus:ring-(--accent) focus:border-(--accent) outline-none transition-all" placeholder="0" min="0">
           <p *ngIf="allocationAmount != null && allocationAmount > availableBalance" class="text-red-500 text-xs font-medium mt-2">Amount cannot exceed your Total Balance.</p>
         </div>
         <button (click)="allocateFunds()" [disabled]="!allocationAmount || actionLoading || (allocationAmount != null && allocationAmount > availableBalance)" class="btn-allocate w-full mt-auto py-4 rounded-xl text-white font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50">
@@ -101,7 +112,7 @@
         <p class="goal-help text-sm mb-4">Take money out of this goal if you need it.</p>
         <div class="form-group mb-6">
           <label class="block text-sm font-medium mb-2 goal-label">Amount (KSh)</label>
-          <input type="number" [(ngModel)]="withdrawAmount" class="w-full p-4 rounded-xl border-2 border-slate-200 bg-slate-50 text-slate-800 focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none transition-all" placeholder="0.00">
+          <input type="number" [(ngModel)]="withdrawAmount" class="w-full p-4 rounded-xl border-2 border-slate-200 bg-slate-50 text-slate-800 focus:ring-2 focus:ring-(--accent) focus:border-(--accent) outline-none transition-all" placeholder="0.00">
         </div>
         <button (click)="withdrawFunds()" [disabled]="!withdrawAmount || actionLoading" class="btn-withdraw w-full mt-auto py-4 rounded-xl border-2 font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 goal-withdraw-btn">
           @if (actionLoading && activeTab === 'withdraw') {

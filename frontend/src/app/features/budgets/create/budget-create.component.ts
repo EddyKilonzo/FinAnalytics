@@ -37,7 +37,7 @@ import { getBackendErrorMessage } from '../../../core/utils/backend-error';
             <div class="space-y-1.5">
               <label for="name" class="block text-xs font-bold tracking-wide uppercase text-slate-500 ml-1">Budget Name</label>
               <input type="text" id="name" formControlName="name" placeholder="e.g. Groceries, Rent, Utilities" 
-                     class="w-full bg-white text-slate-800 border-2 border-slate-200 rounded-xl px-4 py-3 text-base font-medium focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] transition-all placeholder:text-slate-400" />
+                     class="w-full bg-white text-slate-800 border-2 border-slate-200 rounded-xl px-4 py-3 text-base font-medium focus:outline-none focus:ring-2 focus:ring-(--accent) focus:border-(--accent) transition-all placeholder:text-slate-400" />
             </div>
 
             <div class="space-y-1.5">
@@ -47,7 +47,7 @@ import { getBackendErrorMessage } from '../../../core/utils/backend-error';
                   KES
                 </div>
                 <input type="number" id="limit" formControlName="limit" placeholder="0" 
-                       class="w-full bg-white text-slate-800 border-2 border-slate-200 rounded-xl pl-14 pr-4 py-3 text-base font-medium focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] transition-all placeholder:text-slate-400" />
+                       class="w-full bg-white text-slate-800 border-2 border-slate-200 rounded-xl pl-14 pr-4 py-3 text-base font-medium focus:outline-none focus:ring-2 focus:ring-(--accent) focus:border-(--accent) transition-all placeholder:text-slate-400" />
               </div>
               @if (budgetForm.get('limit')?.touched && budgetForm.get('limit')?.invalid) {
                 <p class="text-red-500 text-xs font-medium ml-1 mt-1 animation-slide-down">Valid limit is required</p>
@@ -57,7 +57,7 @@ import { getBackendErrorMessage } from '../../../core/utils/backend-error';
             <div class="space-y-1.5">
               <label for="category" class="block text-xs font-bold tracking-wide uppercase text-slate-500 ml-1">Category (Optional)</label>
               <select id="category" formControlName="categoryId" 
-                      class="w-full bg-white text-slate-800 border-2 border-slate-200 rounded-xl px-4 py-3 text-base font-medium focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] transition-all appearance-none cursor-pointer">
+                      class="w-full bg-white text-slate-800 border-2 border-slate-200 rounded-xl px-4 py-3 text-base font-medium focus:outline-none focus:ring-2 focus:ring-(--accent) focus:border-(--accent) transition-all appearance-none cursor-pointer">
                 <option value="">No category (overall budget)</option>
                 @for (cat of categories; track cat.id) {
                   <option [value]="cat.id">{{ cat.name }}</option>

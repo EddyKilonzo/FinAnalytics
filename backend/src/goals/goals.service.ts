@@ -316,6 +316,7 @@ export class GoalsService {
 
   /**
    * Withdraw an amount from a goal's currentAmount.
+   * Adds the withdrawn amount to the user's main balance by creating an income transaction.
    *
    * Use cases: the user needs to dip into a savings pot, or a contribution was
    * entered in error. currentAmount cannot go below zero.
@@ -336,6 +337,17 @@ export class GoalsService {
         );
       }
 
+      // Add withdrawn amount to main balance (income - expenses) by creating an income transaction
+      await this.transactionsService.create(
+        {
+          amount: dto.amount,
+          type: "income",
+          description: `Withdrawal from goal: ${goal.name}`,
+          incomeSource: "goal_withdrawal",
+        },
+        userId,
+      );
+
       const newAmount = +(current - dto.amount).toFixed(2);
 
       const updated = await this.db.goal.update({
@@ -345,7 +357,7 @@ export class GoalsService {
 
       this.logger.log(
         `Goal withdrawal: KES ${dto.amount} removed from "${goal.name}" (${id}) — ` +
-          `remaining KES ${newAmount}`,
+          `remaining KES ${newAmount}; added to main balance`,
       );
       return this.enrichWithProgress(updated);
     } catch (error) {

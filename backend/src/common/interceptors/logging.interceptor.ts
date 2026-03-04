@@ -53,9 +53,8 @@ export class LoggingInterceptor implements NestInterceptor {
             this.logger.error(line);
           } else if (status >= 400) {
             this.logger.warn(line);
-          } else {
-            this.logger.log(line);
           }
+          // 2xx: skip logging to reduce terminal noise
         },
         error: (err: unknown) => {
           const ms = Date.now() - start;
