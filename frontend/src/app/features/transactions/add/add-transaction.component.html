@@ -1,0 +1,162 @@
+<div class="flex flex-col h-full bg-white max-h-[90vh]">
+  <!-- Header -->
+  <div class="flex items-center justify-between p-6 border-b border-slate-100">
+    <h2 class="text-xl font-bold text-slate-900">
+      {{ transaction ? 'Edit Transaction' : 'New Transaction' }}
+    </h2>
+    <button 
+      (click)="onClose()"
+      class="p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+    >
+      <ng-icon name="lucideX" size="20"></ng-icon>
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="p-6 overflow-y-auto custom-scrollbar">
+    <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      
+      <!-- Type Toggle -->
+      <div class="flex p-1 bg-slate-100 rounded-xl">
+        <button 
+          type="button"
+          class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all"
+          [ngClass]="transactionForm.get('type')?.value === 'expense' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'"
+          (click)="setTransactionType('expense')"
+        >
+          Expense
+        </button>
+        <button 
+          type="button"
+          class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all"
+          [ngClass]="transactionForm.get('type')?.value === 'income' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'"
+          (click)="setTransactionType('income')"
+        >
+          Income
+        </button>
+      </div>
+
+      <!-- Amount -->
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-slate-700">Amount</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <span class="text-slate-400 font-medium text-sm">KES</span>
+          </div>
+          <input 
+            type="number" 
+            formControlName="amount"
+            step="0.01"
+            placeholder="0.00"
+            class="block w-full pl-14 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-lg font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            [ngClass]="{'border-rose-300 ring-rose-100': transactionForm.get('amount')?.invalid && transactionForm.get('amount')?.touched}"
+          >
+        </div>
+        <div *ngIf="transactionForm.get('amount')?.invalid && transactionForm.get('amount')?.touched" class="text-rose-500 text-xs mt-1">
+          Valid amount is required.
+        </div>
+      </div>
+
+      <!-- Title & Merchant -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-slate-700">Title</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <ng-icon name="lucideAlignLeft" size="16"></ng-icon>
+            </div>
+            <input 
+              type="text" 
+              formControlName="title"
+              placeholder="e.g. Lunch with team"
+              class="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            >
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-slate-700">Merchant</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <ng-icon name="lucideStore" size="16"></ng-icon>
+            </div>
+            <input 
+              type="text" 
+              formControlName="merchant"
+              placeholder="e.g. Starbucks"
+              class="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Date & Category -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-slate-700">Date & Time</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <ng-icon name="lucideCalendar" size="16"></ng-icon>
+            </div>
+            <input 
+              type="datetime-local" 
+              formControlName="date"
+              class="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            >
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex justify-between items-center">
+            <label class="block text-sm font-medium text-slate-700">Category</label>
+            <span *ngIf="isPredicting" class="text-xs text-emerald-500 font-medium flex items-center gap-1 animate-pulse">
+              <ng-icon name="lucideLoader2" class="animate-spin"></ng-icon> AI Suggesting...
+            </span>
+            <span *ngIf="!isPredicting && aiSuggestedCategoryId" class="text-xs text-emerald-500 font-medium flex items-center gap-1 animate-fade-in">
+              <ng-icon name="lucideSparkles"></ng-icon> AI Selected
+            </span>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <ng-icon name="lucideTag" size="16"></ng-icon>
+            </div>
+            <select 
+              formControlName="categoryId"
+              class="block w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all appearance-none"
+              [ngClass]="{'ring-2 ring-emerald-500/30 border-emerald-500 bg-emerald-50/10': aiSuggestedCategoryId}"
+            >
+              <option value="" disabled>Select a category</option>
+              <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+            </select>
+            <!-- Custom chevron -->
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <div class="p-6 border-t border-slate-100 bg-slate-50 mt-auto rounded-b-3xl">
+    <div class="flex gap-3 justify-end">
+      <button 
+        type="button" 
+        (click)="onClose()"
+        class="px-5 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm"
+      >
+        Cancel
+      </button>
+      <button 
+        type="button" 
+        (click)="onSubmit()"
+        class="px-5 py-2.5 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        [disabled]="transactionForm.invalid"
+      >
+        {{ transaction ? 'Save Changes' : 'Create Transaction' }}
+      </button>
+    </div>
+  </div>
+</div>

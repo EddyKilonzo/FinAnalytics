@@ -1,0 +1,41 @@
+<div class="lessons-container texture-layer">
+  <div class="header-section">
+    <div class="header-content">
+      <h1 class="page-title">Financial Academy</h1>
+      <p class="page-subtitle">Master your money with our curated lessons</p>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading()" class="loading-state" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+    <p>Loading lessons...</p>
+  </div>
+
+  <div *ngIf="!isLoading()" class="lessons-grid">
+    <div class="lesson-card" *ngFor="let lesson of lessons(); let i = index" [style.animation-delay]="i * 0.1 + 's'" [routerLink]="['/lessons', lesson.id]">
+      <div class="card-glow"></div>
+      <div class="card-inner">
+        <div class="card-header">
+          <div class="category-badge">
+            <ng-icon [name]="getIconForCategory(lesson.category)" size="16"></ng-icon>
+            <span>{{ lesson.category }}</span>
+          </div>
+          <div class="duration">
+            <ng-icon name="lucideClock" size="14"></ng-icon>
+            <span>{{ lesson.readTimeMinutes }} min</span>
+          </div>
+        </div>
+        
+        <h2 class="lesson-title">{{ lesson.title }}</h2>
+        <p class="lesson-description">{{ lesson.description }}</p>
+        
+        <div class="card-footer">
+          <span class="date"></span>
+          <div class="read-more">
+            <span>Read Lesson</span>
+            <ng-icon name="lucideArrowRight" size="18" class="arrow-icon"></ng-icon>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

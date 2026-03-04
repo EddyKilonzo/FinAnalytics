@@ -1,0 +1,44 @@
+<div class="max-w-2xl mx-auto px-4 py-10 fade-in">
+  <button routerLink="/goals" class="btn-back-unified mb-8 inline-flex items-center gap-2 bg-white border-2 border-white text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 py-2.5 px-4 rounded-xl font-medium text-sm shadow-sm transition-colors">
+    <ng-icon name="lucideArrowLeft"></ng-icon>
+    Back to Goals
+  </button>
+
+  <div class="create-card p-8 rounded-3xl bg-white border-2 border-emerald-500">
+    <h1 class="text-2xl font-bold mb-1 text-emerald-700">Create New Goal</h1>
+    <p class="text-emerald-600/90 text-sm mb-6">Set a target and start saving for your future.</p>
+
+    <form [formGroup]="goalForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
+      
+      <div class="form-group">
+        <label class="block text-sm font-medium mb-1.5 text-emerald-700">Goal Name</label>
+        <input type="text" formControlName="name" class="form-input w-full p-3 rounded-xl border-2 border-slate-200 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 outline-none transition-all" placeholder="e.g., Dream Vacation">
+      </div>
+
+      <div class="form-group">
+        <label class="block text-sm font-medium mb-1.5 text-emerald-700">Target Amount (KES)</label>
+        <input type="number" formControlName="targetAmount" class="form-input w-full p-3 rounded-xl border-2 border-slate-200 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 outline-none transition-all" placeholder="5000">
+      </div>
+
+      <div class="form-group">
+        <label class="block text-sm font-medium mb-1.5 text-emerald-700">Target Date</label>
+        <input type="date" formControlName="targetDate" class="form-input w-full p-3 rounded-xl border-2 border-slate-200 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 outline-none transition-all">
+      </div>
+
+      <div class="flex justify-end gap-3 mt-2 pt-5 border-t border-slate-200">
+        <button type="button" routerLink="/goals" class="px-5 py-2.5 rounded-xl font-medium bg-white border-2 border-slate-200 text-slate-600 hover:border-emerald-300 hover:text-emerald-600 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" [disabled]="goalForm.invalid || saving" class="btn-submit flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 font-medium disabled:opacity-50 transition-colors">
+          @if (saving) {
+            <span class="animate-spin inline-block w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full"></span>
+            Saving...
+          } @else {
+            <ng-icon name="lucideCheck"></ng-icon>
+            Save Goal
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

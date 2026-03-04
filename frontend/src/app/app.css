@@ -1,1 +1,5 @@
 /* App root – minimal; landing uses its own styles */
+app-root {
+  display: block;
+  position: relative;
+}

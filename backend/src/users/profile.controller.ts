@@ -1,16 +1,20 @@
 import {
   BadRequestException,
+  Body,
   Controller,
+  HttpCode,
   HttpException,
   HttpStatus,
   InternalServerErrorException,
   Logger,
+  Patch,
   Post,
   Request,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
+import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { memoryStorage } from "multer";
 import {
@@ -28,6 +32,7 @@ import { MailerService } from "../common/mailer/mailer.service";
 import { UsersService } from "./users.service";
 import { ErrorResponseDto } from "../auth/dto/auth-response.dto";
 import { ProfilePictureResponseDto } from "./dto/profile-picture-response.dto";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 
 interface AuthRequest extends Express.Request {
   user: AuthUser;
@@ -133,6 +138,70 @@ export class ProfileController {
       );
       throw new InternalServerErrorException(
         "Could not update profile picture. Please try again.",
+      );
+    }
+  }
+
+  @Patch("me")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Update own profile (name)" })
+  @ApiResponse({ status: 200, description: "Profile updated." })
+  @ApiResponse({ status: 401, description: "Unauthorized.", type: ErrorResponseDto })
+  async updateProfile(
+    @Request() req: AuthRequest,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    try {
+      const data = await this.usersService.updateUser(req.user.id, req.user.id, dto);
+      return { success: true, message: "Profile updated successfully", data };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error(
+        `Unexpected error updating profile for user ${req.user.id}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw new InternalServerErrorException("Could not update profile. Please try again.");
+    }
+  }
+
+  @Patch("me/change-password")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Change password",
+    description:
+      "Verifies the current password then replaces it with the new one.",
+  })
+  @ApiBody({ type: ChangePasswordDto })
+  @ApiResponse({ status: 200, description: "Password changed successfully." })
+  @ApiResponse({
+    status: 401,
+    description: "Current password is incorrect.",
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Validation failed or new password same as current.",
+    type: ErrorResponseDto,
+  })
+  async changePassword(
+    @Request() req: AuthRequest,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    try {
+      await this.usersService.changePassword(
+        req.user.id,
+        dto.currentPassword,
+        dto.newPassword,
+      );
+      return { success: true, message: "Password changed successfully." };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error(
+        `Unexpected error changing password for user ${req.user.id}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw new InternalServerErrorException(
+        "Could not change password. Please try again.",
       );
     }
   }

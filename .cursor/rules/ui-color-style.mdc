@@ -1,0 +1,68 @@
+---
+description: UI color style conventions for cards, category items, and buttons
+globs: frontend/**/*.ts,frontend/**/*.html,frontend/**/*.css
+alwaysApply: false
+---
+
+# UI Color Style: White Background + Colored Borders
+
+Cards, category tiles, and buttons should use **white backgrounds with colored borders** — not solid colored backgrounds.
+
+## Cards & List Items
+
+```html
+<!-- ✅ GOOD: white bg, colored border -->
+<div
+  class="bg-white border-2 rounded-2xl p-5 hover:shadow-md transition-all"
+  [style.border-color]="item.color || '#22c55e'"
+>
+  <div
+    class="w-11 h-11 rounded-xl bg-white border-2 flex items-center justify-center"
+    [style.border-color]="item.color || '#22c55e'"
+    [style.color]="item.color || '#22c55e'"
+  >
+    <ng-icon ...></ng-icon>
+  </div>
+  <p class="text-gray-800 font-semibold">Label</p>
+  <p class="text-gray-500 text-xs">Description</p>
+</div>
+
+<!-- ❌ BAD: solid colored background -->
+<div [style.background]="item.color">...</div>
+```
+
+## Buttons
+
+```html
+<!-- ✅ GOOD: white bg, colored border + text -->
+<button class="bg-white border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 px-4 py-2 rounded-lg font-medium transition-colors">
+  Action
+</button>
+
+<!-- ❌ BAD: solid colored button -->
+<button class="bg-emerald-600 text-white">Action</button>
+```
+
+## Icons
+
+Icons should **never** have a colored background. The icon itself should carry the color.
+
+```html
+<!-- ✅ GOOD: white container, colored icon -->
+<div
+  class="w-11 h-11 rounded-xl bg-white border-2 flex items-center justify-center"
+  [style.border-color]="item.color || '#22c55e'"
+  [style.color]="item.color || '#22c55e'"
+>
+  <ng-icon name="lucideTag" size="20"></ng-icon>
+</div>
+
+<!-- ❌ BAD: green/colored background on icon container -->
+<div class="bg-green-500 ...">
+  <ng-icon class="text-white" ...></ng-icon>
+</div>
+```
+
+- Use `text-gray-800` / `text-gray-500` for text on white backgrounds
+- Use `hover:shadow-md` on cards for subtle depth on hover
+- Apply the category/brand color only to borders and the icon element itself, never as a background fill

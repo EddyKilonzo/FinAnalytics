@@ -5,7 +5,9 @@ import {
   BadRequestException,
   ForbiddenException,
   NotFoundException,
+  UnauthorizedException,
 } from "@nestjs/common";
+import * as bcrypt from "bcryptjs";
 import { PrismaService } from "../common/prisma.service";
 import { handlePrismaError } from "../common/helpers/prisma-error.handler";
 import type { UpdateUserDto } from "./dto/update-user.dto";
@@ -521,6 +523,37 @@ export class UsersService {
     } catch (error) {
       if (error instanceof HttpException) throw error;
       handlePrismaError(error, this.logger, "UsersService.completeOnboarding");
+    }
+  }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    try {
+      const user = await this.db.user.findUnique({ where: { id: userId } });
+      if (!user) throw new NotFoundException("User not found.");
+
+      const valid = await bcrypt.compare(currentPassword, user.password);
+      if (!valid) {
+        throw new UnauthorizedException("Current password is incorrect.");
+      }
+
+      if (currentPassword === newPassword) {
+        throw new BadRequestException(
+          "New password must be different from your current password.",
+        );
+      }
+
+      const hashed = await bcrypt.hash(newPassword, 12);
+      await this.db.user.update({
+        where: { id: userId },
+        data: { password: hashed },
+      });
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      handlePrismaError(error, this.logger, "UsersService.changePassword");
     }
   }
 

@@ -4,11 +4,12 @@ import { filter } from 'rxjs';
 import type { Subscription } from 'rxjs';
 import AOS from 'aos';
 import { BeamsBackgroundComponent } from './shared/beams/beams-background.component';
+import { ToastComponent } from './shared/toast/toast.component';
 import { ThemeService } from './core/theme.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, BeamsBackgroundComponent],
+  imports: [RouterOutlet, BeamsBackgroundComponent, ToastComponent],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

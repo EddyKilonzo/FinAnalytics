@@ -1,0 +1,67 @@
+<header class="shared-nav" [class.scrolled]="isScrolled">
+  <div class="shared-nav-inner">
+    <a routerLink="/" class="shared-nav-logo" aria-label="FinAnalytics home">
+      <span class="shared-nav-logo-mark">
+        <ng-icon name="lucideTrendingUp" size="20"></ng-icon>
+      </span>
+      FinAnalytics
+    </a>
+
+    <nav class="shared-nav-links" aria-label="Main navigation">
+      <a routerLink="/" fragment="features" class="shared-nav-link">Features</a>
+      <a routerLink="/" fragment="how-it-works" class="shared-nav-link">How it works</a>
+      <a routerLink="/" fragment="faq" class="shared-nav-link">FAQ</a>
+      @if (auth.currentUser$ | async; as user) {
+        <a routerLink="/dashboard" class="shared-nav-link shared-nav-link-user">
+          <ng-icon name="lucideLayoutDashboard" size="16"></ng-icon>
+          Dashboard
+        </a>
+        <a routerLink="/profile" class="shared-nav-link shared-nav-link-user">
+          <ng-icon name="lucideUser" size="16"></ng-icon>
+          Profile
+        </a>
+        @if (auth.isAdmin()) {
+          <a routerLink="/admin" class="shared-nav-link shared-nav-link-user">
+            <ng-icon name="lucideShield" size="16"></ng-icon>
+            Admin
+          </a>
+        }
+      }
+    </nav>
+
+    <div class="shared-nav-actions">
+      @if (!(auth.currentUser$ | async)) {
+        <span class="shared-nav-proof" aria-label="5 stars">
+          <ng-icon name="lucideStar" size="13"></ng-icon>
+          <ng-icon name="lucideStar" size="13"></ng-icon>
+          <ng-icon name="lucideStar" size="13"></ng-icon>
+          <ng-icon name="lucideStar" size="13"></ng-icon>
+          <ng-icon name="lucideStar" size="13"></ng-icon>
+        </span>
+        <span class="shared-nav-reviews">4,200+ reviews</span>
+      }
+
+      <button
+        type="button"
+        class="shared-nav-theme"
+        (click)="theme.toggle()"
+        [attr.aria-label]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+      >
+        <ng-icon name="lucideSun" size="16" class="icon-sun"></ng-icon>
+        <ng-icon name="lucideMoon" size="16" class="icon-moon"></ng-icon>
+      </button>
+
+      @if (auth.currentUser$ | async) {
+        <button type="button" class="shared-nav-logout" (click)="logout()" aria-label="Log out">
+          <ng-icon name="lucideLogOut" size="16"></ng-icon>
+          Log out
+        </button>
+      } @else {
+        <a routerLink="/auth/login" class="shared-nav-cta">
+          Sign in
+          <ng-icon name="lucideArrowRight" size="15"></ng-icon>
+        </a>
+      }
+    </div>
+  </div>
+</header>

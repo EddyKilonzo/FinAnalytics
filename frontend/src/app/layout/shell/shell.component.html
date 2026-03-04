@@ -1,1 +1,9 @@
-<router-outlet />
+<!-- Shared navbar and footer on every page (home, login, register, etc.) -->
+<!-- Shared layout: navbar and footer on every page (home, login, register, etc.) -->
+<app-navbar />
+<main class="shell-main">
+  <router-outlet />
+</main>
+<div class="shell-footer">
+  <app-footer />
+</div>

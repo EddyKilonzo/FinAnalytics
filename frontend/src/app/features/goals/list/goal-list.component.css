@@ -1,0 +1,74 @@
+.text-primary { color: white; }
+.text-muted { color: rgba(255,255,255,0.55); }
+.bg-card { background: var(--card-bg); }
+.bg-surface-alt { background: var(--surface-alt); }
+.text-accent { color: var(--accent); }
+.bg-accent { background: var(--accent); }
+
+.btn-create {
+  background: var(--accent);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+.btn-create:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  filter: brightness(1.05);
+}
+
+.goal-card {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.goal-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.12);
+}
+.target-label,
+.target-amount,
+.goal-name,
+.saved-amount,
+.saved-label { color: var(--accent); }
+.goal-name { color: var(--text-primary, #0f172a); }
+.progress-track { background: var(--accent-dim); }
+.progress-fill {
+  background: var(--accent);
+}
+.empty-state-btn {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.empty-state-btn:hover { background: var(--accent-dim); }
+.loading-text { color: var(--accent); }
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+}
+
+.header-section {
+  animation: fadeDown 0.6s ease-out forwards;
+}
+
+.goals-grid .goal-card {
+  opacity: 0;
+  animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.goals-grid .goal-card:nth-child(1) { animation-delay: 0.1s; }
+.goals-grid .goal-card:nth-child(2) { animation-delay: 0.2s; }
+.goals-grid .goal-card:nth-child(3) { animation-delay: 0.3s; }
+.goals-grid .goal-card:nth-child(4) { animation-delay: 0.4s; }
+.goals-grid .goal-card:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.9) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

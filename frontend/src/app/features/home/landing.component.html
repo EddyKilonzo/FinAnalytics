@@ -1,47 +1,4 @@
 <div class="landing">
-
-  <!-- ═══════ HEADER ═══════ -->
-  <header class="lp-header" [class.scrolled]="isScrolled">
-    <div class="lp-header-inner">
-      <a routerLink="/" class="lp-logo" aria-label="FinAnalytix home">
-        <span class="lp-logo-mark">
-          <ng-icon name="lucideTrendingUp" size="20"></ng-icon>
-        </span>
-        FinAnalytix
-      </a>
-
-      <nav class="lp-nav" aria-label="Main navigation">
-        <a href="#features" class="lp-nav-link">Features</a>
-        <a href="#how-it-works" class="lp-nav-link">How it works</a>
-        <a href="#faq" class="lp-nav-link">FAQ</a>
-      </nav>
-
-      <div class="lp-header-actions">
-        <div class="lp-social-proof">
-          <span class="lp-stars" aria-label="5 stars">
-            <ng-icon name="lucideStar" size="13"></ng-icon>
-            <ng-icon name="lucideStar" size="13"></ng-icon>
-            <ng-icon name="lucideStar" size="13"></ng-icon>
-            <ng-icon name="lucideStar" size="13"></ng-icon>
-            <ng-icon name="lucideStar" size="13"></ng-icon>
-          </span>
-          <span class="lp-reviews">4,200+ reviews</span>
-        </div>
-
-        <button type="button" class="lp-theme-btn" (click)="theme.toggle()"
-          [attr.aria-label]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'">
-          <ng-icon name="lucideSun" size="16" class="icon-sun"></ng-icon>
-          <ng-icon name="lucideMoon" size="16" class="icon-moon"></ng-icon>
-        </button>
-
-        <a routerLink="/login" class="lp-btn-signin">
-          Sign in
-          <ng-icon name="lucideArrowRight" size="15"></ng-icon>
-        </a>
-      </div>
-    </div>
-  </header>
-
   <!-- ═══════ HERO ═══════ -->
   <section class="lp-hero-section">
     <div class="lp-hero-bg">
@@ -890,11 +847,11 @@
         No ads. No selling your data. Just your finances, simplified.
       </p>
       <div class="lp-cta-actions">
-        <a routerLink="/register" class="lp-btn-cta-primary" id="cta-register-btn">
+        <a routerLink="/auth/register" class="lp-btn-cta-primary" id="cta-register-btn">
           Create free account
           <ng-icon name="lucideArrowRight" size="18"></ng-icon>
         </a>
-        <a routerLink="/login" class="lp-btn-cta-ghost" id="cta-signin-btn">
+        <a routerLink="/auth/login" class="lp-btn-cta-ghost" id="cta-signin-btn">
           Sign in
         </a>
       </div>
@@ -933,61 +890,4 @@
       </div>
     </div>
   </section>
-
-  <!-- ═══════ FOOTER ═══════ -->
-  <footer class="lp-footer">
-    <div class="lp-footer-inner">
-      <div class="lp-footer-brand">
-        <a routerLink="/" class="lp-footer-logo">
-          <span class="lp-logo-mark">
-            <ng-icon name="lucideTrendingUp" size="18"></ng-icon>
-          </span>
-          FinAnalytix
-        </a>
-        <p>Smart money management for young Kenyans. No judgment, no spam, no ads.</p>
-        <div class="lp-footer-social">
-          <a href="#" class="lp-social-link" aria-label="Twitter / X">
-            <ng-icon name="lucideTwitter" size="16"></ng-icon>
-          </a>
-          <a href="#" class="lp-social-link" aria-label="LinkedIn">
-            <ng-icon name="lucideLinkedin" size="16"></ng-icon>
-          </a>
-          <a href="#" class="lp-social-link" aria-label="Instagram">
-            <ng-icon name="lucideInstagram" size="16"></ng-icon>
-          </a>
-          <a href="#" class="lp-social-link" aria-label="GitHub">
-            <ng-icon name="lucideGithub" size="16"></ng-icon>
-          </a>
-        </div>
-      </div>
-
-      <div class="lp-footer-col">
-        <h4>Product</h4>
-        <a routerLink="/login">Dashboard</a>
-        <a href="#features">Features</a>
-        <a href="#">Pricing</a>
-        <a href="#">Changelog</a>
-      </div>
-
-      <div class="lp-footer-col">
-        <h4>Company</h4>
-        <a href="#">About</a>
-        <a href="#">Blog</a>
-        <a href="#">Careers</a>
-        <a href="#">Press</a>
-      </div>
-
-      <div class="lp-footer-col">
-        <h4>Legal</h4>
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms of Service</a>
-        <a href="#">Cookie Policy</a>
-      </div>
-    </div>
-
-    <div class="lp-footer-bottom">
-      <span>&copy; {{ currentYear }} FinAnalytix. All rights reserved.</span>
-      <span>Made with <ng-icon name="lucideHeart" size="13" class="lp-heart"></ng-icon> in Nairobi</span>
-    </div>
-  </footer>
 </div>

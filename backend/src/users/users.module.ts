@@ -7,7 +7,7 @@ import { MailerModule } from "../common/mailer/mailer.module";
 
 @Module({
   imports: [CloudinaryModule, MailerModule],
-  controllers: [UsersController, ProfileController],
+  controllers: [ProfileController, UsersController],
   providers: [UsersService],
   exports: [UsersService],
 })

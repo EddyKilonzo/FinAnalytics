@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Optional: extend Tailwind with FinAnalytics green palette (use as bg-[--green-400] etc.) */
+/* FinAnalytics green palette for Tailwind utilities */
 @theme {
   --color-green-900: #051F20;
   --color-green-800: #0B2B26;
@@ -10,7 +10,7 @@
   --color-green-100: #DAF1DE;
 }
 
-/* Global styles – FinAnalytics green palette */
+/* ── Dark mode (default) ──────────────────────────────────────────────────── */
 :root,
 html.dark {
   --green-900: #051F20;
@@ -19,17 +19,29 @@ html.dark {
   --green-600: #235347;
   --green-400: #8EB69B;
   --green-100: #DAF1DE;
-  /* Semantic theme tokens (dark mode) */
+
+  /* Semantic tokens */
   --page-bg: #0B2B26;
   --surface: rgba(5, 31, 32, 0.75);
   --surface-alt: rgba(5, 31, 32, 0.4);
+  --surface-raised: rgba(22, 56, 50, 0.6);
   --text-primary: #DAF1DE;
   --text-secondary: #8EB69B;
+  --text-muted: rgba(142, 182, 155, 0.5);
   --card-bg: rgba(11, 43, 38, 0.7);
-  --border-subtle: rgba(218, 241, 222, 0.15);
+  --card-bg-solid: #0d2e29;
+  --border-subtle: rgba(218, 241, 222, 0.1);
+  --border-medium: rgba(142, 182, 155, 0.2);
+  --accent: #22c55e;
+  --accent-dim: rgba(34, 197, 94, 0.15);
+  --accent-glow: rgba(34, 197, 94, 0.25);
+
+  /* Texture overlay opacity */
+  --texture-opacity: 0.035;
+  --texture-blend: overlay;
 }
 
-/* Light mode */
+/* ── Light mode ───────────────────────────────────────────────────────────── */
 html.light {
   --green-900: #051F20;
   --green-800: #0B2B26;
@@ -37,15 +49,27 @@ html.light {
   --green-600: #235347;
   --green-400: #2d6b5c;
   --green-100: #0d332e;
-  --page-bg: #e8f0ec;
-  --surface: rgba(255, 255, 255, 0.9);
-  --surface-alt: rgba(255, 255, 255, 0.7);
+
+  --page-bg: #eaf2ed;
+  --surface: rgba(255, 255, 255, 0.92);
+  --surface-alt: rgba(240, 248, 243, 0.85);
+  --surface-raised: rgba(255, 255, 255, 0.98);
   --text-primary: #051F20;
   --text-secondary: #235347;
+  --text-muted: rgba(35, 83, 71, 0.45);
   --card-bg: rgba(255, 255, 255, 0.95);
-  --border-subtle: rgba(5, 31, 32, 0.12);
+  --card-bg-solid: #ffffff;
+  --border-subtle: rgba(5, 31, 32, 0.08);
+  --border-medium: rgba(5, 31, 32, 0.14);
+  --accent: #16a34a;
+  --accent-dim: rgba(22, 163, 74, 0.1);
+  --accent-glow: rgba(22, 163, 74, 0.2);
+
+  --texture-opacity: 0.025;
+  --texture-blend: multiply;
 }
 
+/* ── Base ─────────────────────────────────────────────────────────────────── */
 * {
   box-sizing: border-box;
 }
@@ -61,16 +85,62 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: var(--page-bg);
   color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
   transition: background-color 0.25s ease, color 0.2s ease;
 }
 
-/* Use on page containers so beams show through; cards/sections can use semi-transparent backgrounds */
-.beams-page {
-  background: transparent;
-  min-height: 100vh;
-}
+  /* ── Texture noise overlay ────────────────────────────────────────────────── */
+  /* Applied via ::after on any element with .texture-layer */
+  .texture-layer {
+    position: relative;
+    isolation: isolate;
+  }
+  
+  .texture-layer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: var(--texture-opacity);
+    mix-blend-mode: var(--texture-blend);
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    background-repeat: repeat;
+  }
+  
+  /* Children of texture-layer need z-index to sit above the ::after */
+  .texture-layer > * {
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* ── Shared card style ────────────────────────────────────────────────────── */
+  .fin-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  
+  html.light .fin-card {
+    background: var(--card-bg);
+    box-shadow: 0 1px 3px rgba(5, 31, 32, 0.06), 0 4px 16px rgba(5, 31, 32, 0.04);
+  }
 
-/* Light mode overrides for shared/landing UI */
+  /* Base Card Style with MANDATORY Shadow */
+  .card-shadow {
+    border-radius: 1.5rem;
+    /* Mandatory Box-shadow for cards */
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, 
+                rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, 
+                rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+/* ── Light mode overrides for shared/landing UI ───────────────────────────── */
 html.light .header {
   background: var(--surface);
 }

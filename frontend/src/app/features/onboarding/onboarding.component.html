@@ -1,0 +1,130 @@
+<div class="onboarding-page">
+  <!-- Background decoration -->
+  <div class="onboarding-bg-orb onboarding-bg-orb-1"></div>
+  <div class="onboarding-bg-orb onboarding-bg-orb-2"></div>
+
+  <div class="onboarding-card">
+    <!-- Header -->
+    <div class="onboarding-header">
+      <div class="onboarding-logo">
+        <span class="onboarding-logo-mark">
+          <ng-icon name="lucideTrendingUp" size="20"></ng-icon>
+        </span>
+        <span class="onboarding-logo-text">FinAnalytix</span>
+      </div>
+
+      <div class="onboarding-progress">
+        <div class="progress-track">
+          <div class="progress-fill" [style.width]="progressPercent + '%'"></div>
+        </div>
+        <span class="progress-label">Step {{ step() }} of 2</span>
+      </div>
+    </div>
+
+    <!-- Step 1: User Type -->
+    @if (step() === 1) {
+      <div class="onboarding-step" data-step="1">
+        <div class="step-intro">
+          <h1 class="step-title">What best describes you?</h1>
+          <p class="step-subtitle">
+            We'll personalise your experience and financial insights based on your life stage.
+          </p>
+        </div>
+
+        <div class="user-type-grid">
+          @for (option of userTypeOptions; track option.value) {
+            <button
+              type="button"
+              class="user-type-card"
+              [class.selected]="selectedUserType() === option.value"
+              (click)="selectUserType(option.value)"
+            >
+              <div class="user-type-icon">
+                <ng-icon [name]="option.icon" size="24"></ng-icon>
+              </div>
+              <div class="user-type-info">
+                <span class="user-type-label">{{ option.label }}</span>
+                <span class="user-type-desc">{{ option.description }}</span>
+              </div>
+              <div class="user-type-check">
+                @if (selectedUserType() === option.value) {
+                  <ng-icon name="lucideCheck" size="14"></ng-icon>
+                }
+              </div>
+            </button>
+          }
+        </div>
+
+        <div class="step-actions">
+          <button
+            type="button"
+            class="btn-next"
+            [disabled]="!selectedUserType()"
+            (click)="goToStep2()"
+          >
+            Continue
+            <ng-icon name="lucideArrowRight" size="16"></ng-icon>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Step 2: Income Sources -->
+    @if (step() === 2) {
+      <div class="onboarding-step" data-step="2">
+        <div class="step-intro">
+          <h1 class="step-title">Where does your money come from?</h1>
+          <p class="step-subtitle">
+            Select all that apply. This helps us give you relevant budgeting and savings tips.
+          </p>
+        </div>
+
+        <div class="income-grid">
+          @for (source of incomeSourceOptions; track source.value) {
+            <button
+              type="button"
+              class="income-card"
+              [class.selected]="isIncomeSelected(source.value)"
+              (click)="toggleIncomeSource(source.value)"
+            >
+              <span class="income-icon">
+                <ng-icon [name]="source.icon" size="20"></ng-icon>
+              </span>
+              <span class="income-label">{{ source.label }}</span>
+              @if (isIncomeSelected(source.value)) {
+                <span class="income-check">
+                  <ng-icon name="lucideCheck" size="11"></ng-icon>
+                </span>
+              }
+            </button>
+          }
+        </div>
+
+        @if (selectedIncomeSources().length === 0) {
+          <p class="income-hint">Select at least one income source to continue.</p>
+        }
+
+        <div class="step-actions step-actions-two">
+          <button type="button" class="btn-back" (click)="goBack()">
+            <ng-icon name="lucideArrowLeft" size="16"></ng-icon>
+            Back
+          </button>
+          <button
+            type="button"
+            class="btn-next"
+            [disabled]="!canSubmit"
+            (click)="submit()"
+          >
+            @if (loading()) {
+              <ng-icon name="lucideLoader" size="16" class="spin"></ng-icon>
+              Setting up...
+            } @else {
+              Get started
+              <ng-icon name="lucideArrowRight" size="16"></ng-icon>
+            }
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

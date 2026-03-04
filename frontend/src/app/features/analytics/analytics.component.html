@@ -1,0 +1,128 @@
+<div class="analytics-container relative min-h-[400px]">
+  <!-- Loading Overlay -->
+  <div *ngIf="isLoading" class="absolute inset-0 z-50 flex items-center justify-center bg-slate-50/80 backdrop-blur-sm rounded-2xl">
+    <div class="flex flex-col items-center">
+      <div class="w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
+      <p class="mt-4 text-emerald-800 font-medium animate-pulse">Loading analytics...</p>
+    </div>
+  </div>
+
+  <header class="header-section animate-fade-in-up">
+    <div>
+      <h1 class="page-title">Analytics</h1>
+      <p class="page-subtitle">
+        Track your performance, monitor trends, and optimize your business.
+      </p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary">
+        <ng-icon name="lucideCalendar"></ng-icon>
+        Last 30 Days
+      </button>
+      <button class="btn btn-primary">
+        <ng-icon name="lucideDownload"></ng-icon>
+        Export Report
+      </button>
+    </div>
+  </header>
+
+  <!-- Key Metrics -->
+  <div class="metrics-grid">
+    <div
+      *ngFor="let metric of metrics; let i = index"
+      class="fin-card card-shadow metric-card animate-fade-in-up"
+      [ngClass]="'delay-' + (i + 1) * 100"
+    >
+      <div class="metric-header">
+        <span class="metric-label">{{ metric.label }}</span>
+        <div class="metric-icon">
+          <ng-icon *ngIf="i === 0" name="lucideActivity" size="20"></ng-icon>
+          <ng-icon *ngIf="i === 1" name="lucideBarChart3" size="20"></ng-icon>
+          <ng-icon *ngIf="i === 2" name="lucidePieChart" size="20"></ng-icon>
+          <ng-icon *ngIf="i === 3" name="lucideTrendingDown" size="20"></ng-icon>
+        </div>
+      </div>
+      <div class="metric-value">{{ metric.value }}</div>
+      <div class="metric-footer">
+        <span [class]="metric.isPositive ? 'trend-positive' : 'trend-negative'">
+          <ng-icon
+            [name]="metric.isPositive ? 'lucideTrendingUp' : 'lucideTrendingDown'"
+            size="16"
+          ></ng-icon>
+          {{ metric.trend }}
+        </span>
+        <span class="metric-vs">vs last month</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Primary Charts Layout -->
+  <div class="charts-layout">
+    <!-- Main Line Chart -->
+    <div class="fin-card card-shadow chart-card animate-fade-in-up delay-300">
+      <div class="chart-header">
+        <h2 class="chart-title">Revenue & Expenses Overview</h2>
+      </div>
+      <div class="chart-container">
+        <canvas
+          baseChart
+          [data]="lineChartData"
+          [options]="lineChartOptions"
+          [type]="lineChartType"
+        >
+        </canvas>
+      </div>
+    </div>
+
+    <!-- Doughnut Chart -->
+    <div class="fin-card card-shadow chart-card animate-fade-in-up delay-400">
+      <div class="chart-header">
+        <h2 class="chart-title">Expense Breakdown</h2>
+      </div>
+      <div class="chart-container">
+        <canvas
+          baseChart
+          [data]="doughnutChartData"
+          [options]="doughnutChartOptions"
+          [type]="doughnutChartType"
+        >
+        </canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Secondary Grid -->
+  <div class="bottom-grid">
+    <!-- Monthly Comparison Bar Chart -->
+    <div class="fin-card card-shadow chart-card animate-fade-in-up delay-400">
+      <div class="chart-header">
+        <h2 class="chart-title">Monthly Performance Target</h2>
+      </div>
+      <div class="chart-container" style="height: 280px">
+        <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="barChartType">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- AI Insights -->
+    <div class="fin-card card-shadow chart-card animate-fade-in-up delay-400">
+      <div class="chart-header">
+        <h2 class="chart-title">Key Insights</h2>
+      </div>
+      <div class="insights-list">
+        <div *ngFor="let insight of insights" class="insight-item">
+          <div class="insight-icon-wrapper" [ngClass]="'icon-' + insight.type">
+            <ng-icon [name]="insight.icon" size="20"></ng-icon>
+          </div>
+          <div class="insight-content">
+            <h3 class="insight-title">{{ insight.title }}</h3>
+            <p class="insight-desc">{{ insight.description }}</p>
+          </div>
+          <button class="insight-action">
+            <ng-icon name="lucideArrowRight" size="20"></ng-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

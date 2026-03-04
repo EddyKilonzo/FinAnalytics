@@ -1,0 +1,66 @@
+<div class="goals-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <div class="header-section flex flex-col sm:flex-row justify-between items-center mb-10">
+    <div>
+      <h1 class="text-4xl font-extrabold tracking-tight text-white">Your Goals</h1>
+      <p class="mt-2 text-lg" style="color: rgba(255,255,255,0.6)">Dream big, save smart.</p>
+    </div>
+    <button routerLink="/goals/create" class="btn-create mt-4 sm:mt-0 flex items-center gap-2 px-6 py-3 rounded-full text-white font-medium transition-all">
+      <ng-icon name="lucidePlus"></ng-icon>
+      Create Goal
+    </button>
+  </div>
+
+  <div class="goals-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="col-span-full py-12 flex flex-col items-center justify-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mb-4"></div>
+      <p class="text-lg loading-text">Loading your goals...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && goals.length === 0" class="col-span-full py-8 px-6 text-center bg-white rounded-2xl border-2 border-dashed hover:shadow-md transition-shadow max-w-md mx-auto">
+      <p class="text-slate-600 text-base mb-3">You haven't set any goals yet.</p>
+      <a routerLink="/goals/create" class="inline-flex items-center gap-1.5 bg-white border-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors empty-state-btn">
+        Create your first goal &rarr;
+      </a>
+    </div>
+
+    <!-- Goals List -->
+    <ng-container *ngIf="!loading">
+      <div *ngFor="let goal of goals" [routerLink]="['/goals', goal.id]" class="goal-card cursor-pointer p-6 rounded-2xl flex flex-col h-full bg-white border-2 border-slate-200 relative overflow-hidden">
+        <div class="flex justify-between items-start mb-6">
+          <div class="icon-wrapper p-3 rounded-xl bg-white border-2" style="border-color: var(--accent); color: var(--accent)">
+            <ng-icon name="lucideTarget" size="24"></ng-icon>
+          </div>
+          <div class="text-right">
+            <span class="text-xs font-semibold uppercase tracking-wider target-label">Target</span>
+            <div class="text-xl font-bold target-amount">{{ goal.target | currency:'KES':'symbol':'1.0-0' }}</div>
+          </div>
+        </div>
+
+        <h3 class="text-2xl font-bold mb-2 goal-name">{{ goal.name }}</h3>
+        
+        <div class="flex items-center gap-2 text-sm mb-6 goal-meta" style="color: var(--accent)">
+          <ng-icon name="lucideCalendar" size="16"></ng-icon>
+          <span>By {{ goal.deadline | date:'mediumDate' }}</span>
+        </div>
+
+        <div class="mt-auto">
+          <div class="flex justify-between items-end mb-2">
+            <div class="text-sm font-medium">
+              <span class="text-lg font-bold saved-amount">{{ goal.current | currency:'KES':'symbol':'1.0-0' }}</span>
+              <span class="saved-label"> saved</span>
+            </div>
+            <div class="text-sm font-bold pct-amount" style="color: var(--accent)">{{ getPercentage(goal.current, goal.target) }}%</div>
+          </div>
+          <div class="progress-track w-full h-3 rounded-full overflow-hidden relative">
+            <div class="progress-fill h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden" 
+                 [style.width.%]="getPercentage(goal.current, goal.target)">
+                 <div class="absolute inset-0 bg-white/20 w-full animate-shimmer"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

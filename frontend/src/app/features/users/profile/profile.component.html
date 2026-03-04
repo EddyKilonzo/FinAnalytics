@@ -1,43 +1,466 @@
-<section class="profile">
-  <h1>Profile</h1>
+<div class="profile-shell">
 
-  <div class="profile-card">
-    <div class="avatar-section">
-      @if (user(); as u) {
-        @if (u.avatarUrl) {
-          <img [src]="u.avatarUrl" alt="Profile" class="avatar" />
+  <!-- Left sidebar nav -->
+  <aside class="profile-nav">
+
+    <!-- User identity block -->
+    <div class="profile-nav-identity">
+      <div class="pnav-avatar-wrap">
+        @if (user(); as u) {
+          @if (u.avatarUrl) {
+            <img [src]="u.avatarUrl" alt="Profile picture" class="pnav-avatar-img" />
+          } @else {
+            <div class="pnav-avatar-initials">{{ initials }}</div>
+          }
         } @else {
-          <div class="avatar-placeholder">{{ initials }}</div>
+          <div class="pnav-avatar-initials">—</div>
         }
-      } @else {
-        <div class="avatar-placeholder">—</div>
+      </div>
+      <div class="pnav-identity-text">
+        <span class="pnav-name">{{ user()?.name ?? 'Your Name' }}</span>
+        <span class="pnav-email">{{ user()?.email ?? '' }}</span>
+      </div>
+    </div>
+
+    <!-- Account section -->
+    <div class="profile-nav-group">
+      <span class="profile-nav-group-label">Account</span>
+      @for (item of sections[0].items; track item.id) {
+        <button
+          type="button"
+          class="profile-nav-item"
+          [class.active]="activeSection() === item.id"
+          (click)="setSection(item.id)"
+        >
+          <span class="pnav-item-icon">
+            <ng-icon [name]="item.icon" size="16"></ng-icon>
+          </span>
+          <span class="pnav-item-label">{{ item.label }}</span>
+          @if (activeSection() === item.id) {
+            <span class="pnav-item-arrow">
+              <ng-icon name="lucideChevronRight" size="14"></ng-icon>
+            </span>
+          }
+        </button>
       }
     </div>
 
-    <div class="profile-details">
-      @if (user(); as u) {
-        <p class="name">{{ u.name ?? 'No name set' }}</p>
-        <p class="email">{{ u.email }}</p>
-      } @else {
-        <p class="loading">Loading…</p>
-      }
+    <!-- General section -->
+    <div class="profile-nav-group profile-nav-group-general">
+      <span class="profile-nav-group-label">General</span>
+      <a href="https://help.finanalytics.app" target="_blank" class="profile-nav-item">
+        <span class="pnav-item-icon">
+          <ng-icon name="lucideHelpCircle" size="16"></ng-icon>
+        </span>
+        <span class="pnav-item-label">Help &amp; Support</span>
+      </a>
+      <button type="button" class="profile-nav-item profile-nav-signout" (click)="logout()">
+        <span class="pnav-item-icon">
+          <ng-icon name="lucideLogOut" size="16"></ng-icon>
+        </span>
+        <span class="pnav-item-label">Sign out</span>
+      </button>
     </div>
-  </div>
 
-  <div class="upload-section">
-    <h2>Profile picture</h2>
-    <input
-      type="file"
-      accept="image/*"
-      (change)="onFileSelected($event)"
-      #fileInput
-    />
-    <button type="button" (click)="fileInput.click()">Choose image</button>
-    @if (uploadError()) {
-      <p class="error">{{ uploadError() }}</p>
+  </aside>
+
+  <!-- Right content panel -->
+  <main class="profile-content">
+
+    <!-- ── PROFILE SECTION ─────────────────────────────────────────────── -->
+    @if (activeSection() === 'profile') {
+      <div class="profile-section-wrap" role="region" aria-label="Profile">
+
+        <!-- Hero banner with avatar + editable name -->
+        <div class="profile-hero">
+          <div class="profile-avatar-block">
+
+              <!-- Avatar with upload overlay -->
+              <div class="profile-avatar-ring">
+                @if (user(); as u) {
+                  @if (u.avatarUrl) {
+                    <img [src]="u.avatarUrl" alt="Profile picture" class="profile-avatar-img" />
+                  } @else {
+                    <div class="profile-avatar-initials-lg">{{ initials }}</div>
+                  }
+                } @else {
+                  <div class="profile-avatar-initials-lg">—</div>
+                }
+                <label class="profile-avatar-upload-btn" [class.uploading]="uploading()" title="Change photo">
+                  <input type="file" accept="image/*" (change)="onFileSelected($event)" class="sr-only" />
+                  @if (uploading()) {
+                    <span class="upload-spinner"></span>
+                  } @else if (uploadSuccess()) {
+                    <ng-icon name="lucideCheck" size="15"></ng-icon>
+                  } @else {
+                    <ng-icon name="lucideCamera" size="15"></ng-icon>
+                  }
+                </label>
+              </div>
+          </div>
+
+          <!-- Name + meta -->
+          <div class="profile-hero-info">
+                @if (editingName()) {
+                  <div class="edit-name-row">
+                    <input
+                      class="edit-name-input"
+                      type="text"
+                      [(ngModel)]="editNameValue"
+                      [ngModel]="editNameValue()"
+                      (ngModelChange)="editNameValue.set($event)"
+                      placeholder="Your full name"
+                      (keydown.enter)="saveEditName()"
+                      (keydown.escape)="cancelEditName()"
+                      autofocus
+                    />
+                    <button type="button" class="edit-action-btn edit-save-btn" (click)="saveEditName()" [disabled]="savingName()" title="Save">
+                      @if (savingName()) {
+                        <span class="upload-spinner upload-spinner-sm"></span>
+                      } @else {
+                        <ng-icon name="lucideCheck" size="14"></ng-icon>
+                      }
+                    </button>
+                    <button type="button" class="edit-action-btn edit-cancel-btn" (click)="cancelEditName()" title="Cancel">
+                      <ng-icon name="lucideX" size="14"></ng-icon>
+                    </button>
+                  </div>
+                  @if (saveNameError()) {
+                    <span class="edit-name-error">{{ saveNameError() }}</span>
+                  }
+                } @else {
+                  <div class="profile-name-row">
+                    <h1 class="profile-hero-name">{{ user()?.name ?? 'Your Name' }}</h1>
+                    <button type="button" class="edit-pencil-btn" (click)="startEditName()" title="Edit name">
+                      <ng-icon name="lucidePencil" size="13"></ng-icon>
+                    </button>
+                  </div>
+                }
+                <div class="profile-hero-meta">
+                  <span class="profile-badge" [class.badge-admin]="user()?.role === 'admin'">
+                    {{ user()?.role ?? 'user' }}
+                  </span>
+                  @if (isEmailVerified) {
+                    <span class="profile-verified-chip">
+                      <ng-icon name="lucideBadgeCheck" size="13"></ng-icon>
+                      Verified
+                    </span>
+                  } @else {
+                    <span class="profile-unverified-chip">
+                      <ng-icon name="lucideAlertCircle" size="13"></ng-icon>
+                      Unverified
+                    </span>
+                  }
+                </div>
+              </div>
+        </div>
+
+        <!-- Upload feedback -->
+        @if (uploadError()) {
+          <div class="profile-alert profile-alert-error">
+            <ng-icon name="lucideAlertCircle" size="15"></ng-icon>
+            {{ uploadError() }}
+          </div>
+        }
+        @if (uploadSuccess()) {
+          <div class="profile-alert profile-alert-success">
+            <ng-icon name="lucideCheck" size="15"></ng-icon>
+            Profile picture updated successfully.
+          </div>
+        }
+
+        <!-- Info cards grid -->
+        <div class="profile-info-grid">
+
+          <!-- Personal info card -->
+          <div class="profile-info-card">
+            <div class="pic-header">
+              <h2 class="pic-title">Personal Information</h2>
+            </div>
+            <div class="pic-body">
+              <div class="pic-field">
+                <span class="pic-field-icon"><ng-icon name="lucideUser" size="15"></ng-icon></span>
+                <div class="pic-field-content">
+                  <span class="pic-field-label">Full name</span>
+                  <span class="pic-field-value">{{ user()?.name ?? '—' }}</span>
+                </div>
+                <button type="button" class="pic-field-edit" (click)="startEditName()" title="Edit name">
+                  <ng-icon name="lucidePencil" size="13"></ng-icon>
+                </button>
+              </div>
+              <div class="pic-field">
+                <span class="pic-field-icon"><ng-icon name="lucideMail" size="15"></ng-icon></span>
+                <div class="pic-field-content">
+                  <span class="pic-field-label">Email address</span>
+                  <span class="pic-field-value">{{ user()?.email ?? '—' }}</span>
+                </div>
+              </div>
+              <div class="pic-field">
+                <span class="pic-field-icon"><ng-icon name="lucideTag" size="15"></ng-icon></span>
+                <div class="pic-field-content">
+                  <span class="pic-field-label">Account type</span>
+                  <span class="pic-field-value">{{ user()?.userType ?? 'Standard' }}</span>
+                </div>
+              </div>
+              <div class="pic-field">
+                <span class="pic-field-icon"><ng-icon name="lucideCalendar" size="15"></ng-icon></span>
+                <div class="pic-field-content">
+                  <span class="pic-field-label">Member since</span>
+                  <span class="pic-field-value">{{ memberSince }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Account status card -->
+          <div class="profile-info-card">
+            <div class="pic-header">
+              <h2 class="pic-title">Account Status</h2>
+            </div>
+            <div class="pic-body">
+              <div class="profile-status-row">
+                <div class="psr-label">Email verification</div>
+                <div class="psr-value">
+                  @if (isEmailVerified) {
+                    <span class="psr-chip psr-chip-ok">
+                      <ng-icon name="lucideBadgeCheck" size="13"></ng-icon>
+                      Verified
+                    </span>
+                  } @else {
+                    <span class="psr-chip psr-chip-warn">
+                      <ng-icon name="lucideAlertCircle" size="13"></ng-icon>
+                      Not verified
+                    </span>
+                  }
+                </div>
+              </div>
+              <div class="profile-status-row">
+                <div class="psr-label">Onboarding</div>
+                <div class="psr-value">
+                  @if (user()?.onboardingCompleted) {
+                    <span class="psr-chip psr-chip-ok">
+                      <ng-icon name="lucideCheck" size="13"></ng-icon>
+                      Complete
+                    </span>
+                  } @else {
+                    <span class="psr-chip psr-chip-warn">
+                      <ng-icon name="lucideAlertCircle" size="13"></ng-icon>
+                      Incomplete
+                    </span>
+                  }
+                </div>
+              </div>
+              <div class="profile-status-row">
+                <div class="psr-label">Role</div>
+                <div class="psr-value">
+                  <span class="psr-chip" [class.psr-chip-admin]="user()?.role === 'admin'" [class.psr-chip-ok]="user()?.role !== 'admin'">
+                    {{ user()?.role ?? 'user' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
     }
-    @if (uploading()) {
-      <p class="status">Uploading…</p>
+
+    <!-- ── SECURITY SECTION ────────────────────────────────────────────── -->
+    @if (activeSection() === 'security') {
+      <div class="profile-section-wrap" role="region" aria-label="Security">
+
+        <div class="section-header">
+          <h1 class="section-title">Security</h1>
+          <p class="section-desc">Manage your password and account security settings.</p>
+        </div>
+
+        <!-- Change password card -->
+        <div class="profile-info-card profile-info-card-full">
+          <div class="pic-header pic-header-with-icon">
+            <span class="pic-header-icon"><ng-icon name="lucideKeyRound" size="15"></ng-icon></span>
+            <h2 class="pic-title">Change Password</h2>
+          </div>
+          <div class="pic-body pw-form-body">
+
+            @if (pwSuccess()) {
+              <div class="profile-alert profile-alert-success pw-alert">
+                <ng-icon name="lucideCheck" size="15"></ng-icon>
+                Password changed successfully. You're all set.
+              </div>
+            }
+            @if (pwError()) {
+              <div class="profile-alert profile-alert-error pw-alert">
+                <ng-icon name="lucideAlertCircle" size="15"></ng-icon>
+                {{ pwError() }}
+              </div>
+            }
+
+            <!-- Current password -->
+            <div class="pw-field-group">
+              <label class="pw-label" for="pw-current">Current password</label>
+              <div class="pw-input-wrap">
+                <span class="pw-input-icon"><ng-icon name="lucideLock" size="15"></ng-icon></span>
+                <input
+                  id="pw-current"
+                  class="pw-input"
+                  [type]="pwShowCurrent() ? 'text' : 'password'"
+                  [ngModel]="pwCurrent()"
+                  (ngModelChange)="pwCurrent.set($event)"
+                  placeholder="Enter current password"
+                  autocomplete="current-password"
+                />
+                <button type="button" class="pw-toggle-btn" (click)="pwShowCurrent.set(!pwShowCurrent())" tabindex="-1">
+                  <ng-icon [name]="pwShowCurrent() ? 'lucideEyeOff' : 'lucideEye'" size="15"></ng-icon>
+                </button>
+              </div>
+            </div>
+
+            <!-- New password -->
+            <div class="pw-field-group">
+              <label class="pw-label" for="pw-new">New password</label>
+              <div class="pw-input-wrap">
+                <span class="pw-input-icon"><ng-icon name="lucideKeyRound" size="15"></ng-icon></span>
+                <input
+                  id="pw-new"
+                  class="pw-input"
+                  [type]="pwShowNew() ? 'text' : 'password'"
+                  [ngModel]="pwNew()"
+                  (ngModelChange)="pwNew.set($event)"
+                  placeholder="At least 8 characters"
+                  autocomplete="new-password"
+                />
+                <button type="button" class="pw-toggle-btn" (click)="pwShowNew.set(!pwShowNew())" tabindex="-1">
+                  <ng-icon [name]="pwShowNew() ? 'lucideEyeOff' : 'lucideEye'" size="15"></ng-icon>
+                </button>
+              </div>
+              <!-- Strength bar -->
+              @if (pwNew().length > 0) {
+                <div class="pw-strength-bar">
+                  <div class="pw-strength-track">
+                    <div
+                      class="pw-strength-fill"
+                      [class.weak]="pwNew().length < 8"
+                      [class.fair]="pwNew().length >= 8 && pwNew().length < 12"
+                      [class.strong]="pwNew().length >= 12"
+                    ></div>
+                  </div>
+                  <span class="pw-strength-label"
+                    [class.text-red]="pwNew().length < 8"
+                    [class.text-yellow]="pwNew().length >= 8 && pwNew().length < 12"
+                    [class.text-green]="pwNew().length >= 12"
+                  >
+                    {{ pwNew().length < 8 ? 'Too short' : pwNew().length < 12 ? 'Fair' : 'Strong' }}
+                  </span>
+                </div>
+              }
+            </div>
+
+            <!-- Confirm new password -->
+            <div class="pw-field-group">
+              <label class="pw-label" for="pw-confirm">Confirm new password</label>
+              <div class="pw-input-wrap">
+                <span class="pw-input-icon"><ng-icon name="lucideKeyRound" size="15"></ng-icon></span>
+                <input
+                  id="pw-confirm"
+                  class="pw-input"
+                  [type]="pwShowConfirm() ? 'text' : 'password'"
+                  [ngModel]="pwConfirm()"
+                  (ngModelChange)="pwConfirm.set($event)"
+                  placeholder="Repeat new password"
+                  autocomplete="new-password"
+                  (keydown.enter)="submitChangePassword()"
+                />
+                <button type="button" class="pw-toggle-btn" (click)="pwShowConfirm.set(!pwShowConfirm())" tabindex="-1">
+                  <ng-icon [name]="pwShowConfirm() ? 'lucideEyeOff' : 'lucideEye'" size="15"></ng-icon>
+                </button>
+              </div>
+              @if (pwConfirm().length > 0 && pwNew() !== pwConfirm()) {
+                <span class="pw-mismatch">Passwords don't match</span>
+              }
+            </div>
+
+            <!-- Submit -->
+            <div class="pw-actions">
+              <button
+                type="button"
+                class="pw-submit-btn"
+                (click)="submitChangePassword()"
+                [disabled]="pwSaving()"
+              >
+                @if (pwSaving()) {
+                  <span class="upload-spinner upload-spinner-sm"></span>
+                  Saving…
+                } @else {
+                  <ng-icon name="lucideShield" size="15"></ng-icon>
+                  Update password
+                }
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Active sessions info card -->
+        <div class="profile-info-card profile-info-card-full">
+          <div class="pic-header pic-header-with-icon">
+            <span class="pic-header-icon"><ng-icon name="lucideShield" size="15"></ng-icon></span>
+            <h2 class="pic-title">Account Security</h2>
+          </div>
+          <div class="pic-body">
+            <div class="profile-status-row">
+              <div class="psr-label">Email verification</div>
+              <div class="psr-value">
+                @if (isEmailVerified) {
+                  <span class="psr-chip psr-chip-ok">
+                    <ng-icon name="lucideBadgeCheck" size="13"></ng-icon>
+                    Verified
+                  </span>
+                } @else {
+                  <span class="psr-chip psr-chip-warn">
+                    <ng-icon name="lucideAlertCircle" size="13"></ng-icon>
+                    Not verified
+                  </span>
+                }
+              </div>
+            </div>
+            <div class="profile-status-row">
+              <div class="psr-label">Two-factor authentication</div>
+              <div class="psr-value">
+                <span class="psr-chip psr-chip-warn">
+                  <ng-icon name="lucideAlertCircle" size="13"></ng-icon>
+                  Coming soon
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
     }
-  </div>
-</section>
+
+    <!-- ── PREFERENCES SECTION ─────────────────────────────────────────── -->
+    @if (activeSection() === 'preferences') {
+      <div class="profile-section-wrap" role="region" aria-label="Preferences">
+        <div class="section-header">
+          <h1 class="section-title">Preferences</h1>
+          <p class="section-desc">Customize your FinAnalytics experience.</p>
+        </div>
+        <div class="profile-info-card profile-info-card-full">
+          <div class="pic-header">
+            <h2 class="pic-title">App Settings</h2>
+          </div>
+          <div class="pic-body">
+            <div class="security-placeholder">
+              <ng-icon name="lucideSettings" size="32" class="sp-icon"></ng-icon>
+              <p class="sp-text">Preferences coming soon.</p>
+              <p class="sp-sub">Theme, currency, notification settings and more will be available here.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+  </main>
+
+</div>

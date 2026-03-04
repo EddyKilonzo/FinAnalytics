@@ -1,11 +1,30 @@
-/* Beams background – FinAnalytics green palette (darker) */
+/* Beams background – FinAnalytics green palette */
 .beams-wrapper {
   position: fixed;
   inset: 0;
   z-index: -1;
   overflow: hidden;
   background: var(--page-bg, var(--green-800, #0B2B26));
-  transition: background 0.25s ease;
+  transition: background 0.3s ease;
+}
+
+/* Noise texture grain overlay */
+.beams-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  background-repeat: repeat;
+}
+
+html.light .beams-wrapper::after {
+  opacity: 0.025;
+  mix-blend-mode: multiply;
 }
 
 .beams-svg {
@@ -14,7 +33,15 @@
   height: 100%;
   object-fit: cover;
   opacity: 1;
+  transition: opacity 0.3s ease;
 }
+
+/* Dark mode: show dark beams, hide light beams */
+.beams-dark { display: block; }
+.beams-light { display: none; }
+
+html.light .beams-dark { display: none; }
+html.light .beams-light { display: block; }
 
 .beam {
   transform-origin: center;
@@ -37,7 +64,7 @@
   50% { opacity: 0.9; }
 }
 
-/* Radial orbs – darker green shades */
+/* Radial orbs */
 .beams-orbs {
   position: absolute;
   inset: 0;
@@ -78,6 +105,17 @@
   left: 50%;
   transform: translate(-50%, -50%);
   animation-delay: -10s;
+}
+
+/* Light mode orbs – softer, lighter greens */
+html.light .orb-1 {
+  background: radial-gradient(circle, rgba(142, 182, 155, 0.35) 0%, transparent 70%);
+}
+html.light .orb-2 {
+  background: radial-gradient(circle, rgba(218, 241, 222, 0.45) 0%, transparent 70%);
+}
+html.light .orb-3 {
+  background: radial-gradient(circle, rgba(195, 230, 205, 0.3) 0%, transparent 70%);
 }
 
 @keyframes orb-pulse {

@@ -1,0 +1,203 @@
+<!-- Mobile overlay -->
+@if (mobileSidebarOpen()) {
+  <div class="mobile-overlay" (click)="toggleMobileSidebar()"></div>
+}
+
+<!-- Sidebar -->
+<aside
+  class="sidebar"
+  [class.collapsed]="sidebarCollapsed()"
+  [class.mobile-open]="mobileSidebarOpen()"
+>
+  <!-- Sidebar header -->
+  <div class="sidebar-header">
+    <a routerLink="/" class="sidebar-logo" aria-label="Go to home">
+      <span class="sidebar-logo-mark">
+        <ng-icon name="lucideTrendingUp" size="18"></ng-icon>
+      </span>
+      @if (!sidebarCollapsed()) {
+        <span class="sidebar-logo-text">FinAnalytics</span>
+      }
+    </a>
+    <button
+      type="button"
+      class="sidebar-collapse-btn"
+      (click)="toggleSidebar()"
+      [attr.aria-label]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+    >
+      <ng-icon
+        [name]="sidebarCollapsed() ? 'lucideMenu' : 'lucideChevronLeft'"
+        size="16"
+      ></ng-icon>
+    </button>
+  </div>
+
+  <!-- Nav items -->
+  <nav class="sidebar-nav" aria-label="App navigation">
+    <div class="sidebar-section">
+      @if (!sidebarCollapsed()) {
+        <span class="sidebar-section-label">Main</span>
+      }
+      @for (item of visibleNavItems; track item.route) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          class="sidebar-nav-item"
+          [attr.title]="sidebarCollapsed() ? item.label : null"
+          (click)="mobileSidebarOpen.set(false)"
+        >
+          <span class="sidebar-nav-icon">
+            <ng-icon [name]="item.icon" size="18"></ng-icon>
+          </span>
+          @if (!sidebarCollapsed()) {
+            <span class="sidebar-nav-label">{{ item.label }}</span>
+          }
+        </a>
+      }
+    </div>
+
+    @if (isAdmin) {
+      <div class="sidebar-section sidebar-section-admin">
+        @if (!sidebarCollapsed()) {
+          <span class="sidebar-section-label">Admin</span>
+        }
+        @for (item of adminItems; track item.route) {
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: item.route === '/admin' }"
+            class="sidebar-nav-item"
+            [attr.title]="sidebarCollapsed() ? item.label : null"
+            (click)="mobileSidebarOpen.set(false)"
+          >
+            <span class="sidebar-nav-icon">
+              <ng-icon [name]="item.icon" size="18"></ng-icon>
+            </span>
+            @if (!sidebarCollapsed()) {
+              <span class="sidebar-nav-label">{{ item.label }}</span>
+            }
+          </a>
+        }
+      </div>
+    }
+  </nav>
+
+  <!-- Sidebar footer -->
+  <div class="sidebar-footer">
+    <a
+      routerLink="/profile"
+      routerLinkActive="active"
+      class="sidebar-nav-item"
+      [attr.title]="sidebarCollapsed() ? 'Profile' : null"
+      (click)="mobileSidebarOpen.set(false)"
+    >
+      <span class="sidebar-nav-icon">
+        <ng-icon name="lucideUser" size="18"></ng-icon>
+      </span>
+      @if (!sidebarCollapsed()) {
+        <span class="sidebar-nav-label">Profile</span>
+      }
+    </a>
+    <button
+      type="button"
+      class="sidebar-nav-item sidebar-logout"
+      (click)="logout()"
+      [attr.title]="sidebarCollapsed() ? 'Log out' : null"
+    >
+      <span class="sidebar-nav-icon">
+        <ng-icon name="lucideLogOut" size="18"></ng-icon>
+      </span>
+      @if (!sidebarCollapsed()) {
+        <span class="sidebar-nav-label">Log out</span>
+      }
+    </button>
+  </div>
+</aside>
+
+<!-- Main content area -->
+<div class="app-main" [class.sidebar-collapsed]="sidebarCollapsed()">
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button
+        type="button"
+        class="topbar-mobile-menu"
+        (click)="toggleMobileSidebar()"
+        aria-label="Open menu"
+      >
+        <ng-icon name="lucideMenu" size="20"></ng-icon>
+      </button>
+
+      <div class="topbar-search">
+        <ng-icon name="lucideSearch" size="16" class="topbar-search-icon"></ng-icon>
+        <input type="text" placeholder="Search..." class="topbar-search-input" />
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <!-- Theme toggle -->
+      <button
+        type="button"
+        class="topbar-icon-btn"
+        (click)="theme.toggle()"
+        [attr.aria-label]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+      >
+        <ng-icon name="lucideSun" size="18" class="icon-sun"></ng-icon>
+        <ng-icon name="lucideMoon" size="18" class="icon-moon"></ng-icon>
+      </button>
+
+      <!-- Notifications -->
+      <button type="button" class="topbar-icon-btn topbar-notif" aria-label="Notifications">
+        <ng-icon name="lucideBell" size="18"></ng-icon>
+        <span class="notif-dot"></span>
+      </button>
+
+      <!-- User menu -->
+      <div class="topbar-user" (click)="toggleUserMenu()">
+        <div class="topbar-avatar">
+          @if (currentUser?.avatarUrl) {
+            <img [src]="currentUser!.avatarUrl" [alt]="displayName" class="topbar-avatar-img" />
+          } @else {
+            {{ userInitials }}
+          }
+        </div>
+        <div class="topbar-user-info">
+          <span class="topbar-user-name">{{ displayName }}</span>
+          <span class="topbar-user-role">{{ currentUser?.email ?? '' }}</span>
+        </div>
+        <ng-icon
+          name="lucideChevronDown"
+          size="14"
+          class="topbar-chevron"
+          [class.open]="userMenuOpen()"
+        ></ng-icon>
+
+        @if (userMenuOpen()) {
+          <div class="user-dropdown">
+            <a routerLink="/profile" class="user-dropdown-item" (click)="userMenuOpen.set(false)">
+              <ng-icon name="lucideUser" size="15"></ng-icon>
+              My Profile
+            </a>
+            <a routerLink="/settings" class="user-dropdown-item" (click)="userMenuOpen.set(false)">
+              <ng-icon name="lucideSettings" size="15"></ng-icon>
+              Settings
+            </a>
+            <div class="user-dropdown-divider"></div>
+            <button type="button" class="user-dropdown-item user-dropdown-logout" (click)="logout()">
+              <ng-icon name="lucideLogOut" size="15"></ng-icon>
+              Log out
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </header>
+
+  <!-- Page content -->
+  <main class="app-content">
+    <div class="page-outlet">
+      <router-outlet></router-outlet>
+    </div>
+    <app-footer class="app-layout-footer" />
+  </main>
+</div>

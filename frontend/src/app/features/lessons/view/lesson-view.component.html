@@ -1,0 +1,51 @@
+<div class="lesson-view-container texture-layer">
+  <div class="back-nav">
+    <a routerLink="/lessons" class="back-link btn-back-unified inline-flex items-center gap-2 bg-white border-2 border-white text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 py-2.5 px-4 rounded-xl font-medium text-sm shadow-sm transition-colors no-underline">
+      <ng-icon name="lucideArrowLeft" size="20"></ng-icon>
+      <span>Back to Lessons</span>
+    </a>
+  </div>
+
+  <div *ngIf="isLoading()" class="loading-state" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+    <p>Loading lesson...</p>
+  </div>
+
+  <ng-container *ngIf="!isLoading()">
+    <article class="lesson-article" *ngIf="lesson() as currentLesson">
+      <div class="article-header">
+        <div class="category-tag">{{ currentLesson.category }}</div>
+        
+        <div class="article-meta">
+          <div class="meta-item">
+            <ng-icon name="lucideCalendar" size="16"></ng-icon>
+            <span></span>
+          </div>
+          <div class="meta-separator"></div>
+          <div class="meta-item">
+            <ng-icon name="lucideClock" size="16"></ng-icon>
+            <span>{{ currentLesson.readTimeMinutes }} min read</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- The markdown content will render the title as h1 -->
+      <div class="markdown-content" [innerHTML]="parsedContent()"></div>
+      
+      <div class="article-footer">
+        <div class="share-section">
+          <p>Found this useful?</p>
+          <button class="share-button">
+            <ng-icon name="lucideShare2" size="18"></ng-icon>
+            <span>Share Lesson</span>
+          </button>
+        </div>
+      </div>
+    </article>
+
+    <div class="not-found" *ngIf="!lesson()">
+      <h2>Lesson not found</h2>
+      <p>The lesson you are looking for does not exist or has been removed.</p>
+      <a routerLink="/lessons" class="btn-primary">Return to Academy</a>
+    </div>
+  </ng-container>
+</div>

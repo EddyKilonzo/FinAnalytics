@@ -81,6 +81,34 @@ export class TransactionsService {
   }
 
   /**
+   * Keyword-based category suggestion when ML is unavailable or returns "other".
+   * Returns a category slug from the seeded set, or null if no match.
+   */
+  private keywordSuggestSlug(description: string): string | null {
+    const lower = (description || "").trim().toLowerCase();
+    if (lower.length < 2) return null;
+
+    const rules: { keywords: string[]; slug: string }[] = [
+      { keywords: ["coffee", "starbucks", "cafe", "restaurant", "lunch", "dinner", "breakfast", "food", "grocer", "supermarket", "nakumatt", "tuskys", "naivas", "market", "milk", "bread"], slug: "food-dining" },
+      { keywords: ["uber", "bolt", "matatu", "boda", "fuel", "petrol", "gas", "parking", "transport", "taxi", "fare"], slug: "transport" },
+      { keywords: ["movie", "netflix", "spotify", "cinema", "streaming", "gaming", "music"], slug: "entertainment" },
+      { keywords: ["party", "club", "bar", "event", "gift", "friends", "social"], slug: "social" },
+      { keywords: ["electric", "water", "internet", "airtime", "data", "safaricom", "airtel", "paybill", "m-pesa", "mpesa", "bill", "token"], slug: "utilities" },
+      { keywords: ["pharmacy", "doctor", "clinic", "hospital", "health", "medicine", "gym"], slug: "health" },
+      { keywords: ["school", "tuition", "helb", "books", "course", "university", "college", "education", "stationery"], slug: "education" },
+      { keywords: ["clothes", "clothing", "shoes", "fashion", "tailor"], slug: "clothing" },
+      { keywords: ["rent", "housing", "house", "landlord", "room"], slug: "rent-housing" },
+      { keywords: ["savings", "save", "chama", "m-shwari", "mshwari", "investment"], slug: "savings" },
+      { keywords: ["salary", "payroll", "income", "freelance", "stipend", "helb disbursement"], slug: "income" },
+    ];
+
+    for (const rule of rules) {
+      if (rule.keywords.some((kw) => lower.includes(kw))) return rule.slug;
+    }
+    return null;
+  }
+
+  /**
    * Resolve a category slug to its database ID.
    * Returns null if the slug doesn't exist so the caller can decide how to handle it.
    */
@@ -197,8 +225,8 @@ export class TransactionsService {
           date: dto.date ? new Date(dto.date) : new Date(),
           categoryId: dto.categoryId ?? null,
           incomeSource:
-            dto.type === "income" && dto.incomeSource
-              ? dto.incomeSource.trim()
+            dto.incomeSource != null && String(dto.incomeSource).trim() !== ""
+              ? String(dto.incomeSource).trim()
               : null,
           userId,
         },
@@ -209,28 +237,30 @@ export class TransactionsService {
         `Transaction created: ${transaction.id} (${dto.type} KES ${dto.amount}) — user ${userId}`,
       );
 
-      // Step 2 — request ML categorisation (non-blocking on failure)
+      // Step 2 — request ML categorisation, with keyword fallback when ML returns null or "other"
       if (dto.description?.trim()) {
         const prediction = await this.ml.categorise(dto.description, dto.type);
+        const slug =
+          prediction &&
+          prediction.suggestedCategorySlug &&
+          prediction.suggestedCategorySlug.toLowerCase() !== "other"
+            ? prediction.suggestedCategorySlug
+            : this.keywordSuggestSlug(dto.description);
 
-        if (prediction) {
-          const suggestedCategoryId = await this.categoryIdFromSlug(
-            prediction.suggestedCategorySlug,
-          );
-
+        if (slug) {
+          const suggestedCategoryId = await this.categoryIdFromSlug(slug);
           if (suggestedCategoryId) {
+            const confidence = prediction?.confidence ?? 0.7;
             const enriched = await this.db.transaction.update({
               where: { id: transaction.id },
               data: {
                 suggestedCategoryId,
-                categoryConfidence: prediction.confidence,
+                categoryConfidence: confidence,
               },
               include: { category: true, suggestedCategory: true },
             });
-
             this.logger.log(
-              `ML suggestion: "${prediction.suggestedCategorySlug}" ` +
-                `(${(prediction.confidence * 100).toFixed(1)}%) for tx ${transaction.id}`,
+              `Category suggestion: "${slug}" for tx ${transaction.id}`,
             );
             return enriched;
           }
@@ -270,10 +300,7 @@ export class TransactionsService {
       if (dto.date !== undefined) data.date = new Date(dto.date);
       if (dto.categoryId !== undefined) data.categoryId = dto.categoryId;
 
-      const effectiveType = dto.type ?? (existing as any).type;
-      if (effectiveType === "expense") {
-        data.incomeSource = null;
-      } else if (dto.incomeSource !== undefined) {
+      if (dto.incomeSource !== undefined) {
         data.incomeSource = dto.incomeSource
           ? String(dto.incomeSource).trim()
           : null;

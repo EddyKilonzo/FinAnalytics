@@ -1,0 +1,36 @@
+.text-primary { color: white; }
+.text-muted { color: rgba(255,255,255,0.55); }
+.bg-card { background: var(--card-bg); }
+.bg-surface { background: var(--surface); }
+.border-subtle { border-color: var(--border-subtle); }
+
+.create-card {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  animation: slideUp 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.form-input {
+  color: var(--text-primary);
+}
+
+.btn-submit:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes slideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

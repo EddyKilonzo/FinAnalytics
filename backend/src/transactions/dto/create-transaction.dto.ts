@@ -64,13 +64,12 @@ export class CreateTransactionDto {
 
   @ApiPropertyOptional({
     description:
-      "Income source label for type=income (e.g. HELB, parents, part_time_job). " +
-      "Align with keys from onboarding incomeSources when possible.",
+      "For income: source label (e.g. HELB, employer). For expense: merchant/store name. Stored for both types.",
     example: "helb",
-    maxLength: 50,
+    maxLength: 120,
   })
   @IsOptional()
   @IsString()
-  @MaxLength(50)
+  @MaxLength(120)
   incomeSource?: string;
 }

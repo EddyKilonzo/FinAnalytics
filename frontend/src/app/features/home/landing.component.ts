@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -102,25 +102,18 @@ export type HeroIntent = 'personal' | 'small' | 'enterprise';
   styleUrl: './landing.component.css',
 })
 export class LandingComponent implements OnInit {
-  protected readonly currentYear = new Date().getFullYear();
   protected heroIntent: HeroIntent = 'personal';
   protected heroEmail = '';
-  protected isScrolled = false;
 
-  constructor(protected theme: ThemeService) { }
+  constructor(protected theme: ThemeService) {}
 
-  ngOnInit(): void { }
-
-  @HostListener('window:scroll')
-  onScroll(): void {
-    this.isScrolled = window.scrollY > 20;
-  }
+  ngOnInit(): void {}
 
   protected setIntent(value: HeroIntent): void {
     this.heroIntent = value;
   }
 
   protected getStarted(): void {
-    window.location.href = '/register';
+    window.location.href = '/auth/register';
   }
 }
