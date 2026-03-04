@@ -7,6 +7,7 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { PrismaService } from "../common/prisma.service";
+import { TransactionsService } from "../transactions/transactions.service";
 import { handlePrismaError } from "../common/helpers/prisma-error.handler";
 import type { CreateGoalDto } from "./dto/create-goal.dto";
 import type { UpdateGoalDto } from "./dto/update-goal.dto";
@@ -17,7 +18,10 @@ import type { WithdrawGoalDto } from "./dto/withdraw-goal.dto";
 export class GoalsService {
   private readonly logger = new Logger(GoalsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly transactionsService: TransactionsService,
+  ) {}
 
   private get db() {
     return this.prisma as any;
@@ -259,8 +263,9 @@ export class GoalsService {
 
   /**
    * Add an amount to a goal's currentAmount (record a savings contribution).
-   * currentAmount is allowed to exceed targetAmount — the frontend can choose
-   * to display it as "100 % complete" while showing the over-saved figure.
+   * Deducts from the user's main balance (income - expenses): validates that
+   * allocation does not exceed available balance, then creates an expense
+   * transaction so balance is reduced and adds the amount to the goal.
    */
   async allocate(
     id: string,
@@ -270,6 +275,24 @@ export class GoalsService {
   ): Promise<any> {
     try {
       const goal = await this.findAndAuthorise(id, userId, userRole);
+
+      const summary = await this.transactionsService.getSummary(userId);
+      const balance = Number(summary?.balance ?? 0);
+      if (dto.amount > balance) {
+        throw new BadRequestException(
+          `Cannot allocate KES ${dto.amount.toFixed(2)} — your Total Balance is only KES ${balance.toFixed(2)}.`,
+        );
+      }
+
+      await this.transactionsService.create(
+        {
+          amount: dto.amount,
+          type: "expense",
+          description: `Transfer to goal: ${goal.name}`,
+          incomeSource: undefined,
+        },
+        userId,
+      );
 
       const newAmount = +Number(
         Number(goal.currentAmount) + dto.amount,
@@ -282,7 +305,7 @@ export class GoalsService {
 
       this.logger.log(
         `Goal allocation: KES ${dto.amount} added to "${goal.name}" (${id}) — ` +
-          `total now KES ${newAmount}`,
+          `total now KES ${newAmount}; balance reduced by KES ${dto.amount}`,
       );
       return this.enrichWithProgress(updated);
     } catch (error) {

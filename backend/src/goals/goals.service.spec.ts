@@ -34,11 +34,18 @@ describe("GoalsService", () => {
     },
   };
 
+  const mockTransactionsService = {
+    getSummary: jest.fn().mockResolvedValue({ balance: 10000 }),
+    create: jest.fn().mockResolvedValue({ id: "tx-1", amount: 5000, type: "expense" }),
+  };
+
   let service: GoalsService;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new GoalsService(mockPrisma as any);
+    mockTransactionsService.getSummary.mockResolvedValue({ balance: 10000 });
+    mockTransactionsService.create.mockResolvedValue({ id: "tx-1", amount: 5000, type: "expense" });
+    service = new GoalsService(mockPrisma as any, mockTransactionsService as any);
   });
 
   it("should be defined", () => {
@@ -109,7 +116,7 @@ describe("GoalsService", () => {
   });
 
   describe("allocate", () => {
-    it("should add amount to currentAmount and return enriched goal", async () => {
+    it("should check balance, create expense transaction, add to goal and return enriched goal", async () => {
       mockPrisma.goal.findUnique.mockResolvedValue(baseGoal);
       mockPrisma.goal.update.mockResolvedValue({
         ...baseGoal,
@@ -121,11 +128,33 @@ describe("GoalsService", () => {
         "user-1",
         "USER",
       );
+      expect(mockTransactionsService.getSummary).toHaveBeenCalledWith("user-1");
+      expect(mockTransactionsService.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          amount: 5000,
+          type: "expense",
+          description: "Transfer to goal: Rainy day",
+        }),
+        "user-1",
+      );
       expect(mockPrisma.goal.update).toHaveBeenCalledWith({
         where: { id: "goal-1" },
         data: { currentAmount: 5000 },
       });
       expect(result).toHaveProperty("currentAmount", 5000);
+    });
+
+    it("should throw BadRequestException when amount exceeds balance", async () => {
+      mockPrisma.goal.findUnique.mockResolvedValue(baseGoal);
+      mockTransactionsService.getSummary.mockResolvedValue({ balance: 1000 });
+      await expect(
+        service.allocate("goal-1", { amount: 5000 }, "user-1", "USER"),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.allocate("goal-1", { amount: 5000 }, "user-1", "USER"),
+      ).rejects.toThrow("Total Balance is only");
+      expect(mockTransactionsService.create).not.toHaveBeenCalled();
+      expect(mockPrisma.goal.update).not.toHaveBeenCalled();
     });
   });
 

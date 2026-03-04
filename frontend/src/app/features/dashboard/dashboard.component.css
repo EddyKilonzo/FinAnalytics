@@ -113,9 +113,15 @@
 }
 
 /* Mandatory Shadow Class */
-.insight-icon-positive {
-  color: var(--accent);
-}
+.insight-icon-positive { color: var(--accent); }
+.dashboard-loading-text { color: var(--accent); }
+.dashboard-trend { color: var(--accent); }
+.dashboard-link { color: var(--accent); }
+.dashboard-link:hover { filter: brightness(0.85); }
+.dashboard-btn-icon:hover { background: var(--accent-dim); color: var(--accent); }
+.dashboard-goal-item:hover { border-color: var(--accent-dim); background: var(--accent-dim); }
+.dashboard-goal-bar { background: var(--accent); }
+.dashboard-spinner { border-color: var(--accent-dim); border-top-color: var(--accent); }
 
 .card-shadow {
   box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, 

@@ -176,12 +176,12 @@ import {
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
-      box-shadow: 0 4px 12px var(--accent-glow);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
 
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 16px var(--accent-glow);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14);
     }
 
     /* Elevated Card Style - Expensify Inspired */

@@ -2,7 +2,7 @@
   <!-- Loading Overlay -->
   <div *ngIf="isLoading" class="absolute inset-0 z-50 flex items-center justify-center bg-slate-50/80 backdrop-blur-sm rounded-2xl">
     <div class="flex flex-col items-center">
-      <div class="w-12 h-12 border-4 border-[var(--accent)] border-t-[var(--accent)] rounded-full animate-spin"></div>
+      <div class="w-12 h-12 border-4 rounded-full animate-spin dashboard-spinner"></div>
       <p class="mt-4 font-medium animate-pulse dashboard-loading-text">Loading dashboard...</p>
     </div>
   </div>
@@ -131,7 +131,7 @@
                    [ngClass]="{
                      'bg-red-500': alert.status === 'danger',
                      'bg-amber-500': alert.status === 'warning',
-                     'bg-emerald-500': alert.status === 'safe'
+                     'bg-[var(--accent)]': alert.status === 'safe'
                    }">
               </div>
             </div>
@@ -177,15 +177,15 @@
       <section class="goals-section card-shadow rounded-2xl bg-white p-6">
         <div class="flex justify-between items-center mb-6">
           <h3 class="text-xl font-bold text-slate-800">Saving Goals</h3>
-          <button class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
+          <button class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 dashboard-btn-icon transition-colors">
             +
           </button>
         </div>
         
         <div class="space-y-4">
-          <div *ngFor="let goal of goals" class="p-4 rounded-xl border border-slate-100 hover:border-emerald-100 hover:bg-emerald-50/30 transition-colors cursor-pointer group">
+          <div *ngFor="let goal of goals" class="p-4 rounded-xl border border-slate-100 dashboard-goal-item transition-colors cursor-pointer group">
             <div class="flex justify-between mb-1">
-              <span class="font-semibold text-slate-800 group-hover:text-emerald-700 transition-colors">{{ goal.name }}</span>
+              <span class="font-semibold text-slate-800 group-hover:text-[var(--accent)] transition-colors">{{ goal.name }}</span>
               <span class="text-sm text-slate-500">{{ getGoalProgress(goal.current, goal.target) }}%</span>
             </div>
             <div class="flex justify-between text-xs text-slate-500 mb-2">
@@ -193,7 +193,7 @@
               <span>{{ goal.target | currency:'KES':'symbol':'1.0-0' }}</span>
             </div>
             <div class="w-full bg-slate-100 rounded-full h-1.5">
-              <div class="bg-emerald-500 h-1.5 rounded-full" [style.width.%]="getGoalProgress(goal.current, goal.target)"></div>
+              <div class="h-1.5 rounded-full dashboard-goal-bar" [style.width.%]="getGoalProgress(goal.current, goal.target)"></div>
             </div>
           </div>
         </div>

@@ -74,3 +74,14 @@
 input {
   color: var(--text-primary);
 }
+
+.goal-detail-back-btn { color: var(--accent); }
+.goal-detail-back-btn:hover { background: var(--accent-dim); border-color: var(--accent) !important; }
+.goal-accent { color: var(--accent); }
+.goal-accent-muted { color: var(--accent); opacity: 0.9; }
+.goal-track-bg { background: var(--accent-dim); }
+.goal-label { color: var(--accent); }
+.goal-help { color: var(--accent); opacity: 0.85; }
+.goal-withdraw-btn { border-color: var(--accent); color: var(--accent); background: white; }
+.goal-withdraw-btn:hover:not(:disabled) { background: var(--accent-dim); }
+.goal-tab-inactive { color: var(--accent); opacity: 0.7; }

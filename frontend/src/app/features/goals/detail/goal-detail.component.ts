@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideArrowLeft, lucidePiggyBank, lucideWallet, lucideCalendar, lucideTarget, lucideTrash2 } from '@ng-icons/lucide';
 import { GoalService } from '../../../core/services/goal.service';
+import { TransactionService } from '../../../core/services/transaction.service';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { getBackendErrorMessage } from '../../../core/utils/backend-error';
 
@@ -28,9 +29,12 @@ export class GoalDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private goalService = inject(GoalService);
+  private transactionService = inject(TransactionService);
   private toast = inject(ToastService);
 
   goal: Goal | null = null;
+  /** Total Balance (account): income - expenses. Allocations cannot exceed this. */
+  availableBalance = 0;
   allocationAmount: number | null = null;
   withdrawAmount: number | null = null;
   activeTab: 'allocate' | 'withdraw' = 'allocate';
@@ -61,6 +65,13 @@ export class GoalDetailComponent implements OnInit {
         this.toast.error(getBackendErrorMessage(err, 'Failed to load goal.'));
       }
     });
+    this.transactionService.getSummary().subscribe({
+      next: (res) => {
+        const s = res?.data ?? res;
+        this.availableBalance = Number(s?.balance ?? 0);
+      },
+      error: () => { this.availableBalance = 0; }
+    });
   }
 
   getPercentage(): number {
@@ -70,9 +81,13 @@ export class GoalDetailComponent implements OnInit {
 
   allocateFunds() {
     if (!this.goal?.id || !this.allocationAmount || this.allocationAmount <= 0 || this.actionLoading) return;
-    const amount = this.allocationAmount;
+    const amount = Number(this.allocationAmount);
+    if (amount > this.availableBalance) {
+      this.toast.error(`Cannot allocate KES ${amount.toFixed(0)} — your Total Balance is only KES ${this.availableBalance.toFixed(0)}.`);
+      return;
+    }
     this.actionLoading = true;
-    this.goalService.allocateFunds(this.goal.id, amount, 'manual').subscribe({
+    this.goalService.allocateFunds(this.goal.id, amount).subscribe({
       next: (res) => {
         const data = res?.data ?? res;
         if (data) {
@@ -80,7 +95,14 @@ export class GoalDetailComponent implements OnInit {
         }
         this.allocationAmount = null;
         this.actionLoading = false;
-        this.toast.success(`KES ${amount} allocated to goal.`);
+        this.transactionService.getSummary().subscribe({
+          next: (res) => {
+            const s = res?.data ?? res;
+            this.availableBalance = Number(s?.balance ?? 0);
+          },
+          error: () => { this.availableBalance = Math.max(0, this.availableBalance - amount); }
+        });
+        this.toast.success(`KES ${amount} saved to goal. Deducted from your Total Balance.`);
       },
       error: (err) => {
         this.actionLoading = false;
@@ -96,7 +118,7 @@ export class GoalDetailComponent implements OnInit {
       return;
     }
     this.actionLoading = true;
-    this.goalService.withdrawFunds(this.goal.id, this.withdrawAmount, 'manual').subscribe({
+    this.goalService.withdrawFunds(this.goal.id, this.withdrawAmount).subscribe({
       next: (res) => {
         const data = res?.data ?? res;
         if (data) {

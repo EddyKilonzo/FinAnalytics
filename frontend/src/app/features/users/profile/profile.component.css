@@ -102,7 +102,7 @@ html.light .profile-nav-identity {
   justify-content: center;
   font-size: 1.1rem;
   font-weight: 700;
-  box-shadow: 0 4px 12px var(--accent-glow);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .pnav-identity-text {
@@ -539,7 +539,7 @@ html.light .edit-name-input {
 .edit-save-btn {
   background: var(--accent);
   color: #fff;
-  box-shadow: 0 4px 12px var(--accent-glow);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .edit-save-btn:hover:not(:disabled) {
@@ -1072,14 +1072,14 @@ html.light .pw-strength-track {
   font-weight: 700;
   cursor: pointer;
   transition: var(--transition-bounce);
-  box-shadow: 0 4px 12px var(--accent-glow);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
   width: 100%;
 }
 
 .pw-submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   background: #16a34a;
-  box-shadow: 0 6px 16px var(--accent-glow);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14);
 }
 
 .pw-submit-btn:disabled {

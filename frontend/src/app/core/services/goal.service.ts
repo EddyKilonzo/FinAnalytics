@@ -30,11 +30,11 @@ export class GoalService {
     return this.http.delete<any>(`${this.apiUrl}/${id}`);
   }
 
-  allocateFunds(id: string, amount: number, source: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/allocate`, { amount, source });
+  allocateFunds(id: string, amount: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/allocate`, { amount });
   }
 
-  withdrawFunds(id: string, amount: number, destination: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/withdraw`, { amount, destination });
+  withdrawFunds(id: string, amount: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/withdraw`, { amount });
   }
 }

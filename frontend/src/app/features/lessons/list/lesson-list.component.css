@@ -62,7 +62,7 @@
   left: 0;
   right: 0;
   height: 100%;
-  background: radial-gradient(circle at top right, var(--accent-glow) 0%, transparent 60%);
+  background: transparent;
   opacity: 0;
   transition: opacity 0.4s ease;
   pointer-events: none;
