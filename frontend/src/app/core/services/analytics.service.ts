@@ -2,13 +2,10 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import type { ApiResponse, Insight } from '../models';
 
-export interface BackendInsight {
-  id: string;
-  type: string;
-  message: string;
-  severity?: 'info' | 'tip' | 'warning';
-}
+// Backward-compat alias for components that import BackendInsight from here
+export type BackendInsight = Insight;
 
 @Injectable({
   providedIn: 'root',
@@ -17,9 +14,7 @@ export class AnalyticsService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/analytics`;
 
-  getInsights(): Observable<{ success: boolean; data: BackendInsight[] }> {
-    return this.http.get<{ success: boolean; data: BackendInsight[] }>(
-      `${this.apiUrl}/insights`
-    );
+  getInsights(): Observable<ApiResponse<Insight[]>> {
+    return this.http.get<ApiResponse<Insight[]>>(`${this.apiUrl}/insights`);
   }
 }

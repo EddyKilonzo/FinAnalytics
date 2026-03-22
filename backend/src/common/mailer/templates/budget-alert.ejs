@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Budget Alert</title>
+  <style>
+    body { margin: 0; padding: 0; background-color: #051F20; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .wrapper { background-color: #051F20; padding: 40px 16px; }
+    .container { max-width: 600px; margin: 0 auto; background-color: #0A2E2F; border-radius: 12px; border: 1px solid rgba(34,197,94,0.15); overflow: hidden; }
+    .header { padding: 32px 40px 24px; border-bottom: 1px solid rgba(34,197,94,0.15); }
+    .logo { font-size: 22px; font-weight: 800; color: #22c55e; letter-spacing: -0.03em; }
+    .body { padding: 36px 40px; }
+    .greeting { font-size: 24px; font-weight: 700; color: #DAF1DE; margin: 0 0 16px; }
+    .text { font-size: 15px; color: rgba(218,241,222,0.65); line-height: 1.7; margin: 0 0 16px; }
+    .alert-box { border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+    .alert-box.over { background-color: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); }
+    .alert-box.near { background-color: rgba(234,179,8,0.08); border: 1px solid rgba(234,179,8,0.3); }
+    .alert-category { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; margin: 0 0 8px; }
+    .alert-category.over { color: #f87171; }
+    .alert-category.near { color: #fbbf24; }
+    .alert-pct { font-size: 40px; font-weight: 800; margin: 0 0 4px; }
+    .alert-pct.over { color: #f87171; }
+    .alert-pct.near { color: #fbbf24; }
+    .alert-label { font-size: 13px; color: rgba(218,241,222,0.5); margin: 0; }
+    .stats-row { display: flex; gap: 0; margin: 20px 0; border-radius: 8px; overflow: hidden; border: 1px solid rgba(34,197,94,0.15); }
+    .stat-cell { flex: 1; padding: 14px 16px; background-color: rgba(34,197,94,0.04); border-right: 1px solid rgba(34,197,94,0.1); }
+    .stat-cell:last-child { border-right: none; }
+    .stat-label { font-size: 11px; color: rgba(218,241,222,0.4); text-transform: uppercase; letter-spacing: 0.07em; margin: 0 0 4px; }
+    .stat-value { font-size: 16px; font-weight: 700; color: #DAF1DE; margin: 0; }
+    .progress-wrap { margin: 20px 0; }
+    .progress-label { font-size: 12px; color: rgba(218,241,222,0.5); margin: 0 0 6px; }
+    .progress-bar-bg { background-color: rgba(34,197,94,0.1); border-radius: 99px; height: 8px; overflow: hidden; }
+    .progress-bar-fill { height: 8px; border-radius: 99px; }
+    .footer { padding: 20px 40px; border-top: 1px solid rgba(34,197,94,0.15); text-align: center; }
+    .footer-text { font-size: 12px; color: rgba(218,241,222,0.4); margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <div class="logo">FinAnalytics</div>
+      </div>
+      <div class="body">
+        <h1 class="greeting">Budget alert, <%= name %></h1>
+        <p class="text">Your <strong style="color:#DAF1DE;"><%= categoryName %></strong> budget has reached a significant threshold.</p>
+
+        <% var isOver = percentageUsed >= 100; %>
+        <div class="alert-box <%= isOver ? 'over' : 'near' %>">
+          <p class="alert-category <%= isOver ? 'over' : 'near' %>"><%= categoryName %> Budget</p>
+          <p class="alert-pct <%= isOver ? 'over' : 'near' %>"><%= Math.round(percentageUsed) %>%</p>
+          <p class="alert-label"><%= isOver ? 'over budget' : 'of budget used' %></p>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-cell">
+            <p class="stat-label">Spent</p>
+            <p class="stat-value"><%= currency %> <%= spent.toLocaleString() %></p>
+          </div>
+          <div class="stat-cell">
+            <p class="stat-label">Limit</p>
+            <p class="stat-value"><%= currency %> <%= limitAmount.toLocaleString() %></p>
+          </div>
+          <div class="stat-cell">
+            <p class="stat-label"><%= isOver ? 'Over by' : 'Remaining' %></p>
+            <% var diff = Math.abs(limitAmount - spent); %>
+            <p class="stat-value" style="color:<%= isOver ? '#f87171' : '#22c55e' %>"><%= currency %> <%= diff.toLocaleString() %></p>
+          </div>
+        </div>
+
+        <div class="progress-wrap">
+          <p class="progress-label">Budget utilisation</p>
+          <div class="progress-bar-bg">
+            <% var barPct = Math.min(percentageUsed, 100); %>
+            <div class="progress-bar-fill" style="width:<%= barPct %>%; background-color:<%= isOver ? '#f87171' : percentageUsed >= 80 ? '#fbbf24' : '#22c55e' %>;"></div>
+          </div>
+        </div>
+
+        <% if (isOver) { %>
+          <p class="text">You've exceeded your <strong style="color:#DAF1DE;"><%= categoryName %></strong> budget. Consider reviewing upcoming expenses in this category or adjusting your budget limit.</p>
+        <% } else { %>
+          <p class="text">You're approaching your <strong style="color:#DAF1DE;"><%= categoryName %></strong> budget limit. Be mindful of further spending in this category for the rest of the period.</p>
+        <% } %>
+      </div>
+      <div class="footer">
+        <p class="footer-text">© 2026 FinAnalytics · Nairobi, Kenya</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

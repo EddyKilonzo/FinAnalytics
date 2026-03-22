@@ -8,6 +8,7 @@ import {
   ConflictException,
 } from "@nestjs/common";
 import { PrismaService } from "../common/prisma.service";
+import { MailerService } from "../common/mailer/mailer.service";
 import { handlePrismaError } from "../common/helpers/prisma-error.handler";
 import type { CreateBudgetDto } from "./dto/create-budget.dto";
 import type { UpdateBudgetDto } from "./dto/update-budget.dto";
@@ -32,11 +33,21 @@ export interface NudgeItem {
   severity: string;
 }
 
+/**
+ * In-memory set tracking budget IDs for which an alert email was already sent today.
+ * Resets at midnight to avoid re-sending every time findAll is called.
+ * Key format: `${budgetId}:${YYYY-MM-DD}`
+ */
+const alertEmailSentToday = new Set<string>();
+
 @Injectable()
 export class BudgetsService {
   private readonly logger = new Logger(BudgetsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailerService: MailerService,
+  ) {}
 
   private get db() {
     return this.prisma as any;
@@ -165,6 +176,9 @@ export class BudgetsService {
       // Social spending is highlighted in purple per product spec
       const isSocial = budget.category?.slug === SOCIAL_SLUG;
 
+      // Fire budget alert email (non-blocking, cooldown prevents spam)
+      void this.maybeSendBudgetAlertEmail(budget, percentageUsed, totalSpent, alertStatus);
+
       return {
         ...budget,
         limitAmount,
@@ -177,6 +191,45 @@ export class BudgetsService {
     } catch (error) {
       if (error instanceof HttpException) throw error;
       handlePrismaError(error, this.logger, "BudgetsService.enrichWithSummary");
+    }
+  }
+
+  /**
+   * Fire a budget alert email if the budget is near/over limit and we haven't
+   * already sent one today. Non-blocking — errors are swallowed so they don't
+   * affect the response.
+   */
+  private async maybeSendBudgetAlertEmail(
+    budget: any,
+    percentageUsed: number,
+    totalSpent: number,
+    alertStatus: "over" | "near" | "ok",
+  ): Promise<void> {
+    if (alertStatus === "ok") return;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const cooldownKey = `${budget.id}:${today}`;
+    if (alertEmailSentToday.has(cooldownKey)) return;
+
+    try {
+      const user = await (this.prisma as any).user.findUnique({
+        where: { id: budget.userId },
+        select: { email: true, name: true },
+      });
+      if (!user?.email) return;
+
+      alertEmailSentToday.add(cooldownKey);
+      const categoryName = budget.category?.name ?? "Overall";
+      await this.mailerService.sendBudgetAlertEmail({
+        to: user.email,
+        name: user.name,
+        categoryName,
+        percentageUsed,
+        limitAmount: +Number(budget.limitAmount).toFixed(2),
+        spent: +totalSpent.toFixed(2),
+      });
+    } catch {
+      // Non-blocking — do not let email errors surface to the caller
     }
   }
 

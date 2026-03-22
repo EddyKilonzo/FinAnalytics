@@ -1,5 +1,5 @@
-.text-primary { color: white; }
-.text-muted { color: rgba(255,255,255,0.55); }
+.text-primary { color: var(--text-primary); }
+.text-muted { color: var(--text-muted); }
 .bg-card { background: var(--card-bg); }
 .bg-surface { background: var(--surface); }
 .border-subtle { border-color: var(--border-subtle); }

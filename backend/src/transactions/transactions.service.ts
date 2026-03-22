@@ -368,7 +368,7 @@ export class TransactionsService {
         `Category corrected on tx ${id}: "${newCategory.slug}" — user ${userId}`,
       );
 
-      // Push feedback to ML service (non-blocking — don't await)
+      // Push feedback to ML service and persist to DB (both non-blocking)
       if (existing.description?.trim()) {
         this.ml
           .sendFeedback(existing.description, newCategory.slug)
@@ -377,6 +377,20 @@ export class TransactionsService {
               `ML feedback send failed for tx ${id}: ${err instanceof Error ? err.message : String(err)}`,
             );
           });
+
+        this.db.mlFeedback.create({
+          data: {
+            userId,
+            description: existing.description,
+            correctedSlug: newCategory.slug,
+            previousSlug: existing.category?.slug ?? null,
+            confidence: existing.categoryConfidence ?? null,
+          },
+        }).catch((err: unknown) => {
+          this.logger.warn(
+            `ML feedback DB persist failed for tx ${id}: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        });
       }
 
       return updated;
@@ -497,6 +511,41 @@ export class TransactionsService {
         this.logger,
         "TransactionsService.getIncomeBySource",
       );
+    }
+  }
+
+  /**
+   * Export transactions as a UTF-8 CSV string (with BOM for Excel compatibility).
+   * Applies the same filters as findAll but without pagination — returns all matches.
+   */
+  async exportCsv(
+    query: Pick<TransactionQueryDto, "type" | "dateFrom" | "dateTo">,
+    userId: string,
+  ): Promise<string> {
+    try {
+      const where = this.buildWhere(query as TransactionQueryDto, userId, false);
+
+      const transactions = await this.db.transaction.findMany({
+        where,
+        include: { category: true },
+        orderBy: { date: "desc" },
+      });
+
+      const header = "Date,Description,Category,Type,Amount (KES)";
+      const rows = (transactions as any[]).map((tx) => {
+        const date = new Date(tx.date).toISOString().slice(0, 10);
+        const description = `"${(tx.description ?? "").replace(/"/g, '""')}"`;
+        const category = `"${(tx.category?.name ?? "Uncategorised").replace(/"/g, '""')}"`;
+        const type = tx.type;
+        const amount = Number(tx.amount).toFixed(2);
+        return [date, description, category, type, amount].join(",");
+      });
+
+      // BOM (\uFEFF) ensures Excel opens the file as UTF-8
+      return "\uFEFF" + [header, ...rows].join("\r\n");
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      handlePrismaError(error, this.logger, "TransactionsService.exportCsv");
     }
   }
 

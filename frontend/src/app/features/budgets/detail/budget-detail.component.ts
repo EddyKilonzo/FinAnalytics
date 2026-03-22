@@ -8,6 +8,7 @@ import { TransactionService } from '../../../core/services/transaction.service';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { ConfirmModalComponent } from '../../../shared/confirm-modal/confirm-modal.component';
 import { getBackendErrorMessage } from '../../../core/utils/backend-error';
+import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
 
 interface Transaction {
   id: string;
@@ -20,103 +21,111 @@ interface Transaction {
 @Component({
   selector: 'app-budget-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, NgIconComponent, ConfirmModalComponent],
+  imports: [CommonModule, RouterLink, NgIconComponent, ConfirmModalComponent, CurrencyFormatPipe],
   viewProviders: [
     provideIcons({ lucideArrowLeft, lucideEdit3, lucideTrash2, lucideShoppingBag, lucideCoffee, lucideZap })
   ],
   template: `
-    <div class="detail-container max-w-4xl mx-auto p-4 md:p-8 animation-fade-in">
+    <div class="detail-wrap fade-in">
+
       @if (isLoading) {
-        <div class="flex justify-center items-center py-24">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 budget-detail-spinner"></div>
+        <div class="loading-state">
+          <span class="spinner"></span>
         </div>
       }
+
       @if (!isLoading && budget) {
-      <header class="flex justify-between items-center mb-8">
-        <button routerLink=".." class="budget-detail-back inline-flex items-center gap-2 bg-white border-2 border-emerald-500 text-emerald-600 py-2.5 px-5 rounded-xl font-semibold text-sm shadow-sm hover:bg-emerald-50 hover:shadow-md transition-all duration-200">
-          <ng-icon name="lucideArrowLeft" size="20"></ng-icon>
-          <span>Back</span>
-        </button>
-        <div class="flex gap-3">
-          <button class="w-12 h-12 rounded-full flex items-center justify-center bg-white border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:shadow-md transition-all duration-200 shadow-sm" title="Edit budget">
-            <ng-icon name="lucideEdit3" size="20"></ng-icon>
+
+        <!-- ── Header ──────────────────────────────────────────── -->
+        <header class="detail-header">
+          <button routerLink=".." class="btn-back">
+            <ng-icon name="lucideArrowLeft" size="18"></ng-icon>
+            Back
           </button>
-          <button type="button" (click)="openDeleteConfirm()" [disabled]="deleting" class="w-12 h-12 rounded-full flex items-center justify-center bg-white border-2 border-red-400 text-red-500 hover:bg-red-50 hover:shadow-md transition-all duration-200 shadow-sm disabled:opacity-50" title="Delete budget">
-            <ng-icon name="lucideTrash2" size="20"></ng-icon>
-          </button>
-        </div>
-      </header>
-
-      <div class="hero-card p-8 md:p-12 rounded-[32px] bg-white border-2 border-emerald-500/30 hero-card-inner mb-12 relative overflow-hidden">
-        <!-- Decorative corner accent -->
-        <div class="hero-card-accent" aria-hidden="true"></div>
-        <!-- Top progress strip -->
-        <div class="absolute top-0 left-0 right-0 h-1.5 rounded-t-[30px] overflow-hidden bg-emerald-100">
-          <div class="h-full transition-all duration-1000 ease-out relative rounded-r-full progress-fill"
-                [ngClass]="getProgressBarColor(budget.spent, budget.total)"
-                [style.width.%]="getUtilization(budget.spent, budget.total)">
-            <div class="absolute top-0 right-0 bottom-0 w-12 bg-white/30 blur-lg"></div>
+          <div class="header-actions">
+            <button class="icon-btn edit-btn" title="Edit budget">
+              <ng-icon name="lucideEdit3" size="18"></ng-icon>
+            </button>
+            <button type="button" class="icon-btn delete-btn" (click)="openDeleteConfirm()" [disabled]="deleting" title="Delete budget">
+              <ng-icon name="lucideTrash2" size="18"></ng-icon>
+            </button>
           </div>
-        </div>
+        </header>
 
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10 pt-6">
-          <div>
-            <div class="inline-block px-4 py-2 rounded-full bg-white border-2 border-emerald-500/50 text-emerald-700 text-xs font-bold tracking-widest mb-5 uppercase shadow-sm">
-              {{ budget.category }}
+        <!-- ── Hero card ───────────────────────────────────────── -->
+        <div class="hero-card slide-up">
+
+          <!-- Top progress strip -->
+          <div class="hero-strip">
+            <div class="hero-strip-fill"
+                 [class.warn]="isWarn(budget.spent, budget.total)"
+                 [class.over]="isOver(budget.spent, budget.total)"
+                 [style.width.%]="utilPct(budget.spent, budget.total)"></div>
+          </div>
+
+          <div class="hero-body">
+            <div class="hero-left">
+              <span class="category-pill">{{ budget.category }}</span>
+              <h1 class="hero-name">{{ budget.name }}</h1>
             </div>
-            <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-800 hero-title">{{ budget.name }}</h1>
-          </div>
-          <div class="text-left md:text-right">
-            <p class="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-2">Total Spent</p>
-            <div class="flex items-baseline md:justify-end gap-2 flex-wrap">
-              <span class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-emerald-600 hero-amount">{{ budget.spent | currency:'KES':'symbol':'1.0-0' }}</span>
-              <span class="text-xl md:text-2xl text-gray-500 font-medium">/ {{ budget.total | currency:'KES':'symbol':'1.0-0' }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="progress-wrapper h-4 w-full rounded-full overflow-hidden mb-5 bg-gray-100 border border-gray-200/80">
-          <div class="h-full rounded-full transition-all duration-1000 ease-out relative progress-fill"
-               [ngClass]="getProgressBarColor(budget.spent, budget.total)"
-               [style.width.%]="getUtilization(budget.spent, budget.total)">
-            <div class="absolute top-0 right-0 bottom-0 w-10 bg-white/40 blur-md rounded-r-full"></div>
-          </div>
-        </div>
-        <div class="flex justify-between items-center text-sm font-semibold text-gray-600">
-          <span>{{ getUtilization(budget.spent, budget.total) | number:'1.0-0' }}% utilized</span>
-          <span [class]="(budget.total - budget.spent) < 0 ? 'px-4 py-2 rounded-full bg-red-50 border-2 border-red-300 text-red-600 font-bold' : 'px-4 py-2 rounded-full bg-white border-2 border-emerald-500/50 text-emerald-700 font-bold shadow-sm budget-detail-remaining'">
-            {{ (budget.total - budget.spent) >= 0 ? ((budget.total - budget.spent) | currency:'KES':'symbol':'1.0-0') + ' left' : 'Over budget by ' + ((budget.spent - budget.total) | currency:'KES':'symbol':'1.0-0') }}
-          </span>
-        </div>
-      </div>
-
-      <div class="transactions-section animation-slide-up" style="animation-delay: 0.2s; animation-fill-mode: both;">
-        <h2 class="text-2xl md:text-3xl font-extrabold text-gray-800 mb-6">Recent Transactions</h2>
-        <div class="fin-list bg-white rounded-[24px] border-2 border-emerald-500/20 overflow-hidden shadow-lg">
-          @for (tx of transactions; track tx.id; let last = $last) {
-            <div class="flex items-center justify-between p-5 md:p-6 transition-all duration-200 hover:bg-emerald-50/50 hover:shadow-inner fin-list-item" [ngClass]="{'border-b border-gray-200': !last}">
-              <div class="flex items-center gap-5">
-                <div class="w-14 h-14 rounded-2xl bg-white border-2 border-emerald-500/50 flex items-center justify-center text-emerald-600 shadow-sm">
-                  <ng-icon [name]="tx.icon" size="28"></ng-icon>
-                </div>
-                <div>
-                  <h3 class="font-bold text-gray-800 text-lg">{{ tx.merchant }}</h3>
-                  <p class="text-sm text-gray-500 font-medium mt-0.5">{{ tx.date | date:'mediumDate' }}</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <span class="font-bold text-xl text-emerald-600">-{{ tx.amount | currency:'KES':'symbol':'1.0-0' }}</span>
+            <div class="hero-right">
+              <p class="spent-label">Total Spent</p>
+              <div class="spent-row">
+                <span class="spent-amount" [class.warn]="isWarn(budget.spent, budget.total)" [class.over]="isOver(budget.spent, budget.total)">
+                  {{ budget.spent | fmt }}
+                </span>
+                <span class="spent-of">/ {{ budget.total | fmt }}</span>
               </div>
             </div>
-          }
-          @if (transactions.length === 0) {
-            <div class="p-12 text-center text-gray-500">
-              <p class="text-xl font-medium">No transactions found for this budget.</p>
-            </div>
-          }
+          </div>
+
+          <!-- Main progress bar -->
+          <div class="progress-track">
+            <div class="progress-fill"
+                 [class.warn]="isWarn(budget.spent, budget.total)"
+                 [class.over]="isOver(budget.spent, budget.total)"
+                 [style.width.%]="utilPct(budget.spent, budget.total)"></div>
+          </div>
+
+          <div class="progress-labels">
+            <span>{{ utilPct(budget.spent, budget.total) | number:'1.0-0' }}% utilized</span>
+            <span class="remaining-badge"
+                  [class.over]="isOver(budget.spent, budget.total)">
+              @if (!isOver(budget.spent, budget.total)) {
+                {{ (budget.total - budget.spent) | fmt }} left
+              } @else {
+                Over by {{ (budget.spent - budget.total) | fmt }}
+              }
+            </span>
+          </div>
         </div>
-      </div>
-      } <!-- end !isLoading && budget -->
+
+        <!-- ── Recent Transactions ──────────────────────────────── -->
+        <section class="txn-section slide-up" style="animation-delay: 0.15s">
+          <h2 class="section-title">Recent Transactions</h2>
+          <div class="txn-list">
+            @for (tx of transactions; track tx.id; let last = $last) {
+              <div class="txn-row" [class.no-border]="last">
+                <div class="txn-icon-wrap">
+                  <ng-icon [name]="tx.icon" size="22"></ng-icon>
+                </div>
+                <div class="txn-info">
+                  <p class="txn-merchant">{{ tx.merchant }}</p>
+                  <p class="txn-date">{{ tx.date | date:'mediumDate' }}</p>
+                </div>
+                <span class="txn-amount">-{{ tx.amount | fmt }}</span>
+              </div>
+            }
+            @if (transactions.length === 0) {
+              <div class="txn-empty">
+                <p>No transactions found for this budget.</p>
+              </div>
+            }
+          </div>
+        </section>
+
+      }
+
       <app-confirm-modal
         [open]="showDeleteConfirm"
         title="Delete this budget?"
@@ -130,69 +139,275 @@ interface Transaction {
     </div>
   `,
   styles: [`
-    .hero-card {
-      box-shadow:
-        0 4px 6px -1px rgba(5, 150, 105, 0.06),
-        0 10px 20px -5px rgba(5, 150, 105, 0.08),
-        0 20px 40px -10px rgba(0, 0, 0, 0.08);
-      transition: box-shadow 0.25s ease, transform 0.25s ease;
+    /* ── Layout ──────────────────────────────────────────────── */
+    .detail-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem;
     }
-    .hero-card:hover {
-      box-shadow:
-        0 8px 15px -3px rgba(5, 150, 105, 0.08),
-        0 20px 35px -10px rgba(5, 150, 105, 0.1),
-        0 25px 50px -15px rgba(0, 0, 0, 0.1);
+    .fade-in  { animation: fadeIn  0.45s ease-out; }
+    .slide-up { animation: slideUp 0.5s  cubic-bezier(0.16,1,0.3,1) both; }
+    @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── Loading ─────────────────────────────────────────────── */
+    .loading-state {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 6rem 0;
     }
-    .hero-card-accent {
-      position: absolute;
-      top: -60px;
-      right: -60px;
-      width: 180px;
-      height: 180px;
+    .spinner {
+      display: block;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(5, 150, 105, 0.06) 0%, transparent 70%);
-      pointer-events: none;
+      border: 3px solid var(--border-medium);
+      border-top-color: var(--accent);
+      animation: spin 0.8s linear infinite;
     }
-    .hero-title { color: #1f2937; }
-    .hero-amount { color: #059669; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    .progress-fill.budget-detail-progress {
-      background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+    /* ── Header ──────────────────────────────────────────────── */
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
     }
-    .progress-fill.bg-amber-400 {
-      background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border-medium);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      text-decoration: none;
     }
-    .progress-fill.bg-red-500 {
-      background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%);
-    }
+    .btn-back:hover { background: var(--surface-raised); border-color: var(--accent); color: var(--accent); }
 
-    .fin-list {
+    .header-actions { display: flex; gap: 0.5rem; }
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid var(--border-medium);
+      background: var(--surface);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .edit-btn:hover   { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+    .delete-btn:hover { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.4); color: #f87171; }
+
+    /* ── Hero card ───────────────────────────────────────────── */
+    .hero-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 24px;
+      overflow: hidden;
+      margin-bottom: 2rem;
       box-shadow:
-        0 2px 8px rgba(5, 150, 105, 0.06),
-        0 12px 24px -8px rgba(0, 0, 0, 0.06);
-    }
-    .fin-list-item:hover {
-      border-color: rgba(5, 150, 105, 0.2);
+        rgba(50,50,93,0.15) 0px 30px 60px -15px,
+        rgba(0,0,0,0.2) 0px 18px 36px -18px;
     }
 
-    .animation-fade-in {
-      animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    /* Strip */
+    .hero-strip { height: 5px; background: var(--border-subtle); width: 100%; }
+    .hero-strip-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #16a34a);
+      transition: width 1s ease;
     }
-    .animation-slide-up {
-      opacity: 0;
-      transform: translateY(40px);
-      animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    @keyframes slideUp {
-      to { opacity: 1; transform: translateY(0); }
+    .hero-strip-fill.warn { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .hero-strip-fill.over { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+    .hero-body {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      padding: 2rem 2.5rem 1.5rem;
     }
 
-    .budget-detail-spinner { border-color: #059669; }
-    .budget-detail-remaining { }
+    .category-pill {
+      display: inline-block;
+      padding: 0.3rem 0.9rem;
+      border-radius: 999px;
+      background: var(--accent-dim);
+      color: var(--accent);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+      border: 1px solid var(--accent-glow);
+    }
+    .hero-name {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin: 0;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .hero-right { text-align: right; }
+    .spent-label {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin: 0 0 0.4rem 0;
+    }
+    .spent-row { display: flex; align-items: baseline; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap; }
+    .spent-amount {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .spent-amount.warn { color: #f59e0b; }
+    .spent-amount.over { color: #f87171; }
+    .spent-of { font-size: 1.1rem; color: var(--text-primary); opacity: 0.45; font-weight: 500; }
+
+    /* Progress bar */
+    .progress-track {
+      height: 10px;
+      background: var(--surface);
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 0 2.5rem;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #16a34a);
+      border-radius: 999px;
+      transition: width 1s ease;
+    }
+    .progress-fill.warn { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .progress-fill.over { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 2.5rem 1.75rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      opacity: 0.7;
+    }
+    .remaining-badge {
+      padding: 0.3rem 0.9rem;
+      border-radius: 999px;
+      background: var(--accent-dim);
+      color: var(--accent);
+      font-size: 0.82rem;
+      font-weight: 700;
+      border: 1px solid var(--accent-glow);
+      opacity: 1;
+    }
+    .remaining-badge.over {
+      background: rgba(239,68,68,0.1);
+      color: #f87171;
+      border-color: rgba(239,68,68,0.25);
+    }
+
+    /* ── Transactions section ────────────────────────────────── */
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin: 0 0 1.25rem 0;
+      letter-spacing: -0.02em;
+    }
+    .txn-list {
+      background: var(--card-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow:
+        rgba(50,50,93,0.08) 0px 15px 35px -10px,
+        rgba(0,0,0,0.1) 0px 8px 18px -10px;
+    }
+    .txn-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.125rem 1.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background 0.15s;
+    }
+    .txn-row.no-border { border-bottom: none; }
+    .txn-row:hover { background: var(--surface-alt); }
+
+    .txn-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: var(--accent-dim);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 1px solid var(--accent-glow);
+    }
+    .txn-info { flex: 1; min-width: 0; }
+    .txn-merchant {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .txn-date {
+      font-size: 0.8rem;
+      color: var(--text-primary);
+      opacity: 0.5;
+      margin: 0.2rem 0 0 0;
+    }
+    .txn-amount {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #f87171;
+      flex-shrink: 0;
+    }
+    .txn-empty {
+      padding: 3rem;
+      text-align: center;
+      color: var(--text-primary);
+      opacity: 0.45;
+      font-size: 0.95rem;
+    }
+    .txn-empty p { margin: 0; }
+
+    /* ── Responsive ──────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .detail-wrap { padding: 1.5rem 1rem; }
+      .hero-body { padding: 1.5rem 1.25rem 1.25rem; }
+      .progress-track { margin: 0 1.25rem; }
+      .progress-labels { padding: 0.6rem 1.25rem 1.25rem; }
+      .hero-name { font-size: 1.75rem; }
+      .spent-amount { font-size: 1.75rem; }
+      .hero-right { text-align: left; }
+    }
   `]
 })
 export class BudgetDetailComponent implements OnInit {
@@ -218,7 +433,7 @@ export class BudgetDetailComponent implements OnInit {
           id: b.id,
           name: b.category?.name || 'Budget',
           spent: b.totalSpent || 0,
-          total: b.limitAmount || b.limit || 0,
+          total: b.limitAmount || 0,
           category: b.category?.name || '',
           period: b.period || '',
           remaining: b.remaining ?? ((b.limitAmount || 0) - (b.totalSpent || 0)),
@@ -244,25 +459,17 @@ export class BudgetDetailComponent implements OnInit {
     });
   }
 
-  getUtilization(spent: number, total: number): number {
+  utilPct(spent: number, total: number): number {
     return Math.min((spent / total) * 100, 100);
   }
-
-  getProgressBarColor(spent: number, total: number): string {
-    const ratio = total ? spent / total : 0;
-    if (ratio >= 1) return 'bg-red-500';
-    if (ratio > 0.8) return 'bg-amber-400';
-    return 'budget-detail-progress';
-  }
+  isWarn(spent: number, total: number): boolean { return total > 0 && spent / total > 0.8 && spent < total; }
+  isOver(spent: number, total: number): boolean { return spent >= total; }
 
   openDeleteConfirm() {
     if (!this.budget?.id || this.deleting) return;
     this.showDeleteConfirm = true;
   }
-
-  closeDeleteConfirm() {
-    this.showDeleteConfirm = false;
-  }
+  closeDeleteConfirm() { this.showDeleteConfirm = false; }
 
   confirmDelete() {
     if (!this.budget?.id || this.deleting) return;

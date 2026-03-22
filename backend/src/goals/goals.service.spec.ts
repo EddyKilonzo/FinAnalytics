@@ -45,7 +45,7 @@ describe("GoalsService", () => {
     jest.clearAllMocks();
     mockTransactionsService.getSummary.mockResolvedValue({ balance: 10000 });
     mockTransactionsService.create.mockResolvedValue({ id: "tx-1", amount: 5000, type: "expense" });
-    service = new GoalsService(mockPrisma as any, mockTransactionsService as any);
+    service = new GoalsService(mockPrisma as any, mockTransactionsService as any, { sendGoalProgressEmail: jest.fn() } as any);
   });
 
   it("should be defined", () => {

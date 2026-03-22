@@ -8,6 +8,7 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "../common/prisma.service";
 import { TransactionsService } from "../transactions/transactions.service";
+import { MailerService } from "../common/mailer/mailer.service";
 import { handlePrismaError } from "../common/helpers/prisma-error.handler";
 import type { CreateGoalDto } from "./dto/create-goal.dto";
 import type { UpdateGoalDto } from "./dto/update-goal.dto";
@@ -21,6 +22,7 @@ export class GoalsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly transactionsService: TransactionsService,
+    private readonly mailerService: MailerService,
   ) {}
 
   private get db() {
@@ -307,7 +309,32 @@ export class GoalsService {
         `Goal allocation: KES ${dto.amount} added to "${goal.name}" (${id}) — ` +
           `total now KES ${newAmount}; balance reduced by KES ${dto.amount}`,
       );
-      return this.enrichWithProgress(updated);
+
+      const enriched = this.enrichWithProgress(updated);
+
+      // Send goal completion email when goal is newly completed
+      if (enriched.status === "completed") {
+        (this.prisma as any).user
+          .findUnique({ where: { id: userId }, select: { email: true, name: true } })
+          .then((user: { email: string; name: string | null } | null) => {
+            if (!user?.email) return;
+            return this.mailerService.sendGoalProgressEmail({
+              to: user.email,
+              name: user.name,
+              goalName: goal.name,
+              currentAmount: enriched.currentAmount,
+              targetAmount: enriched.targetAmount,
+              percentageComplete: enriched.percentage,
+            });
+          })
+          .catch((err: unknown) => {
+            this.logger.warn(
+              `Could not send goal completion email for goal ${id}: ${err instanceof Error ? err.message : String(err)}`,
+            );
+          });
+      }
+
+      return enriched;
     } catch (error) {
       if (error instanceof HttpException) throw error;
       handlePrismaError(error, this.logger, "GoalsService.allocate");

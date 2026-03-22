@@ -151,7 +151,6 @@ class TransactionClassifier:
                     "clf",
                     LogisticRegression(
                         solver="lbfgs",
-                        multi_class="multinomial",
                         max_iter=1_000,
                         C=5.0,
                         class_weight="balanced",

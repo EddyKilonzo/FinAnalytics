@@ -1,5 +1,18 @@
-/* App root – minimal; landing uses its own styles */
+/* App root – flex column so shell / minimal-layout can pin footer to bottom */
 app-root {
-  display: block;
+  display: flex;
+  flex-direction: column;
   position: relative;
+  min-height: 100dvh;
+  min-height: 100vh;
+}
+
+/* Routed layout hosts fill remaining space below fixed background */
+app-shell,
+app-minimal-layout {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
 }

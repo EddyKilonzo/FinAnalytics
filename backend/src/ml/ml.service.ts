@@ -132,6 +132,39 @@ export class MlService {
   }
 
   /**
+   * Trigger model retraining on the ML service.
+   * Incorporates all accumulated feedback into an updated model.
+   * This call can be slow (seconds), so only trigger from admin endpoints.
+   */
+  async retrain(): Promise<{ message: string; samplesUsed?: number }> {
+    try {
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/retrain`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+
+      if (!response.ok) {
+        throw new Error(`ML /retrain returned HTTP ${response.status}`);
+      }
+
+      const data = (await response.json()) as {
+        message?: string;
+        samples_used?: number;
+      };
+      return {
+        message: data.message ?? "Retraining completed successfully",
+        samplesUsed: data.samples_used,
+      };
+    } catch (err) {
+      this.logger.error(
+        `ML retrain failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      throw err;
+    }
+  }
+
+  /**
    * Send a user's category correction to the ML service for future retraining.
    *
    * Fire-and-forget: we intentionally do not await this in normal flows.

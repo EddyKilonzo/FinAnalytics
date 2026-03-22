@@ -13,7 +13,14 @@
   --topbar-bg: rgba(8, 34, 30, 0.94);
   --topbar-border: rgba(142, 182, 155, 0.08);
   display: flex;
+  flex: 1 1 auto;
+  /* Exact viewport height — prevents body from scrolling.
+     Only .page-outlet scrolls internally. */
+  height: 100dvh;
   height: 100vh;
+  max-height: 100dvh;
+  max-height: 100vh;
+  width: 100%;
   overflow: hidden;
   background: transparent;
 }
@@ -34,7 +41,7 @@ html.light :host {
 .sidebar {
   width: var(--sidebar-w);
   flex-shrink: 0;
-  height: 100vh;
+  height: 100%;  /* fill :host which is exactly 100dvh */
   background: var(--sidebar-bg);
   border-right: 1px solid var(--sidebar-border);
   box-shadow: rgba(50, 50, 93, 0.2) 0px 30px 60px -12px,
@@ -145,21 +152,6 @@ html.light .sidebar::after {
   overflow-y: auto;
   overflow-x: hidden;
   padding: 0.75rem 0;
-  scrollbar-width: thin;
-  scrollbar-color: var(--sidebar-border) transparent;
-}
-
-.sidebar-nav::-webkit-scrollbar {
-  width: 4px;
-}
-
-.sidebar-nav::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.sidebar-nav::-webkit-scrollbar-thumb {
-  background: var(--sidebar-border);
-  border-radius: 2px;
 }
 
 .sidebar-section {
@@ -267,7 +259,7 @@ html.light .sidebar::after {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  height: 100vh;
+  min-height: 0;
   overflow: hidden;
   transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -322,6 +314,55 @@ html.light .topbar::after {
   gap: 1rem;
   flex: 1;
   min-width: 0;
+}
+
+/* Clickable logo → marketing home (sidebar has full logo on desktop) */
+.topbar-brand {
+  display: none;
+  align-items: center;
+  gap: 0.45rem;
+  text-decoration: none;
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+  border-radius: 8px;
+  padding: 0.2rem 0.35rem 0.2rem 0;
+  transition: opacity 0.2s;
+}
+
+.topbar-brand:hover {
+  opacity: 0.88;
+}
+
+.topbar-brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: #22c55e;
+  border-radius: 8px;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.35);
+}
+
+.topbar-brand-text {
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .topbar-brand {
+    display: flex;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar-brand-text {
+    display: none;
+  }
 }
 
 .topbar-mobile-menu {
@@ -494,6 +535,11 @@ html.light .topbar-icon-btn .icon-moon { display: block; }
   letter-spacing: 0.04em;
 }
 
+.topbar-admin-label {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 .topbar-chevron {
   color: var(--text-secondary);
   transition: transform 0.2s;
@@ -561,47 +607,49 @@ html.light .topbar-icon-btn .icon-moon { display: block; }
   color: #ef4444;
 }
 
+.user-dropdown-admin-badge {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: default;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
 /* ── Page content ────────────────────────────────────────────────────────── */
 .app-content {
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 1.5rem 2rem;
-  background: transparent;
-  scrollbar-width: thin;
-  scrollbar-color: var(--sidebar-border) transparent;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  /* No horizontal padding — handled by .page-content so footer can be full-width */
+  padding: 0;
+  background: transparent;
 }
 
 .page-outlet {
-  flex: 1 0 auto;
-  min-height: fit-content;
-  padding-bottom: 0.5rem;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
 }
 
-.app-content::-webkit-scrollbar {
-  width: 5px;
+.page-outlet::-webkit-scrollbar {
+  display: none;
 }
 
-.app-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.app-content::-webkit-scrollbar-thumb {
-  background: var(--sidebar-border);
-  border-radius: 3px;
+/* Padded wrapper around the routed page — keeps content inset while footer is full-width */
+.page-content {
+  padding: 1.5rem 2rem 0;
 }
 
 /* ── App layout footer ───────────────────────────────────────────────────── */
 .app-layout-footer {
-  flex-shrink: 0;
-  margin-top: auto;
-  margin-bottom: 0;
-  margin-left: -2rem;
-  margin-right: -2rem;
-  padding-top: 0.75rem;
+  margin-top: 2rem;
 }
 
 /* ── Mobile overlay ──────────────────────────────────────────────────────── */
@@ -620,6 +668,7 @@ html.light .topbar-icon-btn .icon-moon { display: block; }
     position: fixed;
     left: 0;
     top: 0;
+    height: 100dvh;
     height: 100vh;
     transform: translateX(-100%);
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s;
@@ -651,15 +700,8 @@ html.light .topbar-icon-btn .icon-moon { display: block; }
     max-width: 200px;
   }
 
-  .app-content {
-    padding: 1rem;
-  }
-
-  .app-layout-footer {
-    margin-left: -1rem;
-    margin-right: -1rem;
-    margin-bottom: 0;
-    padding-top: 0.75rem;
+  .page-content {
+    padding: 1rem 1rem 0;
   }
 }
 

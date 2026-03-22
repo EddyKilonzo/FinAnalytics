@@ -34,7 +34,7 @@
           </div>
           <div class="text-right">
             <span class="text-xs font-semibold uppercase tracking-wider target-label">Target</span>
-            <div class="text-xl font-bold target-amount">{{ goal.target | currency:'KES':'symbol':'1.0-0' }}</div>
+            <div class="text-xl font-bold target-amount">{{ goal.target | fmt }}</div>
           </div>
         </div>
 
@@ -48,7 +48,7 @@
         <div class="mt-auto">
           <div class="flex justify-between items-end mb-2">
             <div class="text-sm font-medium">
-              <span class="text-lg font-bold saved-amount">{{ goal.current | currency:'KES':'symbol':'1.0-0' }}</span>
+              <span class="text-lg font-bold saved-amount">{{ goal.current | fmt }}</span>
               <span class="saved-label"> saved</span>
             </div>
             <div class="text-sm font-bold pct-amount" style="color: var(--accent)">{{ getPercentage(goal.current, goal.target) }}%</div>

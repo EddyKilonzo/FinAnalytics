@@ -2,15 +2,18 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { 
-  lucidePlus, lucideSearch, lucideFilter, lucideMoreHorizontal, 
-  lucideArrowUpRight, lucideArrowDownLeft, lucideCoffee, lucideShoppingCart, 
-  lucideCar, lucideHome, lucideMonitor, lucideBriefcase, lucideEdit2, lucideTrash2, lucideSparkles
+import {
+  lucidePlus, lucideSearch, lucideFilter, lucideMoreHorizontal,
+  lucideArrowUpRight, lucideArrowDownLeft, lucideCoffee, lucideShoppingCart,
+  lucideCar, lucideHome, lucideMonitor, lucideBriefcase, lucideEdit2, lucideTrash2, lucideSparkles,
+  lucideDownload
 } from '@ng-icons/lucide';
 import { AddTransactionComponent } from '../add/add-transaction.component';
+import { HttpErrorResponse } from '@angular/common/http';
 import { TransactionService } from '../../../core/services/transaction.service';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { getBackendErrorMessage } from '../../../core/utils/backend-error';
+import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
 
 export interface Transaction {
   id: string;
@@ -28,12 +31,13 @@ export interface Transaction {
 @Component({
   selector: 'app-transaction-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgIconComponent, AddTransactionComponent],
+  imports: [CommonModule, FormsModule, NgIconComponent, AddTransactionComponent, CurrencyFormatPipe],
   viewProviders: [
-    provideIcons({ 
+    provideIcons({
       lucidePlus, lucideSearch, lucideFilter, lucideMoreHorizontal,
       lucideArrowUpRight, lucideArrowDownLeft, lucideCoffee, lucideShoppingCart,
-      lucideCar, lucideHome, lucideMonitor, lucideBriefcase, lucideEdit2, lucideTrash2, lucideSparkles
+      lucideCar, lucideHome, lucideMonitor, lucideBriefcase, lucideEdit2, lucideTrash2, lucideSparkles,
+      lucideDownload
     })
   ],
   templateUrl: './transaction-list.component.html',
@@ -79,7 +83,7 @@ export class TransactionListComponent implements OnInit {
       next: (response) => {
         const items: any[] = Array.isArray(response.data)
           ? response.data
-          : (response.data?.transactions ?? response.data?.items ?? []);
+          : (response.data?.transactions ?? []);
         const mapped = items.map((tx: any) => {
           const rawCategory = tx.category?.name || (tx.type === 'income' ? 'Income' : 'Other');
           const category = rawCategory === 'Other' && tx.type === 'income' ? 'Income' : rawCategory;
@@ -123,9 +127,9 @@ export class TransactionListComponent implements OnInit {
     const map: Record<string, string> = {
       'Food & Dining': '#22c55e',
       'Groceries': '#10b981',
-      'Transport': '#3b82f6',
+      'Transport': '#235347',
       'Utilities': '#8b5cf6',
-      'Electronics': '#6366f1',
+      'Electronics': '#16a34a',
       'Salary': '#059669',
       'Income': '#059669',
       'Entertainment': '#ec4899',
@@ -188,6 +192,23 @@ export class TransactionListComponent implements OnInit {
         this.loadTransactions();
       },
       error: (err) => this.toast.error(getBackendErrorMessage(err, 'Could not delete transaction.'))
+    });
+  }
+
+  exportCsv() {
+    const filter = this.typeFilter();
+    const params = filter !== 'all' ? { type: filter } : {};
+    this.transactionService.exportCsv(params).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `transactions-${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: (err: HttpErrorResponse) =>
+        this.toast.error(getBackendErrorMessage(err, 'Could not export transactions.'))
     });
   }
 }

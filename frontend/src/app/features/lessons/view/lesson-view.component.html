@@ -1,6 +1,26 @@
 <div class="lesson-view-container texture-layer">
+
+  <!-- Reading progress bar -->
+  @if (!isLoading() && lesson()) {
+    <div class="reading-progress-bar">
+      <div class="reading-progress-fill" [style.width.%]="readingProgress()"></div>
+    </div>
+  }
+
+  <!-- Breadcrumb -->
+  <nav class="lv-breadcrumb" aria-label="Breadcrumb">
+    <a routerLink="/dashboard" class="lv-breadcrumb-link">Home</a>
+    <span class="lv-breadcrumb-sep">›</span>
+    <a routerLink="/lessons" class="lv-breadcrumb-link">Financial Academy</a>
+    @if (lesson(); as l) {
+      <span class="lv-breadcrumb-sep">›</span>
+      <span class="lv-breadcrumb-current">{{ l.title }}</span>
+    }
+  </nav>
+
+  <!-- Back nav -->
   <div class="back-nav">
-    <a routerLink="/lessons" class="back-link btn-back-unified inline-flex items-center gap-2 bg-white border-2 border-white text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 py-2.5 px-4 rounded-xl font-medium text-sm shadow-sm transition-colors no-underline">
+    <a routerLink="/lessons" class="back-link btn-back-unified">
       <ng-icon name="lucideArrowLeft" size="20"></ng-icon>
       <span>Back to Lessons</span>
     </a>
@@ -11,36 +31,274 @@
   </div>
 
   <ng-container *ngIf="!isLoading()">
-    <article class="lesson-article" *ngIf="lesson() as currentLesson">
-      <div class="article-header">
-        <div class="category-tag">{{ currentLesson.category }}</div>
-        
-        <div class="article-meta">
-          <div class="meta-item">
-            <ng-icon name="lucideCalendar" size="16"></ng-icon>
-            <span></span>
-          </div>
-          <div class="meta-separator"></div>
-          <div class="meta-item">
-            <ng-icon name="lucideClock" size="16"></ng-icon>
-            <span>{{ currentLesson.readTimeMinutes }} min read</span>
-          </div>
-        </div>
-      </div>
+    <div class="lesson-layout" *ngIf="lesson() as currentLesson">
 
-      <!-- The markdown content will render the title as h1 -->
-      <div class="markdown-content" [innerHTML]="parsedContent()"></div>
-      
-      <div class="article-footer">
-        <div class="share-section">
-          <p>Found this useful?</p>
-          <button class="share-button">
-            <ng-icon name="lucideShare2" size="18"></ng-icon>
-            <span>Share Lesson</span>
-          </button>
+      <!-- Main article -->
+      <article class="lesson-article">
+        <div class="article-header">
+          <div class="category-tag">{{ currentLesson.category }}</div>
+
+          <div class="article-meta">
+            <div class="meta-item">
+              <ng-icon name="lucideCalendar" size="16"></ng-icon>
+              <span></span>
+            </div>
+            <div class="meta-separator"></div>
+            <div class="meta-item">
+              <ng-icon name="lucideClock" size="16"></ng-icon>
+              <span>{{ currentLesson.readTimeMinutes != null ? currentLesson.readTimeMinutes : currentLesson.durationMinutes }} min read</span>
+            </div>
+          </div>
         </div>
-      </div>
-    </article>
+
+        <!-- Mobile TOC toggle -->
+        @if (tocItems().length > 0) {
+          <div class="toc-mobile-toggle">
+            <button class="toc-toggle-btn" (click)="tocExpanded.set(!tocExpanded())">
+              <ng-icon name="lucideList" size="16"></ng-icon>
+              <span>{{ tocExpanded() ? 'Hide' : 'Show' }} Contents</span>
+              <ng-icon [name]="tocExpanded() ? 'lucideChevronUp' : 'lucideChevronDown'" size="14"></ng-icon>
+            </button>
+            @if (tocExpanded()) {
+              <nav class="toc-mobile-nav">
+                @for (item of tocItems(); track item.id) {
+                  <button
+                    class="toc-mobile-link"
+                    [class.toc-h3]="item.level === 3"
+                    [class.active]="activeSectionId() === item.id"
+                    (click)="scrollToSection(item.id)"
+                  >{{ item.text }}</button>
+                }
+              </nav>
+            }
+          </div>
+        }
+
+        <!-- Fun Fact Banner -->
+        @if (facts.length > 0) {
+          <div class="fun-fact-banner">
+            <div class="fun-fact-icon">
+              <ng-icon name="lucideLightbulb" size="18"></ng-icon>
+            </div>
+            <div class="fun-fact-content">
+              <span class="fun-fact-label">Did you know?</span>
+              <p class="fun-fact-text">{{ facts[currentFactIndex()] }}</p>
+            </div>
+            <div class="fun-fact-controls">
+              <button class="fun-fact-btn" (click)="prevFact()" title="Previous fact">
+                <ng-icon name="lucideChevronLeft" size="14"></ng-icon>
+              </button>
+              <span class="fun-fact-dots">
+                @for (f of facts; track $index) {
+                  <span class="fun-fact-dot" [class.active]="$index === currentFactIndex()"></span>
+                }
+              </span>
+              <button class="fun-fact-btn" (click)="nextFact()" title="Next fact">
+                <ng-icon name="lucideChevronRight" size="14"></ng-icon>
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Lesson content -->
+        <div class="markdown-content" [innerHTML]="parsedContent()"></div>
+
+        <!-- Summary Panel -->
+        @if (currentLesson.summary) {
+          <div class="lesson-summary-panel">
+            <div class="summary-panel-header">
+              <ng-icon name="lucideBookOpen" size="18"></ng-icon>
+              <span>Quick Summary</span>
+            </div>
+            <p class="summary-panel-text">{{ currentLesson.summary }}</p>
+            @if (currentLesson.topics && currentLesson.topics.length > 0) {
+              <div class="summary-topics">
+                @for (topic of currentLesson.topics; track topic) {
+                  <span class="summary-topic-chip">{{ topic }}</span>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Knowledge Check Quiz -->
+        @if (quiz.length > 0) {
+          <div class="quiz-section">
+            <div class="quiz-header">
+              <div class="quiz-icon">
+                <ng-icon name="lucideBrain" size="20"></ng-icon>
+              </div>
+              <div>
+                <h3 class="quiz-title">Knowledge Check</h3>
+                <p class="quiz-subtitle">Test what you've just learned</p>
+              </div>
+              <div class="quiz-progress-chip">
+                {{ currentQuestion() + 1 }} / {{ quiz.length }}
+              </div>
+            </div>
+
+            @if (!quizSubmitted()) {
+              <div class="quiz-body">
+                <p class="quiz-question">{{ quiz[currentQuestion()].question }}</p>
+                <div class="quiz-options">
+                  @for (option of quiz[currentQuestion()].options; track $index) {
+                    <button
+                      class="quiz-option"
+                      [class.selected]="selectedAnswer() === $index"
+                      [class.correct]="isAnswered(currentQuestion()) && $index === quiz[currentQuestion()].correct"
+                      [class.wrong]="isAnswered(currentQuestion()) && selectedAnswer() === $index && $index !== quiz[currentQuestion()].correct"
+                      [class.disabled]="isAnswered(currentQuestion())"
+                      (click)="selectAnswer($index)"
+                    >
+                      <span class="quiz-option-letter">{{ ['A','B','C','D'][$index] }}</span>
+                      <span>{{ option }}</span>
+                    </button>
+                  }
+                </div>
+
+                @if (isAnswered(currentQuestion())) {
+                  <div class="quiz-explanation" [class.correct]="isCorrect(currentQuestion())" [class.wrong]="!isCorrect(currentQuestion())">
+                    <ng-icon [name]="isCorrect(currentQuestion()) ? 'lucideCheckCircle' : 'lucideHelpCircle'" size="16"></ng-icon>
+                    <span>{{ quiz[currentQuestion()].explanation }}</span>
+                  </div>
+                }
+
+                <div class="quiz-actions">
+                  @if (!isAnswered(currentQuestion())) {
+                    <button
+                      class="quiz-btn quiz-btn-primary"
+                      [disabled]="selectedAnswer() === null"
+                      (click)="confirmAnswer()"
+                    >
+                      <ng-icon name="lucideCheckCircle" size="16"></ng-icon>
+                      Confirm answer
+                    </button>
+                  } @else {
+                    <button class="quiz-btn quiz-btn-next" (click)="nextQuestion()">
+                      {{ currentQuestion() < quiz.length - 1 ? 'Next question' : 'See results' }}
+                      <ng-icon name="lucideChevronRight" size="16"></ng-icon>
+                    </button>
+                  }
+                </div>
+              </div>
+            } @else {
+              <!-- Quiz Results -->
+              <div class="quiz-results">
+                <!-- Score ring -->
+                <div class="quiz-score-ring" [class.perfect]="quizScore() === quiz.length" [class.good]="quizScore() >= quiz.length * 0.6">
+                  <ng-icon [name]="quizScore() === quiz.length ? 'lucideTrophy' : 'lucideStar'" size="32"></ng-icon>
+                  <span class="quiz-score-num">{{ quizScore() }}/{{ quiz.length }}</span>
+                </div>
+                <h4 class="quiz-result-title">
+                  @if (quizScore() === quiz.length) { Perfect score! }
+                  @else if (quizScore() >= quiz.length * 0.6) { Well done! }
+                  @else { Keep learning! }
+                </h4>
+                <p class="quiz-result-sub">
+                  You got {{ quizScore() }} out of {{ quiz.length }} correct.
+                </p>
+
+                <!-- Per-question review -->
+                <div class="quiz-review">
+                  @for (q of quiz; track q; let qi = $index) {
+                    <div class="quiz-review-item" [class.review-correct]="isCorrect(qi)" [class.review-wrong]="!isCorrect(qi)">
+                      <div class="review-q-header">
+                        <span class="review-q-num">Q{{ qi + 1 }}</span>
+                        <span class="review-verdict">
+                          @if (isCorrect(qi)) {
+                            <ng-icon name="lucideCheckCircle" size="15"></ng-icon> Correct
+                          } @else {
+                            <ng-icon name="lucideHelpCircle" size="15"></ng-icon> Incorrect
+                          }
+                        </span>
+                      </div>
+                      <p class="review-q-text">{{ q.question }}</p>
+                      <div class="review-options">
+                        @for (opt of q.options; track opt; let oi = $index) {
+                          <div class="review-opt"
+                            [class.review-opt-correct]="oi === q.correct"
+                            [class.review-opt-wrong]="oi === answeredQuestions()[qi] && oi !== q.correct"
+                          >
+                            <span class="review-opt-letter">{{ ['A','B','C','D'][oi] }}</span>
+                            <span class="review-opt-text">{{ opt }}</span>
+                            @if (oi === q.correct) {
+                              <ng-icon name="lucideCheckCircle" size="13" class="review-opt-icon"></ng-icon>
+                            }
+                            @if (oi === answeredQuestions()[qi] && oi !== q.correct) {
+                              <ng-icon name="lucideHelpCircle" size="13" class="review-opt-icon"></ng-icon>
+                            }
+                          </div>
+                        }
+                      </div>
+                      <div class="review-explanation">
+                        <ng-icon name="lucideLightbulb" size="13"></ng-icon>
+                        {{ q.explanation }}
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <button class="quiz-btn quiz-btn-retake" (click)="retakeQuiz()">
+                  <ng-icon name="lucideZap" size="15"></ng-icon>
+                  Retake Quiz
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Article footer -->
+        <div class="article-footer">
+          <div class="share-section">
+            <p>Found this useful?</p>
+            <button class="share-button" (click)="shareLesson()" [class.share-copied]="shareStatus() !== 'idle'">
+              <ng-icon name="lucideShare2" size="16"></ng-icon>
+              <span>
+                @if (shareStatus() === 'copied') { Link copied! }
+                @else if (shareStatus() === 'shared') { Shared! }
+                @else { Share Lesson }
+              </span>
+            </button>
+          </div>
+          <div class="complete-section" style="margin-top: 1.5rem;">
+            @if (isCompleted()) {
+              <div style="display: inline-flex; align-items: center; gap: 0.5rem; color: #10b981; font-weight: 600; font-size: 0.95rem;">
+                <ng-icon name="lucideCheckCircle" size="20"></ng-icon>
+                <span>Lesson completed</span>
+              </div>
+            } @else {
+              <button
+                (click)="markComplete()"
+                [disabled]="markingComplete()"
+                style="display: inline-flex; align-items: center; gap: 0.5rem; background: #10b981; color: white; border: none; padding: 0.6rem 1.25rem; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.9rem; opacity: 1; transition: opacity 0.2s;"
+                [style.opacity]="markingComplete() ? '0.6' : '1'">
+                <ng-icon name="lucideCheckCircle" size="18"></ng-icon>
+                {{ markingComplete() ? 'Saving…' : 'Mark as complete' }}
+              </button>
+            }
+          </div>
+        </div>
+      </article>
+
+      <!-- Sticky TOC sidebar (desktop only) -->
+      @if (tocItems().length > 0) {
+        <aside class="toc-sidebar">
+          <div class="toc-inner">
+            <h4 class="toc-heading">Contents</h4>
+            <nav class="toc-nav">
+              @for (item of tocItems(); track item.id) {
+                <button
+                  class="toc-link"
+                  [class.toc-h3]="item.level === 3"
+                  [class.active]="activeSectionId() === item.id"
+                  (click)="scrollToSection(item.id)"
+                >{{ item.text }}</button>
+              }
+            </nav>
+          </div>
+        </aside>
+      }
+    </div>
 
     <div class="not-found" *ngIf="!lesson()">
       <h2>Lesson not found</h2>

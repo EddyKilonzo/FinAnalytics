@@ -1,294 +1,295 @@
-<div class="dashboard-container fade-in-up relative min-h-[400px]">
-  <!-- Loading Overlay -->
-  @if (isLoading) {
-    <div class="absolute inset-0 z-50 flex items-center justify-center bg-slate-50/80 backdrop-blur-sm rounded-2xl">
-      <div class="flex flex-col items-center">
-        <div class="w-12 h-12 border-4 rounded-full animate-spin dashboard-spinner"></div>
-        <p class="mt-4 font-medium animate-pulse dashboard-loading-text">Loading dashboard...</p>
-      </div>
+<div class="dashboard-container fade-in-up">
+
+  <!-- Full overlay: initial load only -->
+  @if (isLoading && isInitialLoad) {
+    <div class="dash-loading-overlay">
+      <div class="dash-spinner"></div>
+      <p class="dash-loading-text">Loading dashboard...</p>
+    </div>
+  }
+
+  <!-- Filter-change indicator (subtle, doesn't hide charts) -->
+  @if (isFilterUpdating) {
+    <div class="filter-updating-bar">
+      <ng-icon name="lucideLoader2" class="spin-icon" size="14"></ng-icon>
+      Updating...
     </div>
   }
 
   <!-- Summary load error -->
   @if (summaryLoadFailed) {
-    <div class="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 flex items-center justify-between gap-4">
-      <p class="text-sm font-medium">We couldn't load your summary. Try selecting "All Time" above, check your connection, or retry.</p>
-      <button type="button" class="btn-primary btn-sm shrink-0" (click)="loadDashboardData()">Retry</button>
+    <div class="dash-banner dash-banner-warn">
+      <p>Could not load your summary. Check your connection or try another date range.</p>
+      <button type="button" class="dash-retry-btn" (click)="loadDashboardData()">Retry</button>
     </div>
   }
 
-  <!-- No data for period (API succeeded but returned zeros) -->
+  <!-- No data for period -->
   @if (!isLoading && !summaryLoadFailed && hasNoDataForPeriod && dateRange !== 'all') {
-    <div class="mb-6 p-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-sm">
-      No transactions in <strong>{{ dateRangeLabel }}</strong>. Try <strong>All Time</strong> or <strong>Last 6 Months</strong> in the dropdown above to see your data.
+    <div class="dash-banner dash-banner-info">
+      No transactions in <strong>{{ dateRangeLabel }}</strong>. Try <strong>All Time</strong> or <strong>Last 6 Months</strong> to see your data.
     </div>
   }
 
   <!-- Header -->
-  <header class="dashboard-header mb-8">
+  <header class="dashboard-header">
     <div>
-      <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Overview</h1>
-      <p class="text-slate-500 mt-1">Showing numbers and breakdown for <strong class="text-slate-700">{{ dateRangeLabel }}</strong>.</p>
+      <h1 class="dash-title">Overview</h1>
+      <p class="dash-subtitle page-subtitle">Showing breakdown for <strong>{{ dateRangeLabel }}</strong></p>
     </div>
-    <div class="header-actions flex items-center gap-4">
-      <select
-        [value]="dateRange"
-        (change)="onDateRangeChange($event)"
-        class="bg-slate-50 border border-slate-200 text-sm text-slate-700 font-medium rounded-lg px-3 py-2 cursor-pointer outline-none focus:ring-2 focus:ring-(--accent)">
+    <div class="header-actions">
+      <select class="dash-select" [value]="dateRange" (change)="onDateRangeChange($event)">
         <option value="30days">Last 30 Days</option>
         <option value="6months">Last 6 Months</option>
         <option value="year">This Year</option>
         <option value="all">All Time</option>
       </select>
-      <button class="btn-primary flex items-center gap-2">
-        <ng-icon name="lucideLightbulb"></ng-icon>
+      <button class="btn-analysis" (click)="openSmartAnalysis()">
+        <ng-icon name="lucideSparkles" size="15"></ng-icon>
         Smart Analysis
       </button>
     </div>
   </header>
 
   <!-- Summary Cards -->
-  <section class="summary-grid mb-8">
+  <section class="summary-grid">
     <div class="summary-card card-shadow">
       <div class="card-icon">
-        <ng-icon name="lucideWallet" size="24"></ng-icon>
+        <ng-icon name="lucideWallet" size="22"></ng-icon>
       </div>
       <div class="card-content">
         <p class="card-label">Total Balance</p>
-        <h2 class="card-value">{{ totalBalance | currency:'KES':'symbol':'1.0-0' }}</h2>
-        <p class="card-trend" [ngClass]="balanceTrend.isPositive ? 'dashboard-trend' : 'text-red-500'">
-          <ng-icon [name]="balanceTrend.isPositive ? 'lucideTrendingUp' : 'lucideTrendingDown'" size="16"></ng-icon>
-          <span>{{ balanceTrend.text }} {{ trendComparisonLabel }}</span>
+        <h2 class="card-value">{{ totalBalance | fmt }}</h2>
+        <p class="card-trend" [class.trend-up]="balanceTrend.isPositive" [class.trend-down]="!balanceTrend.isPositive">
+          <ng-icon [name]="balanceTrend.isPositive ? 'lucideTrendingUp' : 'lucideTrendingDown'" size="14"></ng-icon>
+          {{ balanceTrend.text }} {{ trendComparisonLabel }}
         </p>
       </div>
     </div>
 
     <div class="summary-card card-shadow">
-      <div class="card-icon bg-blue-100 text-blue-600">
-        <ng-icon name="lucideTrendingDown" size="24"></ng-icon>
+      <div class="card-icon icon-spending">
+        <ng-icon name="lucideTrendingDown" size="22"></ng-icon>
       </div>
       <div class="card-content">
         <p class="card-label">Monthly Spending</p>
-        <h2 class="card-value">{{ monthlySpending | currency:'KES':'symbol':'1.0-0' }}</h2>
-        <p class="card-trend" [ngClass]="spendingTrend.isPositive ? 'dashboard-trend' : 'text-red-500'">
-          <ng-icon [name]="spendingTrend.isPositive ? 'lucideTrendingDown' : 'lucideTrendingUp'" size="16"></ng-icon>
-          <span>{{ spendingTrend.text }} {{ trendComparisonLabel }}</span>
+        <h2 class="card-value">{{ monthlySpending | fmt }}</h2>
+        <p class="card-trend" [class.trend-up]="spendingTrend.isPositive" [class.trend-down]="!spendingTrend.isPositive">
+          <ng-icon [name]="spendingTrend.isPositive ? 'lucideTrendingDown' : 'lucideTrendingUp'" size="14"></ng-icon>
+          {{ spendingTrend.text }} {{ trendComparisonLabel }}
         </p>
       </div>
     </div>
 
     <div class="summary-card card-shadow">
-      <div class="card-icon bg-amber-100 text-amber-600">
-        <ng-icon name="lucideTrendingUp" size="24"></ng-icon>
+      <div class="card-icon icon-income">
+        <ng-icon name="lucideTrendingUp" size="22"></ng-icon>
       </div>
       <div class="card-content">
         <p class="card-label">Monthly Income</p>
-        <h2 class="card-value">{{ monthlyIncome | currency:'KES':'symbol':'1.0-0' }}</h2>
-        <p class="card-trend" [ngClass]="incomeTrend.isPositive ? 'dashboard-trend' : 'text-red-500'">
-          <ng-icon [name]="incomeTrend.isPositive ? 'lucideTrendingUp' : 'lucideTrendingDown'" size="16"></ng-icon>
-          <span>{{ incomeTrend.text }} {{ trendComparisonLabel }}</span>
+        <h2 class="card-value">{{ monthlyIncome | fmt }}</h2>
+        <p class="card-trend" [class.trend-up]="incomeTrend.isPositive" [class.trend-down]="!incomeTrend.isPositive">
+          <ng-icon [name]="incomeTrend.isPositive ? 'lucideTrendingUp' : 'lucideTrendingDown'" size="14"></ng-icon>
+          {{ incomeTrend.text }} {{ trendComparisonLabel }}
         </p>
       </div>
     </div>
 
     <div class="summary-card card-shadow">
-      <div class="card-icon bg-purple-100 text-purple-600">
-        <ng-icon name="lucideTarget" size="24"></ng-icon>
+      <div class="card-icon icon-goals">
+        <ng-icon name="lucideTarget" size="22"></ng-icon>
       </div>
       <div class="card-content">
         <p class="card-label">Active Goals</p>
         <h2 class="card-value">{{ activeGoalsCount }}</h2>
-        <p class="card-trend text-slate-500">
-          @if (activeGoalsCount === 0) {
-            <span>No goals yet</span>
-          } @else {
-            <span>{{ goalsOnTrackCount }} on track, {{ goalsNeedAttentionCount }} need attention</span>
-          }
+        <p class="card-trend trend-neutral">
+          @if (activeGoalsCount === 0) { No goals yet }
+          @else { {{ goalsOnTrackCount }} on track · {{ goalsNeedAttentionCount }} need attention }
         </p>
       </div>
     </div>
   </section>
 
-  <!-- Main Content Grid -->
+  <!-- Main grid -->
   <div class="main-grid">
-    <!-- Left Column -->
-    <div class="left-col space-y-8">
-      
-      <!-- Chart Section -->
-      <section class="chart-section card-shadow rounded-2xl bg-white p-6">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-xl font-bold text-slate-800">Cash Flow</h3>
-          <span class="text-sm text-slate-500">{{ dateRangeLabel }}</span>
+
+    <!-- Left column -->
+    <div class="left-col">
+
+      <!-- Cash Flow chart -->
+      <section class="dash-card">
+        <div class="dash-card-header">
+          <h3 class="dash-card-title">Cash Flow</h3>
+          <span class="dash-card-meta">{{ dateRangeLabel }}</span>
         </div>
-        <div class="chart-container relative h-[300px]">
-          <canvas baseChart
-            [data]="lineChartData"
-            [options]="lineChartOptions"
-            [type]="lineChartType">
-          </canvas>
+        <div class="chart-container">
+          <canvas baseChart [data]="lineChartData" [options]="lineChartOptions" [type]="lineChartType"></canvas>
         </div>
       </section>
 
-      <!-- Budget Alerts & feedback (always visible) -->
-      <section class="alerts-section card-shadow rounded-2xl bg-white p-6">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-xl font-bold text-slate-800">Budget Alerts</h3>
-          <a routerLink="/budgets" class="text-emerald-600 dashboard-link text-sm font-medium flex items-center gap-1">
-            View All <ng-icon name="lucideChevronRight"></ng-icon>
+      <!-- Budget Alerts -->
+      <section class="dash-card">
+        <div class="dash-card-header">
+          <h3 class="dash-card-title">Budget Alerts</h3>
+          <a routerLink="/budgets" class="dash-link">
+            View All <ng-icon name="lucideChevronRight" size="14"></ng-icon>
           </a>
         </div>
 
-        <div class="space-y-4">
-          @for (alert of budgetAlerts; track alert.category) {
-          <div class="alert-item group">
-            <div class="flex justify-between mb-2">
-              <span class="font-medium text-slate-700">{{ alert.category }}</span>
-              <span class="text-sm font-semibold"
-                    [ngClass]="{
-                      'text-red-500': alert.status === 'danger',
-                      'text-amber-500': alert.status === 'warning',
-                      'dashboard-trend': alert.status === 'safe'
-                    }">
-                {{ alert.spent | currency:'KES':'symbol':'1.0-0' }} / {{ alert.budget | currency:'KES':'symbol':'1.0-0' }}
+        @for (alert of budgetAlerts; track alert.category) {
+          <div class="alert-item">
+            <div class="alert-top">
+              <span class="alert-name">{{ alert.category }}</span>
+              <span class="alert-amounts" [class.danger]="alert.status==='danger'" [class.warning]="alert.status==='warning'" [class.safe]="alert.status==='safe'">
+                {{ alert.spent | fmt }} / {{ alert.budget | fmt }}
               </span>
             </div>
-            <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-              <div class="h-2.5 rounded-full transition-all duration-1000 ease-out"
-                   [style.width.%]="alert.percentage > 100 ? 100 : alert.percentage"
-                   [ngClass]="{
-                     'bg-red-500': alert.status === 'danger',
-                     'bg-amber-500': alert.status === 'warning',
-                     'bg-(--accent)': alert.status === 'safe'
-                   }">
-              </div>
+            <div class="alert-track">
+              <div class="alert-fill" [style.width.%]="alert.percentage" [class.danger]="alert.status==='danger'" [class.warning]="alert.status==='warning'" [class.safe]="alert.status==='safe'"></div>
             </div>
-            <p class="text-xs mt-1.5 text-slate-600" [ngClass]="{
-                 'text-red-500': alert.status === 'danger',
-                 'text-amber-600': alert.status === 'warning'
-               }">
-              {{ alert.feedback }}
-            </p>
+            <p class="alert-feedback" [class.danger]="alert.status==='danger'" [class.warning]="alert.status==='warning'">{{ alert.feedback }}</p>
           </div>
-          }
+        }
 
-          @if (budgetAlerts.length === 0) {
-            <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-emerald-800">
-              <p class="font-medium">How it's going</p>
-              <p class="text-sm mt-1">All your budgets are on track. No alerts this period.</p>
-            </div>
-          }
-
-          @if (nudges.length > 0) {
-          <div class="nudges mt-4 pt-4 border-t border-slate-100">
-            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Tips</p>
-            <div class="space-y-2">
-              @for (nudge of nudges; track nudge.id) {
-              <div class="flex gap-2 items-start text-sm text-slate-600 bg-slate-50 rounded-lg p-3">
-                <ng-icon name="lucideLightbulb" size="16" class="text-amber-500 shrink-0 mt-0.5"></ng-icon>
-                <span>{{ nudge.message }}</span>
-              </div>
-              }
-            </div>
+        @if (budgetAlerts.length === 0) {
+          <div class="alert-all-good">
+            <p class="alert-all-good-title">All clear</p>
+            <p class="alert-all-good-sub">All your budgets are on track.</p>
           </div>
-          }
-        </div>
+        }
+
+        @if (nudges.length > 0) {
+          <div class="nudges-section">
+            <p class="nudges-label">Tips</p>
+            @for (nudge of nudges; track nudge.id) {
+              <div class="nudge-item">
+                <ng-icon name="lucideLightbulb" size="15" class="nudge-icon"></ng-icon>
+                <span class="nudge-text">{{ nudge.message }}</span>
+                <button type="button" class="nudge-dismiss" (click)="dismissNudge(nudge.id)" title="Dismiss">
+                  <ng-icon name="lucideX" size="13"></ng-icon>
+                </button>
+              </div>
+            }
+          </div>
+        }
       </section>
-      
+
     </div>
 
-    <!-- Right Column -->
-    <div class="right-col space-y-8">
-      
+    <!-- Right column -->
+    <div class="right-col">
+
       <!-- Expenses Breakdown -->
-      <section class="breakdown-section card-shadow rounded-2xl bg-white p-6">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-xl font-bold text-slate-800">Expenses Breakdown</h3>
-          <span class="text-sm text-slate-500">{{ dateRangeLabel }}</span>
+      <section class="dash-card">
+        <div class="dash-card-header">
+          <h3 class="dash-card-title">Expenses Breakdown</h3>
+          <span class="dash-card-meta">{{ dateRangeLabel }}</span>
         </div>
-        <div class="relative h-[200px] mb-6 flex justify-center items-center">
-          <canvas baseChart
-            [data]="doughnutChartData"
-            [options]="doughnutChartOptions"
-            [type]="doughnutChartType">
-          </canvas>
-          <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span class="text-sm text-slate-500">Total</span>
-            <span class="text-xl font-bold text-slate-800">{{ monthlySpending | currency:'KES':'symbol':'1.0-0' }}</span>
+        <div class="donut-container">
+          <canvas baseChart [data]="doughnutChartData" [options]="doughnutChartOptions" [type]="doughnutChartType"></canvas>
+          <div class="donut-center">
+            <span class="donut-label">Total</span>
+            <span class="donut-value">{{ monthlySpending | fmt }}</span>
           </div>
         </div>
-        
-        <div class="space-y-3">
-          @if ((doughnutChartData.labels?.length ?? 0) > 0) {
-            @for (label of doughnutChartData.labels; track $index) {
-            <div class="flex items-center justify-between text-sm">
-              <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full shrink-0" [style.backgroundColor]="($any(doughnutChartData.datasets)?.[0]?.backgroundColor)?.[$index] ?? '#94a3b8'"></span>
-                <span class="text-slate-600">{{ label }}</span>
+        <div class="breakdown-list">
+          @for (label of doughnutChartData.labels; track $index) {
+            <div class="breakdown-row">
+              <div class="breakdown-left">
+                <span class="breakdown-dot" [style.background]="($any(doughnutChartData.datasets)?.[0]?.backgroundColor)?.[$index]"></span>
+                <span class="breakdown-name">{{ label }}</span>
               </div>
-              <span class="font-medium text-slate-800">{{ (($any(doughnutChartData.datasets)?.[0]?.data)?.[$index] ?? 0) | currency:'KES':'symbol':'1.0-0' }}</span>
+              <span class="breakdown-amount">{{ (($any(doughnutChartData.datasets)?.[0]?.data)?.[$index] ?? 0) | fmt }}</span>
             </div>
-            }
-          } @else {
-            <p class="text-sm text-slate-500">No expense data for this period.</p>
           }
         </div>
       </section>
 
-      <!-- Goals Summary -->
-      <section class="goals-section card-shadow rounded-2xl bg-white p-6">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-xl font-bold text-slate-800">Saving Goals</h3>
-          <button class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 dashboard-btn-icon transition-colors">
-            +
-          </button>
+      <!-- Goals -->
+      <section class="dash-card">
+        <div class="dash-card-header">
+          <h3 class="dash-card-title">Saving Goals</h3>
+          <a routerLink="/goals/create" class="dash-icon-btn" title="New goal">+</a>
         </div>
-        
-        <div class="space-y-4">
-          @for (goal of goals; track goal.name) {
-          <div class="p-4 rounded-xl border border-slate-100 dashboard-goal-item transition-colors cursor-pointer group">
-            <div class="flex justify-between mb-1">
-              <span class="font-semibold text-slate-800 group-hover:text-[var(--accent)] transition-colors">{{ goal.name }}</span>
-              <span class="text-sm text-slate-500">{{ getGoalProgress(goal.current, goal.target) }}%</span>
+        @for (goal of goals; track goal.name) {
+          <div class="goal-item">
+            <div class="goal-top">
+              <span class="goal-name">{{ goal.name }}</span>
+              <span class="goal-pct">{{ getGoalProgress(goal.current, goal.target) }}%</span>
             </div>
-            <div class="flex justify-between text-xs text-slate-500 mb-2">
-              <span>{{ goal.current | currency:'KES':'symbol':'1.0-0' }}</span>
-              <span>{{ goal.target | currency:'KES':'symbol':'1.0-0' }}</span>
+            <div class="goal-amounts">
+              <span>{{ goal.current | fmt }}</span>
+              <span>{{ goal.target | fmt }}</span>
             </div>
-            <div class="w-full bg-slate-100 rounded-full h-1.5">
-              <div class="h-1.5 rounded-full dashboard-goal-bar" [style.width.%]="getGoalProgress(goal.current, goal.target)"></div>
+            <div class="goal-track">
+              <div class="goal-fill" [style.width.%]="getGoalProgress(goal.current, goal.target)"></div>
             </div>
           </div>
-          }
-        </div>
+        }
+        @if (goals.length === 0) {
+          <p class="goal-empty">No goals yet. <a routerLink="/goals/create" class="dash-link">Create one</a></p>
+        }
       </section>
 
       <!-- AI Insights -->
-      <section class="insights-section card-shadow rounded-2xl bg-linear-to-br from-slate-900 to-slate-800 p-6 text-white relative overflow-hidden">
-        <div class="flex items-center gap-2 mb-4 relative z-10">
-          <ng-icon name="lucideLightbulb" class="text-amber-300"></ng-icon>
-          <h3 class="text-lg font-bold">AI Insights</h3>
-        </div>
-        
-        <div class="space-y-3 relative z-10">
-          @for (insight of insights; track insight.text) {
-          <div class="insight-item flex gap-3 items-start bg-white/5 p-3 rounded-lg backdrop-blur-sm border border-white/10">
-            <div class="mt-0.5">
-              @if (insight.type === 'positive') {
-                <ng-icon name="lucideTrendingUp" class="insight-icon-positive" size="16"></ng-icon>
-              }
-              @if (insight.type === 'negative') {
-                <ng-icon name="lucideTrendingDown" class="text-red-400" size="16"></ng-icon>
-              }
-              @if (insight.type === 'suggestion') {
-                <ng-icon name="lucideArrowRight" class="text-blue-400" size="16"></ng-icon>
-              }
-            </div>
-            <p class="text-sm text-slate-200 leading-snug">{{ insight.text }}</p>
+      <section class="dash-card insights-card">
+        <div class="dash-card-header">
+          <div class="insights-title-row">
+            <ng-icon name="lucideSparkles" size="16" class="insights-icon"></ng-icon>
+            <h3 class="dash-card-title">AI Insights</h3>
           </div>
-          }
+          <button class="btn-analysis btn-analysis-sm" (click)="openSmartAnalysis()">Refresh</button>
         </div>
+        @if (insights.length > 0) {
+          @for (insight of insights; track insight.text) {
+            <div class="insight-item" [class.positive]="insight.type==='positive'" [class.negative]="insight.type==='negative'" [class.suggestion]="insight.type==='suggestion'">
+              <ng-icon [name]="insight.type === 'positive' ? 'lucideTrendingUp' : insight.type === 'negative' ? 'lucideTrendingDown' : 'lucideArrowRight'" size="14" class="insight-type-icon"></ng-icon>
+              <p class="insight-text">{{ insight.text }}</p>
+            </div>
+          }
+        } @else {
+          <p class="insights-empty">Click <strong>Refresh</strong> or <strong>Smart Analysis</strong> above to load personalized insights.</p>
+        }
       </section>
 
     </div>
   </div>
+
+  <!-- Smart Analysis slide-over panel -->
+  @if (insightsPanelOpen) {
+    <div class="insights-overlay" (click)="closeSmartAnalysis()">
+      <div class="insights-panel" (click)="$event.stopPropagation()">
+        <div class="insights-panel-header">
+          <div class="insights-panel-title-row">
+            <ng-icon name="lucideSparkles" size="18" class="insights-icon"></ng-icon>
+            <h2 class="insights-panel-title">Smart Analysis</h2>
+          </div>
+          <button class="insights-close" (click)="closeSmartAnalysis()">
+            <ng-icon name="lucideX" size="18"></ng-icon>
+          </button>
+        </div>
+        <div class="insights-panel-body">
+          @if (isInsightsLoading) {
+            <div class="insights-loading">
+              <div class="dash-spinner"></div>
+              <p>Analysing your spending patterns...</p>
+            </div>
+          } @else if (insightsError) {
+            <div class="insights-error">
+              <p>Could not load insights. Please try again.</p>
+              <button class="dash-retry-btn" (click)="openSmartAnalysis()">Retry</button>
+            </div>
+          } @else {
+            @for (insight of insights; track insight.text) {
+              <div class="insight-panel-item" [class.positive]="insight.type==='positive'" [class.negative]="insight.type==='negative'" [class.suggestion]="insight.type==='suggestion'">
+                <ng-icon [name]="insight.type === 'positive' ? 'lucideTrendingUp' : insight.type === 'negative' ? 'lucideTrendingDown' : 'lucideLightbulb'" size="20" class="insight-panel-icon"></ng-icon>
+                <p class="insight-panel-text">{{ insight.text }}</p>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  }
+
 </div>

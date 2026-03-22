@@ -14,7 +14,9 @@ import {
   HttpException,
   InternalServerErrorException,
   Request,
+  Res,
 } from "@nestjs/common";
+import type { Response } from "express";
 import {
   ApiTags,
   ApiOperation,
@@ -220,6 +222,38 @@ export class TransactionsController {
       );
       throw new InternalServerErrorException(
         "Could not retrieve category breakdown. Please try again.",
+      );
+    }
+  }
+
+  // ─── GET /api/v1/transactions/export ──────────────────────────────────────
+
+  @Get("export")
+  @HttpCode(HttpStatus.OK)
+  async exportCsv(
+    @Query("dateFrom") dateFrom: string | undefined,
+    @Query("dateTo") dateTo: string | undefined,
+    @Query("type") type: "income" | "expense" | undefined,
+    @Request() req: AuthRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    try {
+      const csv = await this.transactionsService.exportCsv(
+        { dateFrom, dateTo, type },
+        req.user.id,
+      );
+      const filename = `transactions-${new Date().toISOString().slice(0, 10)}.csv`;
+      res.setHeader("Content-Type", "text/csv; charset=utf-8");
+      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+      return csv;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error(
+        "Unexpected error exporting transactions CSV",
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw new InternalServerErrorException(
+        "Could not export transactions. Please try again.",
       );
     }
   }

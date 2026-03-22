@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
+import { ScheduleModule } from "@nestjs/schedule";
 import { APP_GUARD } from "@nestjs/core";
 import { PrismaModule } from "./common/prisma.module";
 import { HealthModule } from "./health/health.module";
@@ -17,6 +18,7 @@ import { AdminModule } from "./admin/admin.module";
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
 
     // Global rate limit: 100 requests/min per IP. Auth login overrides to 5/min.
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),

@@ -365,8 +365,8 @@ html.light .btn-secondary:hover {
 }
 
 .icon-info {
-  background-color: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  background-color: var(--accent-dim);
+  color: var(--accent);
 }
 
 .insight-content {

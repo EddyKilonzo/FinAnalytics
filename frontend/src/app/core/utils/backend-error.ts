@@ -10,6 +10,10 @@ export function getBackendErrorMessage(
 ): string {
   try {
     const body = err?.error;
+    /* With responseType: 'blob', failed responses use a Blob body — JSON is not parsed here */
+    if (body instanceof Blob) {
+      return err.status ? `${fallback} (HTTP ${err.status})` : fallback;
+    }
     if (!body || typeof body !== 'object') {
       return fallback;
     }

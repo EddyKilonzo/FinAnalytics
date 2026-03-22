@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx ng:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx prisma:*)",
+      "Bash(ng test:*)",
+      "Bash(python:*)",
+      "Bash(curl:*)",
+      "Bash(grep -r notification C:UsersAdminDocumentsProjectsFinAnalyticsbackendsrc --include=*.ts)",
+      "Bash(grep -r notification C:UsersAdminDocumentsProjectsFinAnalyticsfrontendsrc --include=*.ts --include=*.html)",
+      "Bash(grep -r \"alert\\\\|nudge\\\\|bell\" C:UsersAdminDocumentsProjectsFinAnalyticsbackendsrc --include=*.ts)",
+      "Bash(grep -r \"alert\\\\|nudge\\\\|message\" C:UsersAdminDocumentsProjectsFinAnalyticsfrontendsrc --include=*.ts --include=*.html)",
+      "Bash(grep -r nudges C:UsersAdminDocumentsProjectsFinAnalyticsfrontendsrc --include=*.ts --include=*.html)",
+      "Bash(find C:/Users/Admin/Documents/Projects/FinAnalytics/backend/src -name *.module.ts)",
+      "Bash(npm install:*)",
+      "Bash(grep -l lucideList C:/Users/Admin/Documents/Projects/FinAnalytics/frontend/node_modules/@ng-icons/lucide/*.d.ts)",
+      "Bash(node:*)",
+      "Bash(grep -n \"index2\\\\|$index\" \"C:/Users/Admin/Documents/Projects/FinAnalytics/frontend/src/app/features/lessons/view/lesson-view.component.html\")"
+    ]
+  }
+}

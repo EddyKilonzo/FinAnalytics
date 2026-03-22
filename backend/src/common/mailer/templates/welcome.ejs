@@ -1,9 +1,40 @@
 <!doctype html>
-<html>
-  <body style="font-family: Arial, sans-serif; color: #111827; line-height: 1.6;">
-    <h2 style="margin-bottom: 8px;">Welcome to FinAnalytics</h2>
-    <p>Hi <%= name %>,</p>
-    <p>Your account is now active. You can start tracking spending, setting budgets, and saving toward goals.</p>
-    <p style="margin-top: 20px;">— FinAnalytics Team</p>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to FinAnalytics</title>
+  <style>
+    body { margin: 0; padding: 0; background-color: #051F20; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .wrapper { background-color: #051F20; padding: 40px 16px; }
+    .container { max-width: 600px; margin: 0 auto; background-color: #0A2E2F; border-radius: 12px; border: 1px solid rgba(34,197,94,0.15); overflow: hidden; }
+    .header { padding: 32px 40px 24px; border-bottom: 1px solid rgba(34,197,94,0.15); }
+    .logo { font-size: 22px; font-weight: 800; color: #22c55e; letter-spacing: -0.03em; }
+    .body { padding: 36px 40px; }
+    .greeting { font-size: 24px; font-weight: 700; color: #DAF1DE; margin: 0 0 16px; }
+    .text { font-size: 15px; color: rgba(218,241,222,0.65); line-height: 1.7; margin: 0 0 16px; }
+    .highlight { color: #DAF1DE; }
+    .cta-btn { display: inline-block; margin: 24px 0 0; padding: 12px 28px; background-color: #22c55e; color: #051F20; font-size: 15px; font-weight: 700; text-decoration: none; border-radius: 8px; }
+    .footer { padding: 20px 40px; border-top: 1px solid rgba(34,197,94,0.15); text-align: center; }
+    .footer-text { font-size: 12px; color: rgba(218,241,222,0.4); margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <div class="logo">FinAnalytics</div>
+      </div>
+      <div class="body">
+        <h1 class="greeting">Welcome aboard, <%= name %>!</h1>
+        <p class="text">Your FinAnalytics account is now active. You can start <span class="highlight">tracking your spending</span>, setting budgets, and saving toward your goals — all in one place.</p>
+        <p class="text">Whether you're managing HELB repayments, building an emergency fund, or investing in NSE stocks, FinAnalytics is here to help you make smarter money decisions.</p>
+        <p class="text">Get started by logging your first transaction.</p>
+      </div>
+      <div class="footer">
+        <p class="footer-text">© 2026 FinAnalytics · Nairobi, Kenya</p>
+      </div>
+    </div>
+  </div>
+</body>
 </html>

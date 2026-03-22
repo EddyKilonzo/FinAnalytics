@@ -1,16 +1,26 @@
 :host {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 100dvh;
   min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  box-sizing: border-box;
+}
+
+app-navbar {
+  flex-shrink: 0;
 }
 
 .shell-main {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  padding-bottom: 2rem; /* Space before footer so content doesn't clash */
+  min-height: 0;
 }
 
-.shell-footer {
-  margin-top: 2rem; /* Clear gap between content and footer */
+app-footer {
+  flex-shrink: 0;
 }

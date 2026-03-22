@@ -6,6 +6,7 @@ import { lucidePlus, lucideTarget, lucideTrendingUp, lucideCalendar } from '@ng-
 import { GoalService } from '../../../core/services/goal.service';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { getBackendErrorMessage } from '../../../core/utils/backend-error';
+import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
 
 interface Goal {
   id: string;
@@ -18,7 +19,7 @@ interface Goal {
 @Component({
   selector: 'app-goal-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, NgIconComponent],
+  imports: [CommonModule, RouterModule, NgIconComponent, CurrencyFormatPipe],
   templateUrl: './goal-list.component.html',
   styleUrls: ['./goal-list.component.css'],
   viewProviders: [provideIcons({ lucidePlus, lucideTarget, lucideTrendingUp, lucideCalendar })],

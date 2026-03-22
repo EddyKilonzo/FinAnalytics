@@ -22,9 +22,9 @@
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   color: var(--text-1);
   background: transparent;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: clip;
 }
 
 /* ── Header ── */
@@ -179,10 +179,13 @@ html.light .icon-moon {
 
 .lp-hero-section {
   position: relative;
-  overflow: visible;
-  padding: 2rem 2rem 0;
+  overflow: hidden;
+  padding: 1.5rem 2rem;
   display: flex;
   flex-direction: column;
+  height: calc(100svh - 4.5rem);
+  /* Fallback for browsers without svh */
+  height: calc(100vh - 4.5rem);
 }
 
 .lp-hero-bg {
@@ -228,12 +231,14 @@ html.light .icon-moon {
 .lp-hero-inner {
   position: relative;
   max-width: 1200px;
-  margin: 0 auto;
+  /* auto top/bottom margins center the grid within the flex column,
+     but unlike justify-content:center they never clip the top when overflowing */
+  margin: auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3rem;
+  gap: 2rem;
   align-items: center;
-  padding-bottom: 2rem;
+  width: 100%;
 }
 
 /* Hero copy */
@@ -248,18 +253,18 @@ html.light .icon-moon {
   border-radius: 2rem;
   font-size: .8rem;
   font-weight: 600;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.65rem;
   letter-spacing: .01em;
 }
 
 .lp-hero-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-size: clamp(1.75rem, 3.5vw, 3.25rem);
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -.03em;
   color: var(--text-1);
-  margin: 0 0 1.25rem;
+  margin: 0 0 0.65rem;
 }
 
 .lp-hero-em {
@@ -267,20 +272,20 @@ html.light .icon-moon {
 }
 
 .lp-hero-sub {
-  font-size: 1.05rem;
-  line-height: 1.65;
+  font-size: 0.95rem;
+  line-height: 1.6;
   color: var(--text-2);
-  margin: 0 0 1.5rem;
+  margin: 0 0 0.75rem;
   max-width: 460px;
 }
 
 .lp-hero-bullets {
   list-style: none;
   padding: 0;
-  margin: 0 0 1.5rem;
+  margin: 0 0 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: .6rem;
+  gap: .4rem;
 }
 
 .lp-hero-bullets li {
@@ -309,22 +314,22 @@ html.light .icon-moon {
   font-size: .88rem;
   font-weight: 600;
   color: var(--text-1);
-  margin: 0 0 .6rem;
+  margin: 0.75rem 0 .6rem;
 }
 
 .lp-intent-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: .5rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
 }
 
 .lp-intent-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: .4rem;
-  padding: .75rem .4rem;
+  gap: .3rem;
+  padding: .65rem .75rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -690,7 +695,7 @@ html.light .icon-moon {
 }
 
 .lp-mock-tx-icon.transport {
-  background: #3b82f6;
+  background: #235347;
 }
 
 .lp-mock-tx-icon.income {
@@ -785,9 +790,12 @@ html.light .icon-moon {
 
 /* Trust bar */
 .lp-trust-bar {
-  position: relative;
+  position: absolute;
+  bottom: 1rem;
+  left: 2rem;
+  right: 2rem;
   max-width: 1200px;
-  margin: 1rem auto 0;
+  margin: 0 auto;
   z-index: 10;
 }
 
@@ -1106,7 +1114,7 @@ html.light .icon-moon {
 }
 
 .savings-dot {
-  background: #3b82f6;
+  background: #235347;
 }
 
 .lp-ac-item-val {
@@ -1180,7 +1188,7 @@ html.light .icon-moon {
 }
 
 .lp-ec-tx-icon.transport {
-  background: #3b82f6;
+  background: #235347;
 }
 
 .lp-ec-tx-icon.social {
@@ -1265,7 +1273,7 @@ html.light .icon-moon {
 }
 
 .lp-ec-bk-seg.transport {
-  background: #3b82f6;
+  background: #235347;
 }
 
 .lp-ec-bk-seg.social {
@@ -1302,7 +1310,7 @@ html.light .icon-moon {
 }
 
 .dot.transport {
-  background: #3b82f6;
+  background: #235347;
 }
 
 .dot.social {
@@ -2026,6 +2034,98 @@ html.light .icon-moon {
   vertical-align: middle;
 }
 
+/* ── Laptop (1024–1280px) ── */
+@media (max-width: 1200px) {
+  .lp-hero-section {
+    padding: 1.25rem 2rem 5.5rem;
+    height: calc(100svh - 4.5rem);
+    height: calc(100vh - 4.5rem);
+  }
+
+  .lp-hero-inner {
+    gap: 1.75rem;
+    grid-template-columns: 1fr 1.05fr;
+    align-items: center;
+  }
+
+  .lp-hero-badge {
+    margin-bottom: 0.7rem;
+  }
+
+  .lp-hero-title {
+    font-size: clamp(1.6rem, 3vw, 2.6rem);
+    margin: 0 0 0.7rem;
+  }
+
+  .lp-hero-sub {
+    font-size: .9rem;
+    max-width: 380px;
+    margin: 0 0 0.75rem;
+  }
+
+  .lp-hero-bullets {
+    margin: 0 0 0.75rem;
+    gap: .4rem;
+  }
+
+  .lp-hero-bullets li {
+    font-size: .83rem;
+  }
+
+  .lp-intent-btn {
+    padding: .45rem .7rem;
+    font-size: .83rem;
+  }
+
+  .lp-intent-grid {
+    gap: .45rem;
+    margin-bottom: .55rem;
+  }
+
+  .lp-intent-label {
+    margin: 0 0 .35rem;
+  }
+
+  .lp-hero-cta-row {
+    margin-bottom: .5rem;
+  }
+
+  .lp-hero-or {
+    margin: 0 0 .35rem;
+  }
+
+  .lp-mockup {
+    transform: perspective(700px) rotateY(-2deg) rotateX(1deg);
+    min-height: 320px;
+  }
+
+  .lp-float-card {
+    right: -.5rem;
+    width: 175px;
+    padding: .65rem;
+  }
+
+  .lp-section {
+    padding: 3.5rem 1.5rem;
+  }
+
+  .lp-two-col {
+    gap: 2.5rem;
+  }
+
+  .lp-header-inner {
+    gap: 1.25rem;
+  }
+
+  .lp-nav {
+    gap: 1.25rem;
+  }
+
+  .lp-trust-bar-inner {
+    gap: 1.25rem;
+  }
+}
+
 /* ── Responsive ── */
 @media (max-width: 960px) {
   .lp-hero-inner {
@@ -2034,8 +2134,15 @@ html.light .icon-moon {
   }
 
   .lp-hero-section {
-    padding: 3.5rem 1.5rem 0;
+    /* On mobile, trust bar is relative-positioned so no need for fixed height */
+    height: auto;
+    min-height: calc(100svh - 4.5rem);
+    min-height: calc(100vh - 4.5rem);
+    padding: 2rem 1.5rem 1.5rem;
+    justify-content: flex-start;
+    gap: 1.5rem;
   }
+
 
   .lp-float-card {
     right: 0;
@@ -2090,7 +2197,7 @@ html.light .icon-moon {
   }
 
   .lp-hero-section {
-    padding: 2.5rem 1.25rem 0;
+    padding: 1.5rem 1.25rem 1.25rem;
   }
 
   .lp-hero-title {

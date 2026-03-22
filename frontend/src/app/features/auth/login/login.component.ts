@@ -50,7 +50,8 @@ export class LoginComponent {
         try {
           this.loading = false;
           this.toast.success('Signed in successfully.');
-          this.router.navigate(['/dashboard']);
+          const dest = this.authService.isAdmin() ? '/admin' : '/dashboard';
+          this.router.navigate([dest]);
         } catch (e) {
           this.loading = false;
           this.toast.error('Something went wrong.');

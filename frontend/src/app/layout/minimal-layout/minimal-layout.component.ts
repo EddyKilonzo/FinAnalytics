@@ -101,10 +101,13 @@ export class MinimalLayoutComponent {
     { label: 'Transactions', icon: 'lucideArrowLeftRight', route: '/admin/transactions', adminOnly: true },
     { label: 'Budgets', icon: 'lucideWallet', route: '/admin/budgets', adminOnly: true },
     { label: 'Goals', icon: 'lucideTarget', route: '/admin/goals', adminOnly: true },
+    { label: 'Categories', icon: 'lucideTag', route: '/admin/categories', adminOnly: true },
+    { label: 'Lessons', icon: 'lucideBookOpen', route: '/admin/lessons', adminOnly: true },
   ];
 
+  /** Regular users see the user nav; admins see nothing here (admin section renders instead). */
   get visibleNavItems(): NavItem[] {
-    return this.navItems;
+    return this.isAdmin ? [] : this.navItems;
   }
 
   get isAdmin(): boolean {

@@ -75,9 +75,17 @@
         <div class="profile-hero">
           <div class="profile-avatar-block">
 
-              <!-- Avatar with upload overlay -->
-              <div class="profile-avatar-ring">
-                @if (user(); as u) {
+              <!-- Avatar with upload overlay + drag-drop -->
+              <div
+                class="profile-avatar-ring"
+                [class.dragging]="isDragging()"
+                (dragover)="onDragOver($event)"
+                (dragleave)="onDragLeave($event)"
+                (drop)="onDrop($event)"
+              >
+                @if (previewUrl()) {
+                  <img [src]="previewUrl()" alt="Preview" class="profile-avatar-img preview-pulse" />
+                } @else if (user(); as u) {
                   @if (u.avatarUrl) {
                     <img [src]="u.avatarUrl" alt="Profile picture" class="profile-avatar-img" />
                   } @else {
@@ -86,7 +94,7 @@
                 } @else {
                   <div class="profile-avatar-initials-lg">—</div>
                 }
-                <label class="profile-avatar-upload-btn" [class.uploading]="uploading()" title="Change photo">
+                <label class="profile-avatar-upload-btn" [class.uploading]="uploading()" title="Change photo — click or drag &amp; drop">
                   <input type="file" accept="image/*" (change)="onFileSelected($event)" class="sr-only" />
                   @if (uploading()) {
                     <span class="upload-spinner"></span>
@@ -97,6 +105,7 @@
                   }
                 </label>
               </div>
+              <p class="avatar-drag-hint">Click camera icon or drag &amp; drop an image</p>
           </div>
 
           <!-- Name + meta -->
@@ -446,18 +455,130 @@
           <h1 class="section-title">Preferences</h1>
           <p class="section-desc">Customize your FinAnalytics experience.</p>
         </div>
+
+        <!-- Appearance card -->
         <div class="profile-info-card profile-info-card-full">
-          <div class="pic-header">
-            <h2 class="pic-title">App Settings</h2>
+          <div class="pic-header pic-header-with-icon">
+            <span class="pic-header-icon"><ng-icon name="lucideSettings" size="15"></ng-icon></span>
+            <h2 class="pic-title">Appearance</h2>
           </div>
-          <div class="pic-body">
-            <div class="security-placeholder">
-              <ng-icon name="lucideSettings" size="32" class="sp-icon"></ng-icon>
-              <p class="sp-text">Preferences coming soon.</p>
-              <p class="sp-sub">Theme, currency, notification settings and more will be available here.</p>
+          <div class="pic-body pic-body-pref">
+            <div class="pref-row">
+              <div class="pref-row-label">
+                <span class="pref-label">Theme</span>
+                <span class="pref-sub">Choose light or dark interface</span>
+              </div>
+              <div class="theme-toggle-group">
+                <button
+                  type="button"
+                  class="theme-opt-btn"
+                  [class.active]="themeService.isLight()"
+                  (click)="themeService.setTheme('light')"
+                >
+                  <ng-icon name="lucideEye" size="14"></ng-icon>
+                  Light
+                </button>
+                <button
+                  type="button"
+                  class="theme-opt-btn"
+                  [class.active]="themeService.isDark()"
+                  (click)="themeService.setTheme('dark')"
+                >
+                  <ng-icon name="lucideEyeOff" size="14"></ng-icon>
+                  Dark
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- Currency card -->
+        <div class="profile-info-card profile-info-card-full">
+          <div class="pic-header pic-header-with-icon">
+            <span class="pic-header-icon"><ng-icon name="lucideTag" size="15"></ng-icon></span>
+            <h2 class="pic-title">Currency</h2>
+          </div>
+          <div class="pic-body pic-body-pref">
+            <div class="pref-row">
+              <div class="pref-row-label">
+                <span class="pref-label">Display currency</span>
+                <span class="pref-sub">Used when formatting monetary values</span>
+              </div>
+              <select
+                class="pref-select"
+                [ngModel]="currencyService.currency()"
+                (ngModelChange)="setCurrency($event)"
+              >
+                @for (c of currencies; track c.code) {
+                  <option [value]="c.code">{{ c.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications card -->
+        <div class="profile-info-card profile-info-card-full">
+          <div class="pic-header pic-header-with-icon">
+            <span class="pic-header-icon"><ng-icon name="lucideMail" size="15"></ng-icon></span>
+            <h2 class="pic-title">Email Notifications</h2>
+          </div>
+          <div class="pic-body pic-body-pref">
+
+            <div class="pref-row pref-row-toggle">
+              <div class="pref-row-label">
+                <span class="pref-label">Budget alerts</span>
+                <span class="pref-sub">Email when spending hits 80% or 100% of a budget</span>
+              </div>
+              <button
+                type="button"
+                class="pref-toggle"
+                [class.on]="notifBudget()"
+                (click)="toggleNotif('budget')"
+                [attr.aria-checked]="notifBudget()"
+                role="switch"
+              >
+                <span class="pref-toggle-knob"></span>
+              </button>
+            </div>
+
+            <div class="pref-row pref-row-toggle">
+              <div class="pref-row-label">
+                <span class="pref-label">Goal progress</span>
+                <span class="pref-sub">Email when a savings goal is completed</span>
+              </div>
+              <button
+                type="button"
+                class="pref-toggle"
+                [class.on]="notifGoal()"
+                (click)="toggleNotif('goal')"
+                [attr.aria-checked]="notifGoal()"
+                role="switch"
+              >
+                <span class="pref-toggle-knob"></span>
+              </button>
+            </div>
+
+            <div class="pref-row pref-row-toggle">
+              <div class="pref-row-label">
+                <span class="pref-label">Weekly insights</span>
+                <span class="pref-sub">Receive spending insights and category summaries</span>
+              </div>
+              <button
+                type="button"
+                class="pref-toggle"
+                [class.on]="notifInsights()"
+                (click)="toggleNotif('insights')"
+                [attr.aria-checked]="notifInsights()"
+                role="switch"
+              >
+                <span class="pref-toggle-knob"></span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
       </div>
     }
 

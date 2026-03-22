@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import type { ApiResponse, Goal } from '../models';
 
 @Injectable({
   providedIn: 'root'
@@ -10,31 +11,31 @@ export class GoalService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/goals`;
 
-  getGoals(): Observable<any> {
-    return this.http.get<any>(this.apiUrl);
+  getGoals(): Observable<ApiResponse<Goal[]>> {
+    return this.http.get<ApiResponse<Goal[]>>(this.apiUrl);
   }
 
-  getGoal(id: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`);
+  getGoal(id: string): Observable<ApiResponse<Goal>> {
+    return this.http.get<ApiResponse<Goal>>(`${this.apiUrl}/${id}`);
   }
 
-  createGoal(data: any): Observable<any> {
-    return this.http.post<any>(this.apiUrl, data);
+  createGoal(data: Partial<Goal>): Observable<ApiResponse<Goal>> {
+    return this.http.post<ApiResponse<Goal>>(this.apiUrl, data);
   }
 
-  updateGoal(id: string, data: any): Observable<any> {
-    return this.http.patch<any>(`${this.apiUrl}/${id}`, data);
+  updateGoal(id: string, data: Partial<Goal>): Observable<ApiResponse<Goal>> {
+    return this.http.patch<ApiResponse<Goal>>(`${this.apiUrl}/${id}`, data);
   }
 
-  deleteGoal(id: string): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/${id}`);
+  deleteGoal(id: string): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
 
-  allocateFunds(id: string, amount: number): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/allocate`, { amount });
+  allocateFunds(id: string, amount: number): Observable<ApiResponse<Goal>> {
+    return this.http.post<ApiResponse<Goal>>(`${this.apiUrl}/${id}/allocate`, { amount });
   }
 
-  withdrawFunds(id: string, amount: number): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/withdraw`, { amount });
+  withdrawFunds(id: string, amount: number): Observable<ApiResponse<Goal>> {
+    return this.http.post<ApiResponse<Goal>>(`${this.apiUrl}/${id}/withdraw`, { amount });
   }
 }

@@ -10,11 +10,12 @@ import {
   lucideLoader2
 } from '@ng-icons/lucide';
 import { AdminService } from '../../../core/services/admin.service';
+import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
 
 @Component({
   selector: 'app-admin-goals',
   standalone: true,
-  imports: [CommonModule, NgIconComponent],
+  imports: [CommonModule, NgIconComponent, CurrencyFormatPipe],
   providers: [
     provideIcons({
       lucidePlus, 
@@ -39,24 +40,27 @@ import { AdminService } from '../../../core/services/admin.service';
         </div>
       </div>
 
-      <!-- Loading State -->
-      <div *ngIf="loading" class="loading-state">
-        <ng-icon name="lucideLoader2" class="spin-icon"></ng-icon>
-        <p>Loading goals...</p>
-      </div>
-
-      <!-- Empty State -->
-      <div *ngIf="!loading && goals.length === 0" class="empty-state">
-        <div class="empty-icon">
-          <ng-icon name="lucideTarget"></ng-icon>
+      @if (loading) {
+        <div class="loading-state">
+          <ng-icon name="lucideLoader2" class="spin-icon"></ng-icon>
+          <p>Loading goals...</p>
         </div>
-        <h3>No Goals Found</h3>
-        <p>There are currently no goals available.</p>
-      </div>
+      }
 
-      <!-- Goals Grid -->
-      <div *ngIf="!loading && goals.length > 0" class="goals-grid">
-        <div class="fin-card-elevated goal-card slide-up" *ngFor="let goal of goals; let i = index" [style.animation-delay]="i * 0.1 + 's'">
+      @if (!loading && goals.length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">
+            <ng-icon name="lucideTarget"></ng-icon>
+          </div>
+          <h3>No Goals Found</h3>
+          <p>There are currently no goals available.</p>
+        </div>
+      }
+
+      @if (!loading && goals.length > 0) {
+        <div class="goals-grid">
+          @for (goal of goals; track goal.id; let i = $index) {
+            <div class="fin-card-elevated goal-card slide-up" [style.animation-delay]="i * 0.1 + 's'">
           <div class="goal-layout">
             
             <div class="goal-details">
@@ -75,12 +79,12 @@ import { AdminService } from '../../../core/services/admin.service';
               <div class="goal-stats">
                 <div class="stat">
                   <span class="stat-label">Current</span>
-                  <span class="stat-value">{{ goal.current | currency:'KES':'symbol':'1.0-0' }}</span>
+                  <span class="stat-value">{{ goal.current | fmt }}</span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat">
                   <span class="stat-label">Target</span>
-                  <span class="stat-value">{{ goal.target | currency:'KES':'symbol':'1.0-0' }}</span>
+                  <span class="stat-value">{{ goal.target | fmt }}</span>
                 </div>
               </div>
             </div>
@@ -103,8 +107,10 @@ import { AdminService } from '../../../core/services/admin.service';
             </div>
 
           </div>
+            </div>
+          }
         </div>
-      </div>
+      }
     </div>
   `,
   styles: [`
@@ -115,11 +121,11 @@ import { AdminService } from '../../../core/services/admin.service';
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
     .admin-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; }
-    .admin-title { font-size: 2.25rem; font-weight: 800; color: white; margin: 0 0 0.5rem 0; letter-spacing: -0.03em; }
-    .admin-subtitle { color: rgba(255,255,255,0.6); margin: 0; font-size: 1.1rem; }
+    .admin-title { font-size: 2.25rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.5rem 0; letter-spacing: -0.03em; }
+    .admin-subtitle { margin: 0; font-size: 1.1rem; color: #a3c4ad !important; }
     
-    .btn-primary { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 0.95rem; border: none; background: var(--accent, #3b82f6); color: #fff; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(59, 130, 246, 0.4); }
+    .btn-primary { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 0.95rem; border: none; background: var(--accent, #22c55e); color: #fff; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(34, 197, 94, 0.4); }
 
     .loading-state, .empty-state {
       display: flex;
@@ -130,12 +136,13 @@ import { AdminService } from '../../../core/services/admin.service';
       background: var(--card-bg, #ffffff);
       border-radius: 24px;
       border: 1px dashed var(--border-medium, #e5e7eb);
-      color: var(--text-secondary, #6b7280);
+      color: var(--text-primary);
+      opacity: 0.65;
       margin-top: 2rem;
     }
-    .spin-icon { font-size: 2rem; animation: spin 1s linear infinite; margin-bottom: 1rem; color: var(--accent, #3b82f6); }
+    .spin-icon { font-size: 2rem; animation: spin 1s linear infinite; margin-bottom: 1rem; color: var(--accent, #22c55e); }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    .empty-icon { font-size: 3rem; color: var(--text-muted, #9ca3af); margin-bottom: 1rem; }
+    .empty-icon { font-size: 3rem; color: var(--text-primary); opacity: 0.45; margin-bottom: 1rem; }
     .empty-state h3 { font-size: 1.25rem; font-weight: 700; color: var(--text-primary, #111827); margin: 0 0 0.5rem 0; }
     .empty-state p { margin: 0; }
 
@@ -159,18 +166,18 @@ import { AdminService } from '../../../core/services/admin.service';
     .goal-badge { display: inline-flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.375rem 0.75rem; border-radius: 999px; }
     
     .type-revenue { background: rgba(34, 197, 94, 0.1); color: #16a34a; }
-    .type-saving { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+    .type-saving { background: rgba(34, 197, 94, 0.1); color: #16a34a; }
     .type-expansion { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
 
-    .goal-deadline { display: flex; align-items: center; gap: 0.25rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted, #9ca3af); }
+    .goal-deadline { display: flex; align-items: center; gap: 0.25rem; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); opacity: 0.45; }
 
-    .goal-title { font-size: 1.4rem; font-weight: 800; color: white; margin: 0 0 0.5rem 0; letter-spacing: -0.02em; }
-    .goal-desc { font-size: 0.95rem; color: rgba(255,255,255,0.6); margin: 0 0 1.5rem 0; line-height: 1.5; }
+    .goal-title { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.5rem 0; letter-spacing: -0.02em; }
+    .goal-desc { font-size: 0.95rem; color: var(--text-primary); opacity: 0.65; margin: 0 0 1.5rem 0; line-height: 1.5; }
 
     .goal-stats { display: flex; align-items: center; background: var(--surface-alt, #f9fafb); padding: 1rem 1.25rem; border-radius: 12px; display: inline-flex; gap: 1.5rem; }
     .stat { display: flex; flex-direction: column; gap: 0.25rem; }
-    .stat-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: rgba(255,255,255,0.45); letter-spacing: 0.05em; }
-    .stat-value { font-size: 1.25rem; font-weight: 700; color: white; }
+    .stat-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--text-primary); opacity: 0.45; letter-spacing: 0.05em; }
+    .stat-value { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); }
     .stat-divider { width: 1px; height: 30px; background: var(--border-medium, #e5e7eb); }
 
     /* Circular Progress Chart */
@@ -181,11 +188,11 @@ import { AdminService } from '../../../core/services/admin.service';
     
     @keyframes progress { 0% { stroke-dasharray: 0 100; } }
     
-    .percentage { fill: white; font-family: sans-serif; font-size: 0.5em; text-anchor: middle; font-weight: 800; }
+    .percentage { fill: var(--text-primary); font-family: sans-serif; font-size: 0.5em; text-anchor: middle; font-weight: 800; }
 
     .color-green .circle { stroke: #16a34a; }
-    .color-blue .circle { stroke: #3b82f6; }
-    .color-purple .circle { stroke: #a855f7; }
+    .color-forest .circle { stroke: #235347; }
+    .color-amber .circle { stroke: #f59e0b; }
 
     @media (max-width: 768px) {
       .goal-layout { flex-direction: column-reverse; align-items: flex-start; }
@@ -209,15 +216,15 @@ export class AdminGoalsComponent implements OnInit {
     this.adminService.getGoals().subscribe({
       next: (res) => {
         const rawGoals = res.data || [];
-        this.goals = rawGoals.map((g: any) => {
+        this.goals = rawGoals.map((g: any, index: number) => {
           const target = Number(g.targetAmount) || 0;
           const current = Number(g.currentAmount) || 0;
           let percentage = target > 0 ? Math.round((current / target) * 100) : 0;
           if (percentage > 100) percentage = 100;
 
-          let colorClass = 'color-blue';
+          let colorClass = 'color-forest';
           if (percentage >= 100) colorClass = 'color-green';
-          else if (percentage < 30) colorClass = 'color-purple';
+          else if (percentage < 30) colorClass = 'color-amber';
 
           let deadlineStr = 'No deadline';
           if (g.deadline) {
@@ -226,6 +233,7 @@ export class AdminGoalsComponent implements OnInit {
           }
 
           return {
+            id: g.id ?? `goal-${index}`,
             title: g.name || g.title || 'Untitled Goal',
             description: g.description || `Goal by ${g.user?.name || 'User'}`,
             type: g.type || 'Goal',

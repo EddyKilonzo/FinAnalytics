@@ -1,28 +1,20 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
+  lucideHeart,
   lucideTrendingUp,
   lucideTwitter,
   lucideLinkedin,
-  lucideInstagram,
   lucideGithub,
-  lucideHeart,
+  lucideMail,
 } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [RouterLink, NgIconComponent],
+  imports: [NgIconComponent],
   providers: [
-    provideIcons({
-      lucideTrendingUp,
-      lucideTwitter,
-      lucideLinkedin,
-      lucideInstagram,
-      lucideGithub,
-      lucideHeart,
-    }),
+    provideIcons({ lucideHeart, lucideTrendingUp, lucideTwitter, lucideLinkedin, lucideGithub, lucideMail }),
   ],
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.css',

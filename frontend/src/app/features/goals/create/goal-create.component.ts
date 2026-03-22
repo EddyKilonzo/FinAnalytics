@@ -28,7 +28,7 @@ export class GoalCreateComponent {
     this.goalForm = this.fb.group({
       name: ['', Validators.required],
       targetAmount: [null, [Validators.required, Validators.min(1)]],
-      targetDate: ['', Validators.required],
+      targetDate: [''],
     });
   }
 

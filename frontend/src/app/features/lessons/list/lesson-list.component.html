@@ -1,8 +1,41 @@
 <div class="lessons-container texture-layer">
+  <div class="lessons-top-bar">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a routerLink="/dashboard" class="breadcrumb-link">Home</a>
+      <span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-current">Financial Academy</span>
+    </nav>
+    @if (!isLoading() && !loadError()) {
+      <div class="lessons-top-bar-actions">
+        <button
+          type="button"
+          class="leaderboard-trigger"
+          (click)="openLeaderboardModal()"
+          aria-haspopup="dialog"
+        >
+          <ng-icon name="lucideTrophy" size="18"></ng-icon>
+          <span>Top learners</span>
+        </button>
+      </div>
+    }
+  </div>
+
   <div class="header-section">
     <div class="header-content">
       <h1 class="page-title">Financial Academy</h1>
       <p class="page-subtitle">Master your money with our curated lessons</p>
+
+      <!-- Progress bar shown once lessons are loaded -->
+      @if (!isLoading() && totalLessons() > 0) {
+        <div class="progress-summary">
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" [style.width.%]="completionPct()"></div>
+          </div>
+          <span class="progress-label">
+            {{ completedCount() }} of {{ totalLessons() }} completed · {{ completionPct() }}%
+          </span>
+        </div>
+      }
     </div>
   </div>
 
@@ -10,32 +43,141 @@
     <p>Loading lessons...</p>
   </div>
 
-  <div *ngIf="!isLoading()" class="lessons-grid">
-    <div class="lesson-card" *ngFor="let lesson of lessons(); let i = index" [style.animation-delay]="i * 0.1 + 's'" [routerLink]="['/lessons', lesson.id]">
-      <div class="card-glow"></div>
-      <div class="card-inner">
-        <div class="card-header">
-          <div class="category-badge">
-            <ng-icon [name]="getIconForCategory(lesson.category)" size="16"></ng-icon>
-            <span>{{ lesson.category }}</span>
+  <div *ngIf="loadError()" style="text-align: center; padding: 4rem 2rem;">
+    <p style="color: var(--text-secondary); margin-bottom: 1.25rem;">Failed to load lessons. Check your connection and try again.</p>
+    <button
+      (click)="load()"
+      style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.65rem 1.4rem; background: var(--surface); border: 1px solid var(--accent); border-radius: 12px; color: var(--accent); font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.2s;"
+    >
+      <ng-icon name="lucideRefreshCw" size="16"></ng-icon>
+      Retry
+    </button>
+  </div>
+
+  <div *ngIf="!isLoading() && !loadError()" class="content-layout">
+    <!-- Lessons grid -->
+    <div class="lessons-grid">
+      <div
+        class="lesson-card"
+        *ngFor="let lesson of lessons(); let i = index"
+        [style.animation-delay]="i * 0.07 + 's'"
+        [routerLink]="['/lessons', lesson.id]"
+        [class.completed]="isCompleted(lesson.id)"
+      >
+        <div class="card-glow"></div>
+        <!-- Completed ribbon -->
+        @if (isCompleted(lesson.id)) {
+          <div class="completed-badge">
+            <ng-icon name="lucideCheckCircle" size="13"></ng-icon>
+            <span>Completed</span>
           </div>
-          <div class="duration">
-            <ng-icon name="lucideClock" size="14"></ng-icon>
-            <span>{{ lesson.readTimeMinutes }} min</span>
+        }
+        <div class="card-inner">
+          <div class="card-header">
+            <div class="category-badge">
+              <ng-icon [name]="getIconForCategory(lesson.category)" size="16"></ng-icon>
+              <span>{{ lesson.category || lesson.topics[0] || 'Finance' }}</span>
+            </div>
+            <div class="duration">
+              <span class="step-badge">{{ i + 1 }}</span>
+              <ng-icon name="lucideClock" size="14"></ng-icon>
+              <span>{{ getReadTime(lesson) }} min read</span>
+            </div>
           </div>
-        </div>
-        
-        <h2 class="lesson-title">{{ lesson.title }}</h2>
-        <p class="lesson-description">{{ lesson.description }}</p>
-        
-        <div class="card-footer">
-          <span class="date"></span>
-          <div class="read-more">
-            <span>Read Lesson</span>
-            <ng-icon name="lucideArrowRight" size="18" class="arrow-icon"></ng-icon>
+
+          <h2 class="lesson-title">{{ lesson.title }}</h2>
+          <p class="lesson-description">{{ lesson.description || lesson.summary }}</p>
+
+          <div class="card-footer">
+            <div class="read-more" [class.completed-cta]="isCompleted(lesson.id)">
+              <span>{{ isCompleted(lesson.id) ? 'Review Lesson' : 'Read Lesson' }}</span>
+              <ng-icon name="lucideArrowRight" size="18" class="arrow-icon"></ng-icon>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Leaderboard modal -->
+  @if (leaderboardModalOpen()) {
+    <div class="lb-modal-overlay" (click)="closeLeaderboardModal()">
+      <div
+        class="lb-modal"
+        (click)="$event.stopPropagation()"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="lb-modal-title"
+      >
+        <div class="lb-modal-header">
+          <div class="lb-modal-title-row">
+            <ng-icon name="lucideTrophy" size="20"></ng-icon>
+            <h2 id="lb-modal-title">Top learners</h2>
+          </div>
+          <button
+            type="button"
+            class="lb-modal-close"
+            (click)="closeLeaderboardModal()"
+            aria-label="Close leaderboard"
+          >
+            <ng-icon name="lucideX" size="20"></ng-icon>
+          </button>
+        </div>
+        <div class="lb-modal-body">
+          <section class="lb-how" aria-labelledby="lb-how-heading">
+            <h3 id="lb-how-heading" class="lb-how-title">
+              <ng-icon name="lucideInfo" size="16"></ng-icon>
+              How we calculate this
+            </h3>
+            <ul class="lb-how-list">
+              <li>
+                <strong>Completed lessons.</strong>
+                Your score is the number of Financial Academy lessons you have <strong>marked complete</strong> on your account.
+                Each lesson counts at most once—revisiting a completed lesson does not increase your total.
+              </li>
+              <li>
+                <strong>Ranking.</strong>
+                We list the <strong>top 10</strong> users with the highest lesson-completion counts, highest first.
+              </li>
+              <li>
+                <strong>Knowledge checks (quiz).</strong>
+                Quiz correct answers contribute to your score. Score = (lessons × 10) + correct answers.
+              </li>
+              <li>
+                <strong>Names.</strong>
+                For privacy, we show first name and last initial (for example, “Alex M.”).
+              </li>
+            </ul>
+          </section>
+
+          <h3 class="lb-rankings-heading">Leaderboard</h3>
+          @if (leaderboard().length > 0) {
+            <ol class="leaderboard-list">
+              @for (entry of leaderboard(); track entry.rank) {
+                <li class="leaderboard-item" [class.top1]="entry.rank === 1" [class.top2]="entry.rank === 2" [class.top3]="entry.rank === 3">
+                  <span class="lb-rank">
+                    @if (entry.rank <= 3) {
+                      <ng-icon [name]="getRankIcon(entry.rank)" size="16"></ng-icon>
+                    } @else {
+                      {{ entry.rank }}
+                    }
+                  </span>
+                  <span class="lb-name">{{ entry.name }}</span>
+                  <span class="lb-stats">
+                    <span class="lb-stat-lessons" title="Lessons completed">{{ entry.lessonsCompleted }} lessons</span>
+                    <span class="lb-stat-sep">·</span>
+                    <span class="lb-stat-answers" title="Correct quiz answers">{{ entry.correctAnswers }} correct</span>
+                  </span>
+                  <span class="lb-count" title="Score">{{ entry.score }}</span>
+                </li>
+              }
+            </ol>
+            <p class="leaderboard-footer">Score = (lessons × 10) + correct answers</p>
+          } @else {
+            <p class="lb-empty">No entries yet. Complete lessons and you can appear here once others start finishing lessons too.</p>
+          }
+        </div>
+      </div>
+    </div>
+  }
 </div>

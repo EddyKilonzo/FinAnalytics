@@ -5,6 +5,7 @@ import { AuthLayoutComponent } from './layout/auth-layout/auth-layout.component'
 import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
 import { guestGuard } from './core/guards/guest.guard';
+import { userOnlyGuard } from './core/guards/user-only.guard';
 
 export const routes: Routes = [
   // ── Exact root: landing for guests (navbar + footer) ──────────────────────
@@ -27,16 +28,19 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
+        canActivate: [userOnlyGuard],
         loadComponent: () =>
           import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
       },
       {
         path: 'analytics',
+        canActivate: [userOnlyGuard],
         loadComponent: () =>
           import('./features/analytics/analytics.component').then((m) => m.AnalyticsComponent),
       },
       {
         path: 'transactions',
+        canActivate: [userOnlyGuard],
         children: [
           {
             path: '',
@@ -56,6 +60,7 @@ export const routes: Routes = [
       },
       {
         path: 'budgets',
+        canActivate: [userOnlyGuard],
         children: [
           {
             path: '',
@@ -82,6 +87,7 @@ export const routes: Routes = [
       },
       {
         path: 'goals',
+        canActivate: [userOnlyGuard],
         children: [
           {
             path: '',
@@ -106,6 +112,7 @@ export const routes: Routes = [
       },
       {
         path: 'categories',
+        canActivate: [userOnlyGuard],
         loadComponent: () =>
           import('./features/categories/category-list.component').then(
             (m) => m.CategoryListComponent,
@@ -113,6 +120,7 @@ export const routes: Routes = [
       },
       {
         path: 'lessons',
+        canActivate: [userOnlyGuard],
         children: [
           {
             path: '',
@@ -132,6 +140,7 @@ export const routes: Routes = [
       },
       {
         path: 'social',
+        canActivate: [userOnlyGuard],
         loadComponent: () =>
           import('./features/social-spending/social-spending.component').then(
             (m) => m.SocialSpendingComponent,
@@ -139,6 +148,7 @@ export const routes: Routes = [
       },
       {
         path: 'profile',
+        canActivate: [userOnlyGuard],
         loadComponent: () =>
           import('./features/users/profile/profile.component').then((m) => m.ProfileComponent),
       },
@@ -183,9 +193,24 @@ export const routes: Routes = [
                 (m) => m.AdminGoalsComponent,
               ),
           },
+          {
+            path: 'categories',
+            loadComponent: () =>
+              import('./features/admin/categories/admin-categories.component').then(
+                (m) => m.AdminCategoriesComponent,
+              ),
+          },
+          {
+            path: 'lessons',
+            loadComponent: () =>
+              import('./features/admin/lessons/admin-lessons.component').then(
+                (m) => m.AdminLessonsComponent,
+              ),
+          },
         ],
       },
 
+      // Admin redirect is handled by userOnlyGuard on /dashboard
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
@@ -195,6 +220,11 @@ export const routes: Routes = [
     path: '',
     component: ShellComponent,
     children: [
+      // Marketing landing — always reachable (e.g. logo from app); guests also use `/` via route above
+      {
+        path: 'home',
+        component: LandingComponent,
+      },
       {
         path: 'auth',
         component: AuthLayoutComponent,
@@ -214,6 +244,14 @@ export const routes: Routes = [
           },
           { path: '', redirectTo: 'login', pathMatch: 'full' },
         ],
+      },
+      {
+        // Email link verification — accessible without auth (/verify-email?email=...&token=...)
+        path: 'verify-email',
+        loadComponent: () =>
+          import('./features/auth/verify-email/verify-email.component').then(
+            (m) => m.VerifyEmailComponent,
+          ),
       },
       {
         path: 'onboarding',

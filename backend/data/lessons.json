@@ -1,38 +1,581 @@
 [
   {
     "id": "lesson-budgeting-basics",
-    "title": "Budgeting basics",
-    "slug": "budgeting-basics",
-    "durationMinutes": 5,
-    "topics": ["budgeting", "planning"],
-    "summary": "Learn how to set a simple budget and stick to it.",
-    "body": "## Why budget?\n\nA budget is a plan for your money. It helps you see where your cash goes and avoid running out before the end of the month.\n\n## The 50/30/20 rule\n\n- **50%** – Needs (transport, food, rent)\n- **30%** – Wants (entertainment, social)\n- **20%** – Savings and goals\n\nStart by tracking what you spend for one week. Then set limits for each category. Use FinAnalytics to set budgets and get alerts when you're close to the limit."
+    "title": "Budgeting Basics",
+    "category": "Budgeting",
+    "durationMinutes": 8,
+    "topics": [
+      "budgeting",
+      "planning",
+      "50/30/20"
+    ],
+    "body": "## Why Budgeting Matters\n\nAs a young Kenyan professional or student, every shilling counts. Whether you're earning KES 25,000 a month from your first job or surviving on HELB funds, a budget is the single most powerful tool you can use to take control of your money.\n\nWithout a budget, it's easy to wonder where your money went at the end of the month. With one, you decide in advance where it goes.\n\n## The 50/30/20 Rule — Adapted for Kenya\n\nThe 50/30/20 rule divides your take-home income into three buckets:\n\n- **50% Needs** — rent, food, transport, utilities, NHIF, NSSF\n- **30% Wants** — eating out, entertainment, social events, new clothes\n- **20% Savings & Debt** — emergency fund, savings goals, HELB repayment\n\n### Example: KES 30,000 Take-Home Pay\n\n| Category | Amount |\n|---|---|\n| Needs (50%) | KES 15,000 |\n| Wants (30%) | KES 9,000 |\n| Savings (20%) | KES 6,000 |\n\nIf your rent alone is KES 12,000, you may need to adjust — perhaps 60/20/20. The rule is a guide, not a cage.\n\n## Step 1: Know Your Income\n\nStart with what actually lands in your M-Pesa or bank account — not gross salary. If you earn KES 40,000 gross, deductions for PAYE, NHIF (KES 1,700), and NSSF (KES 200) might leave you with around KES 35,000 net.\n\n## Step 2: List All Your Expenses\n\nWrite down every expense category:\n\n- **Housing**: rent, electricity (Kenya Power token), water\n- **Food**: Naivas or Quickmart groceries, cooking gas (6kg cylinder ~KES 1,400)\n- **Transport**: matatu fare, Bolt/Uber, fuel if you drive\n- **Airtime & data**: Safaricom or Airtel bundles\n- **Personal care**: salon, barber, toiletries\n\n## Step 3: Subtract and Adjust\n\nTotal Income − Total Expenses = Surplus or Deficit\n\nIf you have a deficit, look at your \"Wants\" first. Can you cook at home instead of eating out three times a week? That alone could save KES 2,000–4,000 monthly.\n\n## Step 4: Automate Where Possible\n\nSet up a standing order to move your savings to M-Shwari or a SACCO immediately on payday. Pay yourself first — before lifestyle spending eats it up.\n\n## Common Budgeting Mistakes\n\n1. **Forgetting irregular expenses** — car insurance, annual subscriptions, school fees\n2. **Not tracking actual spending** — a budget you never review is just a wish list\n3. **Budgeting too tightly** — leave a small buffer or you'll give up\n\n## Tools You Can Use\n\n- FinAnalytics (you're already here!)\n- A notebook and pen — old school but it works\n- M-Pesa statements — download from MySafaricom app\n\n## Key Takeaway\n\nA budget isn't about restriction — it's about intention. When you tell your money where to go, you stop wondering where it went.",
+    "quiz": [
+      {
+        "question": "In the 50/30/20 rule, what does the 20% represent?",
+        "options": [
+          "Food and transport",
+          "Entertainment and leisure",
+          "Savings and debt repayment",
+          "Rent and utilities"
+        ],
+        "correctIndex": 2,
+        "explanation": "The 20% in the 50/30/20 rule is allocated to savings and debt repayment — including emergency funds, savings goals, and loan payments like HELB."
+      },
+      {
+        "question": "When calculating your budget, which income figure should you use?",
+        "options": [
+          "Gross salary before deductions",
+          "Net take-home pay after deductions",
+          "Your HELB disbursement only",
+          "Your total assets"
+        ],
+        "correctIndex": 1,
+        "explanation": "Always budget based on your net take-home pay — the amount that actually hits your account after PAYE, NHIF, NSSF, and other deductions."
+      },
+      {
+        "question": "Which category would matatu fare fall under in the 50/30/20 framework?",
+        "options": [
+          "Wants (30%)",
+          "Savings (20%)",
+          "Needs (50%)",
+          "Debt (20%)"
+        ],
+        "correctIndex": 2,
+        "explanation": "Transport to work or school is a necessity, so it falls under Needs (50%)."
+      },
+      {
+        "question": "What is the best time to move money into savings?",
+        "options": [
+          "At the end of the month with what's left",
+          "Immediately on payday (pay yourself first)",
+          "Only when you hit a specific goal",
+          "After paying all bills and entertainment"
+        ],
+        "correctIndex": 1,
+        "explanation": "Paying yourself first — moving savings immediately on payday — prevents lifestyle spending from consuming money intended for savings."
+      }
+    ]
   },
   {
     "id": "lesson-saving-tips",
-    "title": "Simple saving tips",
-    "slug": "saving-tips",
-    "durationMinutes": 6,
-    "topics": ["saving", "goals"],
-    "summary": "Small habits that help you save without feeling the pinch.",
-    "body": "## Pay yourself first\n\nAs soon as you get money, move a small amount to savings (even 5–10%). What's left is what you can spend.\n\n## Name your savings\n\nGive each goal a name: \"Emergency fund\", \"New laptop\", \"Trip home\". You're more likely to stick to it when you know what it's for.\n\n## Use the app\n\nCreate goals in FinAnalytics and add to them regularly. Watch your progress—it keeps you motivated."
+    "title": "Smart Saving Strategies",
+    "category": "Savings",
+    "durationMinutes": 9,
+    "topics": [
+      "saving",
+      "goals",
+      "emergency fund",
+      "M-Shwari"
+    ],
+    "body": "## Why Saving Is Hard — and How to Make It Easier\n\nMost Kenyans know they should save. But between rent, food, transport, and social obligations, saving often feels impossible. The secret isn't saving more money — it's saving smarter.\n\n## The Emergency Fund: Your First Priority\n\nBefore any investment or savings goal, build an emergency fund. This is money set aside for unexpected events: sudden job loss, medical bills, urgent car repairs, or a family emergency.\n\n**Target: 3–6 months of living expenses**\n\nIf your monthly expenses are KES 25,000, your emergency fund target is KES 75,000–150,000.\n\nKeep it somewhere accessible but not too easy to spend:\n- **M-Shwari** — earns interest, accessible via M-Pesa\n- **KCB M-Pesa** — similar to M-Shwari, slightly different rates\n- **SACCO savings account** — disciplined, earns dividends\n\n## Saving Strategies That Work\n\n### 1. The 24-Hour Rule\nBefore any non-essential purchase over KES 1,000, wait 24 hours. Most impulse buys feel less urgent the next day.\n\n### 2. Round-Up Saving\nEvery time you spend, round up to the nearest KES 100 and transfer the difference to savings. Spend KES 230? Save KES 70. Small but consistent.\n\n### 3. The No-Spend Challenge\nPick one day per week where you spend KES 0. Pack food from home, walk instead of taking a matatu. Over a month, that's 4 days × average KES 600 = KES 2,400 saved.\n\n### 4. Automate via Standing Order\nSet a standing order with your bank or a Safaricom M-Shwari lock to automatically save on the 1st of every month. Automation removes the decision fatigue.\n\n### 5. The 52-Week Challenge (Kenya Edition)\nWeek 1: Save KES 50. Week 2: KES 100. Week 3: KES 150... Week 52: KES 2,600.\nTotal saved: over KES 68,000 by year end.\n\n## Goal-Based Saving\n\nSaving without a goal is like walking without a destination. Define what you're saving for:\n\n- **Short-term (< 1 year)**: New phone (KES 30,000), holiday upcountry, laptop\n- **Medium-term (1–3 years)**: Car deposit (KES 150,000+), business capital\n- **Long-term (3+ years)**: Land purchase, house deposit, retirement\n\n### Calculate Your Monthly Savings Target\n\n> Monthly amount = (Goal amount − current savings) ÷ months remaining\n\nExample: You want KES 60,000 in 10 months and have KES 5,000.\nMonthly savings needed = (60,000 − 5,000) ÷ 10 = **KES 5,500/month**\n\n## M-Shwari: Kenya's Most Accessible Savings Tool\n\nM-Shwari is offered by Safaricom and NCBA Bank. Key features:\n- Minimum balance: KES 0\n- Interest: ~7.35% per annum (credited monthly)\n- Lock savings for 1–6 months to earn higher rates\n- No monthly fees\n\nAccess via *234# or the MySafaricom app.\n\n## Common Saving Mistakes to Avoid\n\n1. **Saving what's left** — save first, spend second\n2. **Keeping savings in M-Pesa wallet** — too easy to spend; separate it\n3. **Only one savings account** — use different pots for different goals\n4. **Giving up after one bad month** — consistency beats perfection\n\n## Key Takeaway\n\nSaving is a habit, not a one-time decision. Start with whatever you can — even KES 200 a week — and increase as your income grows.",
+    "quiz": [
+      {
+        "question": "What is the recommended size of an emergency fund?",
+        "options": [
+          "1 month of expenses",
+          "2 months of expenses",
+          "3–6 months of expenses",
+          "12 months of expenses"
+        ],
+        "correctIndex": 2,
+        "explanation": "Financial experts recommend 3–6 months of living expenses as an emergency fund — enough to cover unexpected events like job loss or medical emergencies."
+      },
+      {
+        "question": "Where is the best place to keep your emergency fund in Kenya?",
+        "options": [
+          "Under your mattress",
+          "In your M-Pesa wallet",
+          "M-Shwari or a SACCO savings account",
+          "In stocks on the NSE"
+        ],
+        "correctIndex": 2,
+        "explanation": "M-Shwari or a SACCO savings account is ideal — accessible when needed, earns interest, but not as instantly spendable as the M-Pesa wallet."
+      },
+      {
+        "question": "In the 52-Week Challenge, how much do you save in Week 10?",
+        "options": [
+          "KES 10",
+          "KES 100",
+          "KES 500",
+          "KES 1,000"
+        ],
+        "correctIndex": 2,
+        "explanation": "In the 52-Week Challenge (Kenya Edition), you save KES 50 × week number. Week 10 = KES 50 × 10 = KES 500."
+      },
+      {
+        "question": "You want to save KES 48,000 in 8 months and have KES 8,000 already. How much should you save monthly?",
+        "options": [
+          "KES 4,000",
+          "KES 5,000",
+          "KES 6,000",
+          "KES 7,000"
+        ],
+        "correctIndex": 1,
+        "explanation": "(48,000 − 8,000) ÷ 8 = 40,000 ÷ 8 = KES 5,000 per month."
+      },
+      {
+        "question": "What is the main benefit of automating your savings via a standing order?",
+        "options": [
+          "You earn more interest",
+          "It removes the temptation to spend before saving",
+          "Your bank waives fees",
+          "You qualify for a loan automatically"
+        ],
+        "correctIndex": 1,
+        "explanation": "Automation removes the decision — money moves to savings before you can spend it, making saving effortless and consistent."
+      }
+    ]
   },
   {
     "id": "lesson-debt-awareness",
-    "title": "Debt awareness",
-    "slug": "debt-awareness",
-    "durationMinutes": 6,
-    "topics": ["debt", "HELB", "loans"],
-    "summary": "Understanding debt and how to stay on top of it.",
-    "body": "## Good vs unhelpful debt\n\n- **Useful debt** – e.g. HELB for studies, can increase your earning power.\n- **Costly debt** – high-interest loans, buy-now-pay-later for wants.\n\n## Stay on top of HELB\n\nIf you have HELB, track when repayment starts. Set aside a little each month so you're ready. Even small amounts help.\n\n## Avoid new high-interest debt\n\nBefore borrowing, ask: Do I need this? Can I save for it instead? Use the app to see how much you really have before spending."
+    "title": "Understanding & Managing Debt",
+    "category": "Personal Finance",
+    "durationMinutes": 10,
+    "topics": [
+      "debt",
+      "HELB",
+      "loans",
+      "interest rates"
+    ],
+    "body": "## Debt: A Tool, Not a Trap\n\nNot all debt is bad. A student loan that funds your degree — enabling you to earn more — is very different from a high-interest mobile loan used to fund a weekend trip. Understanding debt helps you use it wisely and avoid the traps that keep many young Kenyans financially stuck.\n\n## Types of Debt Common in Kenya\n\n### 1. HELB Loan\nThe Higher Education Loans Board (HELB) provides student loans at 4% per annum interest — one of the lowest rates available in Kenya. Repayment begins 1 year after completing studies, deducted directly from salary by employers.\n\n**Key facts:**\n- Rate: 4% p.a.\n- Grace period: 1 year post-graduation\n- Repayment: deducted via PAYE by employer (KES 1,500–5,000/month depending on salary)\n- Defaulting leads to CRB listing and cannot get a clearance certificate\n\n### 2. Mobile Loans (Fuliza, KCB M-Pesa, Tala, Branch)\nThese are convenient but expensive.\n\n| Product | Approximate Annual Rate |\n|---|---|\n| Fuliza (Safaricom) | ~365% effective APR |\n| KCB M-Pesa | ~36–72% p.a. |\n| Tala / Branch | ~84–152% p.a. |\n\nA KES 5,000 Tala loan at 15% for 30 days costs you KES 750 in interest. If you roll it over 12 times, you've paid KES 9,000 in interest on a KES 5,000 loan.\n\n### 3. Bank Loans / Personal Loans\nCommercial banks offer personal loans at 13–18% p.a. under the current CBK rate environment. Better than mobile apps but require documentation.\n\n### 4. SACCO Loans\nSACCOs typically lend at 1% per month on reducing balance (≈12% p.a. effective), up to 3× your savings. Best-value credit for members.\n\n## Interest Rate Concepts You Must Know\n\n### Simple Interest vs Compound Interest\n- **Simple interest**: charged on the original principal only\n- **Compound interest**: charged on principal + accumulated interest (grows faster)\n\n### Reducing Balance vs Flat Rate\nA flat rate of 10% on KES 100,000 means you pay KES 10,000 interest regardless of how much you've repaid. A reducing balance loan charges interest only on the outstanding amount — much cheaper overall.\n\n**Always ask lenders which method they use.**\n\n## The Debt Snowball vs Debt Avalanche\n\n### Snowball Method\nPay minimum on all debts, throw extra money at the **smallest balance** first. Builds momentum — psychological wins.\n\n### Avalanche Method\nPay minimum on all debts, throw extra money at the **highest interest rate** first. Saves more money mathematically.\n\n**Example**: You have:\n- Tala loan: KES 8,000 at 15%/month\n- HELB: KES 45,000 at 4% p.a.\n- SACCO loan: KES 30,000 at 1%/month\n\nAvalanche order: Tala → SACCO → HELB (highest rate first = cheapest overall)\n\n## Managing HELB Repayment\n\n- Check your balance at helb.co.ke or via *642#\n- Even if your employer is deducting, verify payments are credited\n- HELB offers a discount for lump-sum early repayment\n- Never ignore HELB — defaulting gets you CRB-listed and blocks government services\n\n## Red Flags: Signs You're in a Debt Trap\n\n1. Taking a new loan to repay an old one\n2. Only paying the minimum on everything\n3. Debt repayments exceed 40% of take-home pay\n4. You can't name all your debts and their rates\n5. You're using Fuliza every month before payday\n\n## Steps to Get Out of Debt\n\n1. **List all debts** — amount, rate, monthly payment\n2. **Stop new debt** — freeze mobile loan apps\n3. **Build a small buffer** (KES 5,000–10,000 emergency fund first)\n4. **Attack debts** using snowball or avalanche\n5. **Negotiate** — some lenders will reduce rates for early settlement\n\n## Key Takeaway\n\nDebt managed well is a ladder. Debt ignored is a hole. Know your rates, have a repayment plan, and avoid mobile loans for discretionary spending.",
+    "quiz": [
+      {
+        "question": "What is the approximate interest rate on HELB loans?",
+        "options": [
+          "12% per annum",
+          "4% per annum",
+          "18% per annum",
+          "36% per annum"
+        ],
+        "correctIndex": 1,
+        "explanation": "HELB charges 4% per annum — one of the lowest loan rates in Kenya, making it a relatively affordable form of debt for students."
+      },
+      {
+        "question": "Which mobile lending product typically has the highest effective annual interest rate?",
+        "options": [
+          "KCB M-Pesa",
+          "SACCO loan",
+          "Fuliza",
+          "HELB"
+        ],
+        "correctIndex": 2,
+        "explanation": "Fuliza's daily fee structure translates to an extremely high effective APR (approximately 365%), making it one of the most expensive forms of credit."
+      },
+      {
+        "question": "In the debt avalanche method, which debt do you pay off first?",
+        "options": [
+          "The smallest balance",
+          "The newest loan",
+          "The loan from family",
+          "The highest interest rate"
+        ],
+        "correctIndex": 3,
+        "explanation": "The avalanche method targets the highest interest rate first, minimizing total interest paid over time."
+      },
+      {
+        "question": "What does 'reducing balance' mean in loan terms?",
+        "options": [
+          "Your loan balance reduces each year automatically",
+          "Interest is charged only on the outstanding principal",
+          "You pay less each month over time",
+          "The bank reduces your rate when you're a good customer"
+        ],
+        "correctIndex": 1,
+        "explanation": "A reducing balance loan charges interest on the remaining principal after each repayment — so as you pay down the loan, your interest charges decrease."
+      },
+      {
+        "question": "What is a sign you may be in a debt trap?",
+        "options": [
+          "You pay more than the minimum monthly",
+          "You only have one debt",
+          "You take a new loan to repay an old one",
+          "Your SACCO is deducting savings"
+        ],
+        "correctIndex": 2,
+        "explanation": "Borrowing to repay existing debt is a classic debt trap — you're not solving the problem, just delaying and compounding it."
+      }
+    ]
   },
   {
     "id": "lesson-compound-interest",
-    "title": "Compound interest",
-    "slug": "compound-interest",
-    "durationMinutes": 7,
-    "topics": ["saving", "interest", "long-term"],
-    "summary": "How your money can grow when you save early.",
-    "body": "## What is compound interest?\n\nYou earn interest on your savings. Then you earn interest on that interest. Over time, your balance grows faster.\n\n## Start early\n\nEven small amounts add up. Saving KES 500 a month from age 20 can grow much more than starting at 30—because time is on your side.\n\n## Use goals with deadlines\n\nIn FinAnalytics, set a target and a deadline. The app helps you see how much to put aside each month to get there."
+    "title": "Compound Interest & Long-Term Wealth",
+    "category": "Investing",
+    "durationMinutes": 9,
+    "topics": [
+      "compound interest",
+      "investing",
+      "long-term",
+      "wealth"
+    ],
+    "body": "## The Eighth Wonder of the World\n\nAlbert Einstein reportedly called compound interest \"the eighth wonder of the world. He who understands it, earns it; he who doesn't, pays it.\" Whether he said it or not, the math is undeniable — and it's the most powerful concept in personal finance.\n\n## What Is Compound Interest?\n\nCompound interest means earning interest on your interest. When you invest money, you earn returns. Those returns are added to your principal, and next period you earn returns on the larger amount.\n\n**Simple interest** (one year):\n- Principal: KES 10,000 at 10% = KES 11,000\n\n**Compound interest** (10 years at 10% annually):\n- Year 1: KES 10,000 → KES 11,000\n- Year 2: KES 11,000 → KES 12,100\n- Year 3: KES 12,100 → KES 13,310\n- ...\n- Year 10: KES 10,000 → **KES 25,937**\n\nThat's KES 15,937 in returns on a KES 10,000 investment — by doing nothing.\n\n## The Formula\n\n> **A = P × (1 + r/n)^(n×t)**\n\nWhere:\n- A = Final amount\n- P = Principal (starting amount)\n- r = Annual interest rate (as decimal)\n- n = Number of times interest compounds per year\n- t = Time in years\n\n### Example\nYou invest KES 50,000 in a Money Market Fund at 12% per annum, compounding monthly.\n\nA = 50,000 × (1 + 0.12/12)^(12×5) = 50,000 × (1.01)^60 ≈ **KES 90,833**\n\nThat's KES 40,833 earned — on top of your KES 50,000 — in 5 years.\n\n## Time Is Your Greatest Asset\n\nThe earlier you start, the more powerful compounding becomes. This is why your 20s are the most valuable investing decade of your life.\n\n| Start Age | Monthly Investment | Rate | Value at 60 |\n|---|---|---|---|\n| 22 | KES 3,000 | 12% | ~KES 11.8M |\n| 32 | KES 3,000 | 12% | ~KES 3.5M |\n| 42 | KES 3,000 | 12% | ~KES 1.0M |\n\nStarting 10 years earlier more than triples the outcome — with the same monthly contribution.\n\n## The Rule of 72\n\nQuick mental math shortcut: **divide 72 by your interest rate** to find how many years it takes to double your money.\n\n- At 6% → doubles every 12 years\n- At 12% → doubles every 6 years\n- At 18% → doubles every 4 years\n\nKenyan Money Market Funds currently yield 12–16% — your money could double in 5–6 years.\n\n## Compounding Works Against You Too\n\nThis is the dark side. If you carry a Tala loan at 15% per month and don't repay, the interest compounds:\n\n- Month 1: KES 5,000 + KES 750 = KES 5,750\n- Month 2: KES 5,750 + KES 862 = KES 6,612\n- Month 3: KES 6,612 + KES 992 = KES 7,604\n\nThree months later, your KES 5,000 loan is nearly KES 7,600.\n\n## Practical Ways to Harness Compound Interest in Kenya\n\n1. **Money Market Funds** — CIC, Sanlam, Cytonn, GenCap (12–16% p.a.)\n2. **SACCO savings** — dividends reinvested compound over years\n3. **NSE dividend-reinvestment** — buy more shares with dividends received\n4. **Treasury Bonds** — government bonds at 12–16% held to maturity\n\n## Starting Small Still Works\n\nYou don't need millions to start. KES 1,000/month at 14% for 20 years = **KES 1.06 million**.\n\nThe key ingredients:\n1. Start as early as possible\n2. Be consistent — don't withdraw\n3. Choose instruments with good rates\n4. Reinvest all returns\n\n## Key Takeaway\n\nCompound interest rewards patience and punishes procrastination. The best time to start was yesterday. The second-best time is today.",
+    "quiz": [
+      {
+        "question": "What is the key difference between simple and compound interest?",
+        "options": [
+          "Compound interest has a higher rate",
+          "Compound interest earns returns on returns",
+          "Simple interest is only for banks",
+          "Compound interest requires more capital"
+        ],
+        "correctIndex": 1,
+        "explanation": "Compound interest earns returns on both the original principal AND previously earned interest, causing exponential growth over time."
+      },
+      {
+        "question": "Using the Rule of 72, how long does it take to double money at 12% per annum?",
+        "options": [
+          "3 years",
+          "6 years",
+          "9 years",
+          "12 years"
+        ],
+        "correctIndex": 1,
+        "explanation": "Rule of 72: 72 ÷ 12 = 6 years to double your money at 12% per annum."
+      },
+      {
+        "question": "You invest KES 10,000 at 10% compounded annually. What is the value after 2 years?",
+        "options": [
+          "KES 12,000",
+          "KES 12,100",
+          "KES 11,000",
+          "KES 12,500"
+        ],
+        "correctIndex": 1,
+        "explanation": "Year 1: 10,000 × 1.10 = 11,000. Year 2: 11,000 × 1.10 = 12,100. The extra KES 100 (vs simple interest of KES 2,000 flat) is compounding at work."
+      },
+      {
+        "question": "Why does starting to invest at 22 produce so much more wealth than starting at 32?",
+        "options": [
+          "Younger people earn higher interest rates",
+          "The extra 10 years allow more compound cycles",
+          "Banks offer bonuses to young investors",
+          "Investment limits are higher when you're younger"
+        ],
+        "correctIndex": 1,
+        "explanation": "Each additional year of compounding multiplies all previous growth. An extra 10 years at the start of your investing journey creates exponentially more wealth than adding the same years later."
+      }
+    ]
+  },
+  {
+    "id": "lesson-nse-investing",
+    "title": "How to Invest in NSE Stocks",
+    "category": "Investing",
+    "durationMinutes": 11,
+    "topics": [
+      "NSE",
+      "stocks",
+      "investing",
+      "CDS account",
+      "shares"
+    ],
+    "body": "## What Is the NSE?\n\nThe Nairobi Securities Exchange (NSE) is Kenya's stock market — established in 1954 and regulated by the Capital Markets Authority (CMA). It's where shares of listed Kenyan companies are bought and sold. As of 2026, over 60 companies are listed, including Safaricom, Equity Bank, KCB, East African Breweries (EABL), and Kenya Power.\n\nOwning shares means owning a small piece of a company. You profit when:\n1. **The share price rises** (capital gains)\n2. **The company pays dividends** (share of profits)\n\n## Why NSE Investing Makes Sense for Young Kenyans\n\n- **Long-term returns**: NSE has averaged ~12% annual returns over the long run\n- **Low starting amount**: You can buy shares worth as little as KES 1,000\n- **Liquidity**: You can sell anytime the market is open (9am–3pm, Mon–Fri)\n- **Regulation**: CMA-regulated — much safer than unregulated schemes\n- **Dividends**: Many blue-chip companies pay dividends twice a year\n\n## Step-by-Step: How to Buy NSE Shares\n\n### Step 1: Open a CDS Account\nA Central Depository & Settlement (CDS) account is where your shares are held electronically — like an M-Pesa account, but for shares.\n\nOpen one through:\n- **Stockbrokers**: AIB-AXYS, Dyer & Blair, SBG Securities, Kingdom Securities\n- **Banks with brokerage arms**: Equity Investment Bank, Standard Investment Bank (SIB), Co-op Trust\n- **Online platforms**: Genghis Capital, EAStocks (allows online trading)\n\nDocuments needed: National ID/Passport, KRA PIN certificate, passport photo, and completed account forms.\n\n### Step 2: Fund Your Brokerage Account\nTransfer money to your broker's account via bank transfer or M-Pesa (some brokers accept this).\n\n### Step 3: Place a Buy Order\nTell your broker (via call, email, or app):\n- Company name / ticker (e.g., SCOM for Safaricom)\n- Number of shares or amount to invest\n- Order type (market order = buy at current price; limit order = buy only if price hits your target)\n\n### Step 4: Confirm Settlement\nNSE operates on T+3 settlement — your shares are officially in your CDS account 3 business days after purchase.\n\n## Understanding NSE Terminology\n\n| Term | Meaning |\n|---|---|\n| Bull Market | Prices rising — good time to be invested |\n| Bear Market | Prices falling — keep calm, stay the course |\n| P/E Ratio | Price ÷ Earnings per share — lower often = cheaper stock |\n| Dividend Yield | Annual dividend ÷ share price × 100 |\n| Market Cap | Total company value = share price × total shares |\n| Rights Issue | Company offers new shares to existing shareholders at a discount |\n\n## Notable NSE Stocks for Beginners\n\n### Safaricom (SCOM)\nKenya's largest company. M-Pesa revenues continue to grow. Pays regular dividends. Prices have historically ranged from KES 20–40.\n\n### Equity Group (EQTY)\nPan-African bank with strong earnings. Known for consistent dividends.\n\n### KCB Group (KCB)\nKenya's largest bank by assets. Strong dividend history.\n\n### East African Breweries (EABL)\nConsumer goods giant. Premium brands: Tusker, Guinness. Regular dividends.\n\n## Risks of NSE Investing\n\n1. **Price volatility** — share prices go up and down daily\n2. **Company risk** — a company can underperform or even delist\n3. **Liquidity risk** — some smaller stocks are hard to sell quickly\n4. **Currency risk** — less relevant for KES-denominated investments\n5. **Market-wide crashes** — external shocks (COVID, global recession) affect all stocks\n\n## Tips for NSE Beginners\n\n1. **Start with blue chips** — large, established companies\n2. **Invest regularly** (monthly) — called dollar/shilling cost averaging\n3. **Reinvest dividends** — buy more shares to compound faster\n4. **Do not panic-sell** during drops — corrections are normal\n5. **Diversify** — don't put all KES in one stock\n6. **Think long-term** — 5+ years horizon reduces risk significantly\n\n## Tax Considerations\n\n- **Dividends**: Subject to 5% withholding tax (deducted at source)\n- **Capital gains**: As of 2023, Kenya introduced a 15% CGT on listed securities gains\n- Keep records for your KRA obligations\n\n## Key Takeaway\n\nThe NSE is accessible to every Kenyan with a KRA PIN and a bank account. Start small, diversify, invest regularly, and think long-term. Time in the market beats timing the market.",
+    "quiz": [
+      {
+        "question": "What does CDS stand for in NSE investing?",
+        "options": [
+          "Capital Development Scheme",
+          "Central Depository & Settlement",
+          "Company Dividend System",
+          "Capital Distribution Standard"
+        ],
+        "correctIndex": 1,
+        "explanation": "CDS stands for Central Depository & Settlement — it's the electronic account where your NSE shares are held, similar to how M-Pesa holds your mobile money."
+      },
+      {
+        "question": "NSE uses T+3 settlement. What does this mean?",
+        "options": [
+          "You must trade at least 3 times per month",
+          "Shares appear in your CDS account 3 business days after purchase",
+          "You pay 3% commission on all trades",
+          "You can only hold shares for 3 years"
+        ],
+        "correctIndex": 1,
+        "explanation": "T+3 means the trade settles (shares officially transfer) 3 business days after the transaction date."
+      },
+      {
+        "question": "What is the ticker symbol for Safaricom on the NSE?",
+        "options": [
+          "SAFE",
+          "MPESA",
+          "SCOM",
+          "SAFA"
+        ],
+        "correctIndex": 2,
+        "explanation": "Safaricom trades under the ticker SCOM on the Nairobi Securities Exchange."
+      },
+      {
+        "question": "What is dividend yield?",
+        "options": [
+          "Total company profit divided by employees",
+          "Annual dividend divided by share price × 100",
+          "Number of shares times share price",
+          "Monthly return on investment"
+        ],
+        "correctIndex": 1,
+        "explanation": "Dividend yield = (Annual Dividend ÷ Share Price) × 100. It shows how much cash income you earn relative to the share price."
+      },
+      {
+        "question": "Which of the following is NOT a risk of NSE investing?",
+        "options": [
+          "Price volatility",
+          "Company underperformance",
+          "Guaranteed annual losses",
+          "Market-wide crashes"
+        ],
+        "correctIndex": 2,
+        "explanation": "NSE investing carries risks like volatility and company risk, but there is no guaranteed annual loss — in fact, long-term NSE returns have historically been positive."
+      }
+    ]
+  },
+  {
+    "id": "lesson-paye-tax-basics",
+    "title": "PAYE & Tax Basics for Kenyan Employees",
+    "category": "Personal Finance",
+    "durationMinutes": 10,
+    "topics": [
+      "tax",
+      "PAYE",
+      "KRA",
+      "salary",
+      "deductions"
+    ],
+    "body": "## Why Understanding Tax Matters\n\nEvery employed Kenyan has PAYE (Pay As You Earn) deducted from their salary before it reaches their bank account. Most people never question the numbers — they just accept whatever arrives. But understanding PAYE helps you verify your employer is deducting correctly, claim all allowable deductions, and avoid nasty surprises from KRA.\n\n## What Is PAYE?\n\nPAYE is a system where your employer deducts income tax from your salary every month and remits it to KRA on your behalf. It's not a punishment — it's just how income tax is collected for employees.\n\nPAYE applies to: basic salary, housing allowance (above the exempt limit), commuter allowances (above exempt), benefits-in-kind, and bonuses.\n\n## Kenya's PAYE Tax Bands (2026)\n\n| Monthly Taxable Income | Tax Rate |\n|---|---|\n| First KES 24,000 | 10% |\n| Next KES 8,333 (KES 24,001–32,333) | 25% |\n| Next KES 467,667 (KES 32,334–500,000) | 30% |\n| Above KES 500,000 | 35% |\n\nThese are applied progressively — meaning each band taxes only that portion of income.\n\n## Tax Relief: Reducing What You Owe\n\n### Personal Relief\nEvery resident Kenyan employee gets a monthly personal relief of **KES 2,400** (KES 28,800 per year). This is automatically applied by your employer.\n\n### Insurance Relief\nIf you pay premiums for life, health, or education insurance, you can claim **15% of premiums paid** up to KES 5,000 per month as relief.\n\n### Mortgage Interest Relief\nInterest paid on a mortgage for your owner-occupied home — up to KES 25,000 per month.\n\n### NHIF Benefit\nYour NHIF contributions (KES 1,700/month for most employees) are deductible against taxable income.\n\n## Worked Example: PAYE Calculation\n\n**Gross Monthly Salary: KES 60,000**\n\nStep 1: Calculate taxable income\n- Less: NSSF (KES 200) = KES 59,800 taxable income\n\nStep 2: Apply tax bands\n- First KES 24,000 × 10% = KES 2,400\n- Next KES 8,333 × 25% = KES 2,083\n- Remaining KES 27,467 × 30% = KES 8,240\n- **Gross Tax: KES 12,723**\n\nStep 3: Less Personal Relief: − KES 2,400\n**Net Tax (PAYE): KES 10,323**\n\nStep 4: Other deductions\n- NHIF: KES 1,700\n- NSSF: KES 200\n- **Total Deductions: KES 12,223**\n\n**Net Take-Home: KES 60,000 − KES 12,223 = KES 47,777**\n\n## Your KRA PIN and iTax\n\nEvery employed Kenyan must have a KRA PIN. You use it to:\n- File annual tax returns (due June 30 each year)\n- Apply for jobs, open bank accounts, buy property\n- Claim tax refunds if over-taxed\n\nFile via **itax.kra.go.ke** or the KRA iTax mobile app. Failure to file attracts a penalty of KES 2,000 per year.\n\n## Common PAYE Questions\n\n**Q: My employer pays my rent — is that taxable?**\nA: Yes. Housing benefit above KES 15,000/month (or 15% of basic salary, whichever is lower) is taxable.\n\n**Q: I work two jobs. How is PAYE handled?**\nA: Your secondary employer should deduct at 30% (unless you apply for a custom tax directive from KRA).\n\n**Q: Am I entitled to a refund?**\nA: If your employer over-deducted PAYE, you can claim a refund through iTax after filing your annual return.\n\n## Freelancers and Gig Workers\n\nIf you earn income outside employment (freelance, content creation, online gigs, tuition), you must:\n1. Register for a KRA PIN\n2. File a self-assessment return annually\n3. Pay tax on net income (income minus business expenses)\n\nWithholding tax of 5% may apply to some payments you receive.\n\n## Key Takeaway\n\nPAYE is automatic, but understanding it empowers you. Verify your payslip, claim all eligible reliefs, and always file your KRA return on time to avoid penalties.",
+    "quiz": [
+      {
+        "question": "What is the monthly personal relief amount for Kenyan employees?",
+        "options": [
+          "KES 1,000",
+          "KES 1,700",
+          "KES 2,400",
+          "KES 5,000"
+        ],
+        "correctIndex": 2,
+        "explanation": "Every resident Kenyan employee receives a monthly personal relief of KES 2,400 (KES 28,800 per year), which directly reduces the tax owed."
+      },
+      {
+        "question": "What tax rate applies to the first KES 24,000 of monthly taxable income?",
+        "options": [
+          "10%",
+          "15%",
+          "25%",
+          "30%"
+        ],
+        "correctIndex": 0,
+        "explanation": "The first KES 24,000 of monthly taxable income is taxed at 10% under Kenya's progressive PAYE tax bands."
+      },
+      {
+        "question": "By what date must annual KRA tax returns be filed?",
+        "options": [
+          "March 31",
+          "April 30",
+          "June 30",
+          "December 31"
+        ],
+        "correctIndex": 2,
+        "explanation": "Annual income tax returns in Kenya are due by June 30 each year. Late filing attracts a penalty of KES 2,000."
+      },
+      {
+        "question": "If a freelancer earns KES 50,000 from a client who deducts 5% withholding tax, how much is withheld?",
+        "options": [
+          "KES 1,000",
+          "KES 2,500",
+          "KES 5,000",
+          "KES 10,000"
+        ],
+        "correctIndex": 1,
+        "explanation": "5% of KES 50,000 = KES 2,500. This is deducted at source and can be offset against your annual tax liability."
+      }
+    ]
+  },
+  {
+    "id": "lesson-how-saccos-work",
+    "title": "How SACCOs Work & Why to Join One",
+    "category": "Savings",
+    "durationMinutes": 9,
+    "topics": [
+      "SACCO",
+      "cooperative",
+      "savings",
+      "loans",
+      "SASRA"
+    ],
+    "body": "## What Is a SACCO?\n\nA SACCO (Savings and Credit Cooperative Organisation) is a member-owned financial institution where members pool savings and access affordable loans. SACCOs are regulated in Kenya by SASRA (Sacco Societies Regulatory Authority).\n\nThink of a SACCO as a financial cooperative — you are both a customer AND an owner. Your savings earn dividends (like interest), and you can borrow against your savings at rates far cheaper than banks or mobile lenders.\n\n## How SACCOs Work\n\n### Membership\nJoin a SACCO relevant to your profession, employer, or community:\n- Teacher SACCOs (KNUT SACCO, Kenya Bankers SACCO)\n- University SACCOs (for campus students and staff)\n- Employer-based SACCOs (many government departments and companies have one)\n- Community/church SACCOs (open to the public)\n\n### Monthly Contributions (Shares/Savings)\nMembers contribute a fixed monthly amount — typically KES 500–5,000. These are recorded as \"shares\" and earn dividends at year-end (typically 8–15% per annum).\n\n### Dividends on Savings\nInstead of interest (like a bank), SACCOs pay dividends based on your average shares held during the year and the SACCO's profitability. A well-run SACCO pays 10–14% annually.\n\n### Loans\nAfter saving for a defined period (often 3–6 months), members qualify for loans:\n- **Typical loan limit**: 3× your shares (e.g., KES 30,000 shares = up to KES 90,000 loan)\n- **Interest rate**: 1% per month on reducing balance (≈12% effective p.a.)\n- **Repayment**: monthly deduction from payslip or bank\n\nCompare this to a bank personal loan at 18% or a mobile loan at 100%+ — SACCOs are dramatically cheaper.\n\n## Types of SACCO Loans\n\n| Loan Type | Purpose |\n|---|---|\n| Development Loan | Housing, education, business capital |\n| Emergency Loan | Medical bills, urgent needs |\n| School Fees Loan | Annual school fees for children |\n| Asset Finance | Vehicle purchase |\n| Salary Advance | Short-term cash before payday |\n\n## Benefits of SACCO Membership\n\n1. **Cheap credit** — 1% per month vs 3–15% for mobile loans\n2. **Forced savings** — monthly deductions build wealth automatically\n3. **Dividends** — your savings grow passively\n4. **Member ownership** — you vote on leadership and profit sharing\n5. **Insurance** — many SACCOs cover loans on member death\n6. **Social safety net** — emergency loans quickly processed for members\n\n## SASRA Regulation\n\nSASRA is the government body that licenses and supervises SACCOs in Kenya. Only deposit-taking SACCOs (with Front Office Service Activity — FOSA) are SASRA-licensed to hold member deposits.\n\nBefore joining, verify your SACCO is **SASRA-licensed** at sasra.go.ke. Unlicensed cooperatives are not protected by the same regulations.\n\n## How to Join a SACCO\n\n1. Identify a relevant SACCO (ask employer, check SASRA list)\n2. Fill membership application form\n3. Pay registration fee (typically KES 500–2,000)\n4. Purchase minimum shares (e.g., KES 5,000 initial)\n5. Start monthly contributions\n\n## Common Mistakes to Avoid\n\n1. **Joining without checking SASRA licensing** — fraud risk\n2. **Withdrawing shares early** — penalties and lose loan eligibility\n3. **Not attending AGMs** — miss dividend announcements and governance\n4. **Taking maximum loans immediately** — build savings first\n5. **Choosing a SACCO based on a friend's recommendation alone** — check the financials\n\n## SACCOs vs Banks vs Mobile Loans\n\n| Feature | SACCO | Bank | Mobile Loan |\n|---|---|---|---|\n| Loan Rate | ~12% p.a. | 13–18% p.a. | 84–365% p.a. |\n| Savings Return | 10–14% dividends | 3–7% interest | N/A |\n| Accessibility | Moderate | Moderate | Very easy |\n| Requirements | Membership + shares | Salary + documents | Just M-Pesa |\n\n## Key Takeaway\n\nFor a young Kenyan professional, joining a SACCO is one of the best financial decisions you can make. Cheap loans, strong savings returns, and member ownership make it a superior alternative to banks for most everyday financial needs.",
+    "quiz": [
+      {
+        "question": "What does SASRA stand for?",
+        "options": [
+          "Savings And Securities Regulatory Authority",
+          "Sacco Societies Regulatory Authority",
+          "Standard Audit & Savings Review Agency",
+          "Sacco Association of Savings and Retirement"
+        ],
+        "correctIndex": 1,
+        "explanation": "SASRA stands for Sacco Societies Regulatory Authority — the government body that licenses and supervises SACCOs in Kenya."
+      },
+      {
+        "question": "If your SACCO shares total KES 40,000, what is the typical maximum loan you can access?",
+        "options": [
+          "KES 40,000",
+          "KES 80,000",
+          "KES 120,000",
+          "KES 200,000"
+        ],
+        "correctIndex": 2,
+        "explanation": "Most SACCOs lend up to 3× your shares. KES 40,000 × 3 = KES 120,000 maximum loan."
+      },
+      {
+        "question": "At what approximate effective annual rate do most SACCOs charge for loans?",
+        "options": [
+          "4% per annum",
+          "12% per annum",
+          "36% per annum",
+          "96% per annum"
+        ],
+        "correctIndex": 1,
+        "explanation": "SACCOs typically charge 1% per month on a reducing balance, which is approximately 12% effective per annum — much cheaper than banks or mobile lenders."
+      },
+      {
+        "question": "How do SACCOs return value to members instead of paying interest like a bank?",
+        "options": [
+          "Monthly cashback",
+          "Annual dividends on shares held",
+          "Free loans",
+          "Government subsidies"
+        ],
+        "correctIndex": 1,
+        "explanation": "SACCOs pay dividends on members' shares at the end of the financial year, based on the SACCO's profitability. Well-run SACCOs pay 10–14% annually."
+      }
+    ]
+  },
+  {
+    "id": "lesson-crb-credit-report",
+    "title": "Understanding Your CRB Credit Report",
+    "category": "Personal Finance",
+    "durationMinutes": 8,
+    "topics": [
+      "CRB",
+      "credit score",
+      "credit report",
+      "Metropol",
+      "HELB"
+    ],
+    "body": "## What Is a CRB?\n\nA Credit Reference Bureau (CRB) is a company that collects and maintains credit history information about borrowers. In Kenya, three CRBs are licensed by the Central Bank of Kenya (CBK):\n\n1. **Metropol Corporation** — Kenya's oldest CRB\n2. **TransUnion** — global CRB with Kenyan operations\n3. **Creditinfo Kenya** — newer entrant\n\nBanks, SACCOs, mobile lenders, and even some utilities report your credit behaviour to these bureaus. They compile the information into a credit report, which lenders use to decide whether to lend to you and at what rate.\n\n## What's in Your Credit Report?\n\nA typical Kenyan credit report includes:\n\n- **Personal information**: Name, ID number, KRA PIN\n- **Account history**: All loan accounts, credit cards, mobile loans\n- **Payment history**: On-time payments, late payments, defaults\n- **Enquiries**: Whenever a lender checks your report\n- **Negative listings**: NPL (Non-Performing Loan) listings, defaults\n\n## What Is a Credit Score?\n\nIn Kenya, credit scoring is still maturing. Metropol uses a **CreditScore** ranging from 200–900:\n\n- **750–900**: Excellent — best loan terms available\n- **600–749**: Good — most lenders will approve\n- **400–599**: Fair — limited options, higher rates\n- **200–399**: Poor — very limited access to credit\n\nTransUnion uses a similar range. Your score is driven by payment history, outstanding debt, credit history length, and new enquiries.\n\n## How Do You Get Listed Negatively?\n\nCommon causes of negative CRB listing in Kenya:\n\n1. **Defaulting on any loan** — mobile app loans, bank loans, SACCO loans\n2. **Missing HELB repayments** — HELB reports to CRBs\n3. **Unpaid utility bills** — Kenya Power reports non-payment\n4. **Bounced cheques** — banks report these\n5. **Fuliza non-repayment** — Safaricom/NCBA report Fuliza defaults\n\nYou can be listed for as little as KES 1 — even a forgotten Tala loan of KES 200.\n\n## Consequences of a Negative CRB Listing\n\n- Loan applications rejected by all formal lenders\n- Higher interest rates if approved\n- Cannot access HELB clearance certificate\n- Cannot access government tenders\n- Some employers check CRB reports during hiring\n- Cannot get a postpaid phone contract\n\n## How to Get Your Credit Report\n\n**Metropol:**\n- *433# on any network — free annual report\n- metropol.co.ke — full report download\n\n**TransUnion:**\n- transunionkenya.com\n- First report free; subsequent reports ~KES 250\n\n**Free Annual Report:**\nUnder CBK regulations, every Kenyan is entitled to one free credit report per year from each CRB.\n\n## How to Dispute Errors\n\nIf your report contains errors (e.g., a loan you repaid is still showing as defaulted):\n\n1. Gather your repayment receipts/M-Pesa statements\n2. Submit a dispute to the CRB in writing\n3. The CRB must investigate and respond within 30 days\n4. If the lender confirms it's an error, the listing is removed\n\n## How to Improve Your Credit Score\n\n1. **Repay all outstanding loans immediately** — even small ones\n2. **Set up standing orders** for HELB and loan repayments\n3. **Don't apply for many loans simultaneously** — each enquiry slightly reduces your score\n4. **Maintain old accounts** — longer credit history = better score\n5. **Clear Fuliza** — Safaricom/NCBA report to CRBs\n6. **Verify your report annually** — catch errors early\n\n## Delisting After Repayment\n\nOnce you repay a defaulted loan:\n- Negative listing should be updated within 30 days\n- The lender must submit a clearance notice to the CRB\n- Your listing changes from \"Non-Performing\" to \"Performing\"\n- Score improves over time as history builds\n\n## Key Takeaway\n\nYour CRB report is your financial reputation. In Kenya's increasingly data-driven credit market, a clean report opens doors — to mortgages, business loans, government tenders, and even jobs. Check yours annually and guard it carefully.",
+    "quiz": [
+      {
+        "question": "Which three CRBs are licensed by the Central Bank of Kenya?",
+        "options": [
+          "Equifax, Experian, TransUnion",
+          "Metropol, TransUnion, Creditinfo Kenya",
+          "KCB, Equity, Cooperative",
+          "HELB, KCB, Metropol"
+        ],
+        "correctIndex": 1,
+        "explanation": "The three CBK-licensed CRBs in Kenya are Metropol Corporation, TransUnion Kenya, and Creditinfo Kenya."
+      },
+      {
+        "question": "What is the approximate Metropol CreditScore range?",
+        "options": [
+          "0–100",
+          "300–850",
+          "200–900",
+          "500–1000"
+        ],
+        "correctIndex": 2,
+        "explanation": "Metropol's CreditScore ranges from 200 (poorest) to 900 (best), with scores above 750 considered excellent."
+      },
+      {
+        "question": "Can HELB loan defaults lead to a negative CRB listing?",
+        "options": [
+          "No, HELB doesn't report to CRBs",
+          "Yes, HELB reports defaults to CRBs",
+          "Only if the default is over KES 100,000",
+          "Only for international students"
+        ],
+        "correctIndex": 1,
+        "explanation": "HELB does report defaulters to CRBs. Missing repayments can result in negative listings that block access to credit and government services."
+      },
+      {
+        "question": "How often can you get a free credit report from each CRB in Kenya?",
+        "options": [
+          "Every month",
+          "Once per year",
+          "Every 5 years",
+          "Only when applying for a loan"
+        ],
+        "correctIndex": 1,
+        "explanation": "Under CBK regulations, every Kenyan is entitled to one free credit report per year from each licensed CRB."
+      }
+    ]
+  },
+  {
+    "id": "lesson-money-market-funds",
+    "title": "Money Market Funds: Kenya's Best Savings Tool",
+    "category": "Investing",
+    "durationMinutes": 8,
+    "topics": [
+      "MMF",
+      "money market",
+      "investing",
+      "CMA",
+      "savings"
+    ],
+    "body": "## What Are Money Market Funds?\n\nA Money Market Fund (MMF) is a type of unit trust (collective investment) that pools money from many investors and invests it in short-term, low-risk debt instruments — primarily government Treasury Bills, bank fixed deposits, and commercial paper.\n\nIn Kenya, MMFs are regulated by the Capital Markets Authority (CMA) and have emerged as the most attractive savings option for most Kenyans, offering:\n- **Higher returns** than bank savings accounts (12–16% vs 3–7%)\n- **Daily liquidity** — withdraw anytime, usually within 24–48 hours\n- **Low minimums** — some start from KES 100\n- **No lock-in** — unlike fixed deposits\n\n## How MMFs Work\n\nWhen you invest in an MMF, your money joins a large pool. The fund manager invests the pool in short-term instruments (T-Bills, bank deposits). The returns generated are divided among investors proportionally to their share of the pool.\n\nReturns are credited **daily** to your unit balance — you see your money growing every single day. This is compound interest working for you automatically.\n\n## Top Money Market Funds in Kenya (2026)\n\n| Fund | Fund Manager | Min. Investment | Approx. Yield |\n|---|---|---|---|\n| CIC Money Market Fund | CIC Asset Management | KES 500 | ~14% p.a. |\n| Sanlam Money Market Fund | Sanlam Investments | KES 1,000 | ~14% p.a. |\n| Cytonn Money Market Fund | Cytonn Investments | KES 100 | ~15% p.a. |\n| GenCap Hela Fund | Genghis Capital | KES 1,000 | ~13% p.a. |\n| Nabo Capital MMF | Nabo Capital | KES 1,000 | ~13% p.a. |\n\n*Yields fluctuate with CBK base rate. Always check current rates.*\n\n## How to Invest in an MMF\n\n### Option 1: Through M-Pesa (Easiest)\n- CIC: Go to M-Pesa > Lipa na M-Pesa > Paybill > Business No. 222000\n- Many MMFs now integrate directly with M-Pesa for deposits and withdrawals\n\n### Option 2: Through the Fund's Mobile App or Website\n- Download the app (e.g., CIC mobile, Cytonn app)\n- Register with KRA PIN and ID\n- Fund via M-Pesa or bank transfer\n\n### Option 3: Through Your Bank\n- Some banks (e.g., NCBA, Co-op) have embedded MMFs accessible via banking app\n\n## Returns Example\n\n**Investment**: KES 50,000\n**Rate**: 14% per annum (compounded daily)\n**Period**: 1 year\n\nMonthly balance growth:\n- Month 1: KES 50,583\n- Month 3: KES 51,757\n- Month 6: KES 53,561\n- Month 12: KES 57,503\n\nYou've earned **KES 7,503** while doing nothing. That's 7,503 reasons to move your savings from a bank account.\n\n## MMF vs Bank Savings Account\n\n| Feature | MMF | Bank Savings |\n|---|---|---|\n| Typical Rate | 12–16% p.a. | 3–7% p.a. |\n| Compounding | Daily | Monthly |\n| Minimum Balance | KES 100–1,000 | KES 1,000–5,000 |\n| Liquidity | T+1 to T+2 withdrawal | Instant |\n| Regulation | CMA | CBK |\n| Protection | CMA regulations | KDIC (up to KES 500K) |\n\n## MMF vs Fixed Deposit\n\nFixed deposits offer 8–12% but lock your money for a fixed term (30–365 days). Early withdrawal usually forfeits interest. MMFs offer comparable or better rates with full flexibility — making them the better choice for most people.\n\n## Risks and Considerations\n\nMMFs are very low risk — but not zero risk:\n\n1. **Not KDIC-insured** — unlike bank deposits (KDIC covers up to KES 500,000)\n2. **NAV can drop** — extremely rare, but a fund can lose value in a crisis\n3. **Fund manager risk** — choose CMA-regulated, established managers\n4. **Rate fluctuations** — yields change with CBK base rate movements\n\n## Tax on MMF Returns\n\nMMF returns are subject to **15% withholding tax**, deducted at source by the fund manager before crediting your account. The quoted yields (12–16%) are typically **before** withholding tax — your after-tax return is approximately 85% of the quoted rate.\n\n## Getting Started Today\n\n1. Get your KRA PIN (online at kra.go.ke)\n2. Choose a CMA-regulated MMF\n3. Register online or via M-Pesa\n4. Start with as little as KES 100–1,000\n5. Set up regular top-ups (weekly or monthly)\n\n## Key Takeaway\n\nIf your money is sitting in a bank savings account earning 4%, you're leaving money on the table. Money Market Funds offer Kenyan investors the best combination of safety, liquidity, and returns available in the market today.",
+    "quiz": [
+      {
+        "question": "Which regulatory body oversees Money Market Funds in Kenya?",
+        "options": [
+          "Central Bank of Kenya (CBK)",
+          "Capital Markets Authority (CMA)",
+          "Kenya Revenue Authority (KRA)",
+          "SASRA"
+        ],
+        "correctIndex": 1,
+        "explanation": "Money Market Funds in Kenya are regulated by the Capital Markets Authority (CMA), which licenses fund managers and monitors compliance."
+      },
+      {
+        "question": "What is the approximate typical yield range for top Kenyan MMFs?",
+        "options": [
+          "3–7% per annum",
+          "7–10% per annum",
+          "12–16% per annum",
+          "20–25% per annum"
+        ],
+        "correctIndex": 2,
+        "explanation": "Top Kenyan Money Market Funds typically yield 12–16% per annum, compared to 3–7% for bank savings accounts — a significant difference over time."
+      },
+      {
+        "question": "If an MMF quotes a 14% annual yield, what is your approximate after-withholding-tax return?",
+        "options": [
+          "14%",
+          "11.9%",
+          "7%",
+          "12%"
+        ],
+        "correctIndex": 1,
+        "explanation": "MMF returns are subject to 15% withholding tax. 14% × (1 − 0.15) = 14% × 0.85 = 11.9% effective after-tax return."
+      },
+      {
+        "question": "What is the main advantage of an MMF over a bank fixed deposit?",
+        "options": [
+          "MMFs always pay more interest",
+          "MMFs are insured by KDIC",
+          "MMFs offer flexibility — you can withdraw without penalty",
+          "MMFs are guaranteed by the government"
+        ],
+        "correctIndex": 2,
+        "explanation": "Unlike fixed deposits that lock your money and penalise early withdrawal, MMFs allow you to withdraw at any time (usually T+1 to T+2) without penalty."
+      }
+    ]
+  },
+  {
+    "id": "FWAEDFEF",
+    "title": "QEFUIWE",
+    "slug": "FWAEDFEF",
+    "durationMinutes": 5,
+    "topics": [
+      "GGERGFFF"
+    ],
+    "summary": "GVRFSWRG",
+    "body": "GVRFDWASGETFTRG"
   }
 ]

@@ -63,6 +63,38 @@ export class AdminService {
   }
 
   /**
+   * Monthly stats for the last N months: transaction counts and new user signups.
+   * Used by the admin dashboard chart.
+   */
+  async getMonthlyStats(months = 6): Promise<{ label: string; transactions: number; users: number }[]> {
+    try {
+      const now = new Date();
+      const results: { label: string; transactions: number; users: number }[] = [];
+
+      for (let i = months - 1; i >= 0; i--) {
+        const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59, 999);
+
+        const [transactions, users] = await Promise.all([
+          this.db.transaction.count({ where: { createdAt: { gte: start, lte: end } } }),
+          this.db.user.count({ where: { createdAt: { gte: start, lte: end } } }),
+        ]);
+
+        results.push({
+          label: start.toLocaleDateString("en-KE", { month: "short", year: "2-digit" }),
+          transactions,
+          users,
+        });
+      }
+
+      return results;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      handlePrismaError(error, this.logger, "AdminService.getMonthlyStats");
+    }
+  }
+
+  /**
    * List all transactions (optionally filtered by userId). Paginated.
    */
   async getAllTransactions(query: AdminListQuery): Promise<{

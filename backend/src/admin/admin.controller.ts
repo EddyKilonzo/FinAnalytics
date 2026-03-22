@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Query,
   UseGuards,
   HttpCode,
@@ -17,6 +18,7 @@ import {
   ApiQuery,
 } from "@nestjs/swagger";
 import { AdminService } from "./admin.service";
+import { MlService } from "../ml/ml.service";
 import { AdminListQueryDto } from "./dto/admin-list-query.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { AdminGuard } from "../common/guards/admin.guard";
@@ -38,7 +40,10 @@ import { ErrorResponseDto } from "../auth/dto/auth-response.dto";
 export class AdminController {
   private readonly logger = new Logger(AdminController.name);
 
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly mlService: MlService,
+  ) {}
 
   @Get("dashboard")
   @HttpCode(HttpStatus.OK)
@@ -69,6 +74,27 @@ export class AdminController {
         error instanceof Error ? error.stack : String(error),
       );
       throw new InternalServerErrorException("Could not load dashboard.");
+    }
+  }
+
+  @Get("stats/monthly")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Monthly platform stats [ADMIN]",
+    description: "Returns transaction counts and new user signups per month for the last 6 months.",
+  })
+  @ApiResponse({ status: 200, description: "Monthly stats array." })
+  async getMonthlyStats() {
+    try {
+      const data = await this.adminService.getMonthlyStats(6);
+      return { success: true, data };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error(
+        "Unexpected error in admin getMonthlyStats",
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw new InternalServerErrorException("Could not load monthly stats.");
     }
   }
 
@@ -225,6 +251,39 @@ export class AdminController {
         error instanceof Error ? error.stack : String(error),
       );
       throw new InternalServerErrorException("Could not retrieve goals.");
+    }
+  }
+
+  // ── POST /admin/ml/retrain ─────────────────────────────────────────────────
+
+  @Post("ml/retrain")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Retrain ML categorisation model [ADMIN]",
+    description:
+      "Triggers the Python ML service to retrain using all accumulated user-correction feedback. " +
+      "This may take several seconds. Only call from the admin panel.",
+  })
+  @ApiResponse({ status: 200, description: "Retraining completed." })
+  @ApiResponse({ status: 503, description: "ML service unavailable." })
+  async retrainMlModel() {
+    try {
+      const result = await this.mlService.retrain();
+      return {
+        success: true,
+        message: result.message,
+        ...(result.samplesUsed !== undefined
+          ? { samplesUsed: result.samplesUsed }
+          : {}),
+      };
+    } catch (error) {
+      this.logger.error(
+        "ML retrain failed",
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw new InternalServerErrorException(
+        "ML service retrain failed. The service may be unavailable.",
+      );
     }
   }
 }

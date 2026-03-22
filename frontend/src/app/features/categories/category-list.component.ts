@@ -158,8 +158,7 @@ export class CategoryListComponent implements OnInit {
     this.error.set(false);
     this.categoryService.getCategories().subscribe({
       next: (res) => {
-        const data: Category[] = Array.isArray(res) ? res : (res?.data ?? []);
-        this.categories.set(data);
+        this.categories.set(res.data ?? []);
         this.loading.set(false);
       },
       error: () => {

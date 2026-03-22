@@ -11,14 +11,15 @@ import {
   lucideLoader2
 } from '@ng-icons/lucide';
 import { AdminService } from '../../../core/services/admin.service';
+import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
 
 @Component({
   selector: 'app-admin-budgets',
   standalone: true,
-  imports: [CommonModule, NgIconComponent],
+  imports: [CommonModule, NgIconComponent, CurrencyFormatPipe],
   providers: [
     provideIcons({
-      lucidePlus, 
+      lucidePlus,
       lucidePieChart, 
       lucideTrendingDown,
       lucideAlertCircle,
@@ -41,13 +42,17 @@ import { AdminService } from '../../../core/services/admin.service';
         </div>
       </div>
 
-      <div *ngIf="isLoading" class="loading-state">
-        <ng-icon name="lucideLoader2" class="spinner"></ng-icon>
-        <p>Loading budgets...</p>
-      </div>
+      @if (isLoading) {
+        <div class="loading-state">
+          <ng-icon name="lucideLoader2" class="spinner"></ng-icon>
+          <p>Loading budgets...</p>
+        </div>
+      }
 
-      <div *ngIf="!isLoading" class="budgets-grid">
-        <div class="fin-card-elevated budget-card slide-up" *ngFor="let budget of budgets; let i = index" [style.animation-delay]="i * 0.1 + 's'">
+      @if (!isLoading) {
+        <div class="budgets-grid">
+          @for (budget of budgets; track budget.id; let i = $index) {
+            <div class="fin-card-elevated budget-card slide-up" [style.animation-delay]="i * 0.1 + 's'">
           <div class="card-header">
             <div class="budget-icon" [ngClass]="budget.theme">
               <ng-icon [name]="budget.icon"></ng-icon>
@@ -65,12 +70,12 @@ import { AdminService } from '../../../core/services/admin.service';
           <div class="budget-amounts">
             <div class="amount-group">
               <span class="amount-label">Spent</span>
-              <span class="amount-value">{{ budget.spent | currency:'KES':'symbol':'1.0-0' }}</span>
+              <span class="amount-value">{{ budget.spent | fmt }}</span>
             </div>
             <div class="amount-divider"></div>
             <div class="amount-group text-right">
               <span class="amount-label">Total Limit</span>
-              <span class="amount-value text-muted">{{ budget.total | currency:'KES':'symbol':'1.0-0' }}</span>
+              <span class="amount-value text-muted">{{ budget.total | fmt }}</span>
             </div>
           </div>
 
@@ -86,8 +91,10 @@ import { AdminService } from '../../../core/services/admin.service';
               <div class="progress-fill" [ngClass]="budget.theme" [style.width]="budget.percentage + '%'"></div>
             </div>
           </div>
+            </div>
+          }
         </div>
-      </div>
+      }
     </div>
   `,
   styles: [`
@@ -98,12 +105,12 @@ import { AdminService } from '../../../core/services/admin.service';
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
     .admin-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; }
-    .admin-title { font-size: 2.25rem; font-weight: 800; color: white; margin: 0 0 0.5rem 0; letter-spacing: -0.03em; }
-    .admin-subtitle { color: rgba(255,255,255,0.6); margin: 0; font-size: 1.1rem; }
+    .admin-title { font-size: 2.25rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.5rem 0; letter-spacing: -0.03em; }
+    .admin-subtitle { margin: 0; font-size: 1.1rem; color: #a3c4ad !important; }
     .admin-actions { display: flex; gap: 1rem; }
 
-    .btn-primary { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 0.95rem; border: none; background: var(--accent, #3b82f6); color: #fff; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(59, 130, 246, 0.4); }
+    .btn-primary { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 0.95rem; border: none; background: var(--accent, #22c55e); color: #fff; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(34, 197, 94, 0.4); }
 
     .loading-state {
       display: flex;
@@ -111,13 +118,14 @@ import { AdminService } from '../../../core/services/admin.service';
       align-items: center;
       justify-content: center;
       padding: 4rem 0;
-      color: var(--text-secondary, #6b7280);
+      color: var(--text-primary);
+      opacity: 0.65;
     }
     .spinner {
       font-size: 2.5rem;
       animation: spin 1s linear infinite;
       margin-bottom: 1rem;
-      color: var(--accent, #3b82f6);
+      color: var(--accent, #22c55e);
     }
     @keyframes spin { 100% { transform: rotate(360deg); } }
 
@@ -137,27 +145,27 @@ import { AdminService } from '../../../core/services/admin.service';
     .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; }
     .budget-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     
-    .theme-blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-    .theme-blue-fill { background: linear-gradient(90deg, #60a5fa, #3b82f6); }
-    .theme-purple { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
-    .theme-purple-fill { background: linear-gradient(90deg, #c084fc, #9333ea); }
+    .theme-forest { background: rgba(35, 83, 71, 0.12); color: #235347; }
+    .theme-forest-fill { background: linear-gradient(90deg, #22c55e, #15803d); }
+    .theme-moss { background: rgba(142, 182, 155, 0.12); color: #235347; }
+    .theme-moss-fill { background: linear-gradient(90deg, #8EB69B, #235347); }
     .theme-green { background: rgba(34, 197, 94, 0.1); color: #16a34a; }
     .theme-green-fill { background: linear-gradient(90deg, #4ade80, #16a34a); }
     .theme-orange { background: rgba(249, 115, 22, 0.1); color: #ea580c; }
     .theme-orange-fill { background: linear-gradient(90deg, #fb923c, #ea580c); }
 
-    .btn-icon { width: 32px; height: 32px; border-radius: 8px; border: none; background: transparent; color: var(--text-secondary, #6b7280); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; margin: -0.5rem -0.5rem 0 0; }
+    .btn-icon { width: 32px; height: 32px; border-radius: 8px; border: none; background: transparent; color: var(--text-primary); opacity: 0.65; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; margin: -0.5rem -0.5rem 0 0; }
     .btn-icon:hover { background: var(--surface-hover, #e5e7eb); color: var(--text-primary, #111827); }
 
     .budget-info { margin-bottom: 1.5rem; }
-    .budget-name { font-size: 1.2rem; font-weight: 700; color: white; margin: 0 0 0.25rem 0; }
-    .budget-meta { font-size: 0.85rem; color: rgba(255,255,255,0.55); margin: 0; }
+    .budget-name { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.25rem 0; }
+    .budget-meta { font-size: 0.85rem; color: var(--text-primary); opacity: 0.65; margin: 0; }
 
     .budget-amounts { display: flex; align-items: center; justify-content: space-between; background: var(--surface-alt, #f9fafb); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; }
     .amount-group { display: flex; flex-direction: column; gap: 0.25rem; }
-    .amount-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: rgba(255,255,255,0.45); letter-spacing: 0.05em; }
-    .amount-value { font-size: 1.15rem; font-weight: 700; color: white; }
-    .text-muted { color: var(--text-secondary, #6b7280); }
+    .amount-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--text-primary); opacity: 0.45; letter-spacing: 0.05em; }
+    .amount-value { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
+    .text-muted { color: var(--text-primary); opacity: 0.65; }
     .text-right { text-align: right; }
     .amount-divider { width: 1px; height: 30px; background: var(--border-medium, #e5e7eb); }
 
@@ -218,10 +226,10 @@ export class AdminBudgetsComponent implements OnInit {
 
             // Assign themes cyclically
             const themes = [
-              'theme-blue theme-blue-fill', 
+              'theme-forest theme-forest-fill', 
               'theme-orange theme-orange-fill', 
               'theme-green theme-green-fill', 
-              'theme-purple theme-purple-fill'
+              'theme-moss theme-moss-fill'
             ];
             const theme = themes[index % themes.length];
 

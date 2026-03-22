@@ -240,7 +240,7 @@ export class AnalyticsService {
         where: { id: { in: categoryIds } },
         select: { id: true, name: true },
       });
-      const nameById = new Map(categories.map((c: { id: string; name: string }) => [c.id, c.name]));
+      const nameById = new Map<string, string>(categories.map((c: { id: string; name: string }) => [c.id, c.name] as [string, string]));
       for (const id of categoryIds) {
         byCategory[id].name = nameById.get(id) ?? "Other";
       }
@@ -274,17 +274,104 @@ export class AnalyticsService {
   }
 
   /**
+   * Month-over-month category insight: highlights any category where spending
+   * increased by >20% AND at least KES 500 vs last calendar month.
+   * Returns up to 2 insights (top two largest % increases).
+   * severity: "warning" if increase >50%, "info" otherwise.
+   */
+  private async categoryMomInsight(userId: string): Promise<Insight[]> {
+    try {
+      const now = new Date();
+      const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastMonthEnd = new Date(thisMonthStart.getTime() - 1);
+
+      const categories = await this.db.category.findMany({
+        where: { slug: { not: "income" } },
+        select: { id: true, name: true, slug: true },
+      });
+
+      const results: { name: string; slug: string; pct: number; last: number; current: number }[] = [];
+
+      for (const cat of categories as { id: string; name: string; slug: string }[]) {
+        const [thisSum, lastSum] = await Promise.all([
+          this.db.transaction.aggregate({
+            where: {
+              userId,
+              type: "expense",
+              categoryId: cat.id,
+              date: { gte: thisMonthStart, lte: now },
+            },
+            _sum: { amount: true },
+          }),
+          this.db.transaction.aggregate({
+            where: {
+              userId,
+              type: "expense",
+              categoryId: cat.id,
+              date: { gte: lastMonthStart, lte: lastMonthEnd },
+            },
+            _sum: { amount: true },
+          }),
+        ]);
+
+        const current = Number(thisSum._sum?.amount ?? 0);
+        const last = Number(lastSum._sum?.amount ?? 0);
+
+        if (last <= 0 || current <= 0) continue;
+
+        const pct = ((current - last) / last) * 100;
+        const diff = current - last;
+
+        if (pct > 20 && diff >= 500) {
+          results.push({ name: cat.name, slug: cat.slug, pct, last, current });
+        }
+      }
+
+      // Sort by largest % increase descending, take top 2
+      results.sort((a, b) => b.pct - a.pct);
+      const top2 = results.slice(0, 2);
+
+      return top2.map((r) => {
+        const pctFormatted = Math.round(r.pct);
+        const lastFormatted = new Intl.NumberFormat("en-KE", {
+          style: "currency",
+          currency: "KES",
+          maximumFractionDigits: 0,
+        }).format(r.last);
+        const currentFormatted = new Intl.NumberFormat("en-KE", {
+          style: "currency",
+          currency: "KES",
+          maximumFractionDigits: 0,
+        }).format(r.current);
+
+        return {
+          id: `category_mom_${r.slug}`,
+          type: "category_mom",
+          message: `Your ${r.name} spending is up ${pctFormatted}% vs last month (${lastFormatted} → ${currentFormatted})`,
+          severity: r.pct > 50 ? ("warning" as const) : ("info" as const),
+        };
+      });
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      handlePrismaError(error, this.logger, "AnalyticsService.categoryMomInsight");
+      return [];
+    }
+  }
+
+  /**
    * Returns precomputed insights for the authenticated user: this month summary,
-   * top category, weekend pattern, category spikes, etc. Always includes at least
-   * one insight when the user has any expense data this month.
+   * top category, weekend pattern, category spikes, MoM increases, etc.
+   * Always includes at least one insight when the user has any expense data this month.
    */
   async getInsights(userId: string): Promise<Insight[]> {
     try {
-      const [summary, topCat, weekend, categorySpikes] = await Promise.all([
+      const [summary, topCat, weekend, categorySpikes, momInsights] = await Promise.all([
         this.thisMonthSummaryInsight(userId),
         this.topCategoryInsight(userId),
         this.weekendInsight(userId),
         this.categorySpikeInsights(userId),
+        this.categoryMomInsight(userId),
       ]);
 
       const list: Insight[] = [];
@@ -292,6 +379,7 @@ export class AnalyticsService {
       if (topCat) list.push(topCat);
       if (weekend) list.push(weekend);
       list.push(...(categorySpikes ?? []));
+      list.push(...(momInsights ?? []));
       return list;
     } catch (error) {
       if (error instanceof HttpException) throw error;

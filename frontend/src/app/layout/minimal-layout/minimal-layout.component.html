@@ -11,7 +11,7 @@
 >
   <!-- Sidebar header -->
   <div class="sidebar-header">
-    <a routerLink="/" class="sidebar-logo" aria-label="Go to home">
+    <a routerLink="/home" class="sidebar-logo" aria-label="FinAnalytics — go to marketing home">
       <span class="sidebar-logo-mark">
         <ng-icon name="lucideTrendingUp" size="18"></ng-icon>
       </span>
@@ -34,32 +34,34 @@
 
   <!-- Nav items -->
   <nav class="sidebar-nav" aria-label="App navigation">
-    <div class="sidebar-section">
-      @if (!sidebarCollapsed()) {
-        <span class="sidebar-section-label">Main</span>
-      }
-      @for (item of visibleNavItems; track item.route) {
-        <a
-          [routerLink]="item.route"
-          routerLinkActive="active"
-          class="sidebar-nav-item"
-          [attr.title]="sidebarCollapsed() ? item.label : null"
-          (click)="mobileSidebarOpen.set(false)"
-        >
-          <span class="sidebar-nav-icon">
-            <ng-icon [name]="item.icon" size="18"></ng-icon>
-          </span>
-          @if (!sidebarCollapsed()) {
-            <span class="sidebar-nav-label">{{ item.label }}</span>
-          }
-        </a>
-      }
-    </div>
+    @if (!isAdmin) {
+      <div class="sidebar-section">
+        @if (!sidebarCollapsed()) {
+          <span class="sidebar-section-label">Main</span>
+        }
+        @for (item of visibleNavItems; track item.route) {
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            class="sidebar-nav-item"
+            [attr.title]="sidebarCollapsed() ? item.label : null"
+            (click)="mobileSidebarOpen.set(false)"
+          >
+            <span class="sidebar-nav-icon">
+              <ng-icon [name]="item.icon" size="18"></ng-icon>
+            </span>
+            @if (!sidebarCollapsed()) {
+              <span class="sidebar-nav-label">{{ item.label }}</span>
+            }
+          </a>
+        }
+      </div>
+    }
 
     @if (isAdmin) {
       <div class="sidebar-section sidebar-section-admin">
         @if (!sidebarCollapsed()) {
-          <span class="sidebar-section-label">Admin</span>
+          <span class="sidebar-section-label">System Oversight</span>
         }
         @for (item of adminItems; track item.route) {
           <a
@@ -84,20 +86,22 @@
 
   <!-- Sidebar footer -->
   <div class="sidebar-footer">
-    <a
-      routerLink="/profile"
-      routerLinkActive="active"
-      class="sidebar-nav-item"
-      [attr.title]="sidebarCollapsed() ? 'Profile' : null"
-      (click)="mobileSidebarOpen.set(false)"
-    >
-      <span class="sidebar-nav-icon">
-        <ng-icon name="lucideUser" size="18"></ng-icon>
-      </span>
-      @if (!sidebarCollapsed()) {
-        <span class="sidebar-nav-label">Profile</span>
-      }
-    </a>
+    @if (!isAdmin) {
+      <a
+        routerLink="/profile"
+        routerLinkActive="active"
+        class="sidebar-nav-item"
+        [attr.title]="sidebarCollapsed() ? 'Profile' : null"
+        (click)="mobileSidebarOpen.set(false)"
+      >
+        <span class="sidebar-nav-icon">
+          <ng-icon name="lucideUser" size="18"></ng-icon>
+        </span>
+        @if (!sidebarCollapsed()) {
+          <span class="sidebar-nav-label">Profile</span>
+        }
+      </a>
+    }
     <button
       type="button"
       class="sidebar-nav-item sidebar-logout"
@@ -119,6 +123,12 @@
   <!-- Topbar -->
   <header class="topbar">
     <div class="topbar-left">
+      <a routerLink="/home" class="topbar-brand" aria-label="FinAnalytics — go to marketing home">
+        <span class="topbar-brand-mark">
+          <ng-icon name="lucideTrendingUp" size="18"></ng-icon>
+        </span>
+        <span class="topbar-brand-text">FinAnalytics</span>
+      </a>
       <button
         type="button"
         class="topbar-mobile-menu"
@@ -163,7 +173,9 @@
         </div>
         <div class="topbar-user-info">
           <span class="topbar-user-name">{{ displayName }}</span>
-          <span class="topbar-user-role">{{ currentUser?.email ?? '' }}</span>
+          <span class="topbar-user-role" [class.topbar-admin-label]="isAdmin">
+            {{ isAdmin ? 'Administrator' : (currentUser?.email ?? '') }}
+          </span>
         </div>
         <ng-icon
           name="lucideChevronDown"
@@ -174,14 +186,18 @@
 
         @if (userMenuOpen()) {
           <div class="user-dropdown">
-            <a routerLink="/profile" class="user-dropdown-item" (click)="userMenuOpen.set(false)">
-              <ng-icon name="lucideUser" size="15"></ng-icon>
-              My Profile
-            </a>
-            <a routerLink="/settings" class="user-dropdown-item" (click)="userMenuOpen.set(false)">
-              <ng-icon name="lucideSettings" size="15"></ng-icon>
-              Settings
-            </a>
+            @if (!isAdmin) {
+              <a routerLink="/profile" class="user-dropdown-item" (click)="userMenuOpen.set(false)">
+                <ng-icon name="lucideUser" size="15"></ng-icon>
+                My Profile
+              </a>
+            }
+            @if (isAdmin) {
+              <div class="user-dropdown-item user-dropdown-admin-badge">
+                <ng-icon name="lucideShield" size="15"></ng-icon>
+                Administrator
+              </div>
+            }
             <div class="user-dropdown-divider"></div>
             <button type="button" class="user-dropdown-item user-dropdown-logout" (click)="logout()">
               <ng-icon name="lucideLogOut" size="15"></ng-icon>
@@ -196,8 +212,10 @@
   <!-- Page content -->
   <main class="app-content">
     <div class="page-outlet">
-      <router-outlet></router-outlet>
+      <div class="page-content">
+        <router-outlet></router-outlet>
+      </div>
+      <app-footer class="app-layout-footer" />
     </div>
-    <app-footer class="app-layout-footer" />
   </main>
 </div>

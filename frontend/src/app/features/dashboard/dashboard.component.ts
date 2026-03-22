@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -10,20 +10,26 @@ import {
   lucideAlertCircle,
   lucideLightbulb,
   lucideArrowRight,
-  lucideChevronRight
+  lucideChevronRight,
+  lucideSparkles,
+  lucideX,
+  lucideLoader2,
 } from '@ng-icons/lucide';
 import { BaseChartDirective, provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { ChartConfiguration, ChartType } from 'chart.js';
 import { TransactionService } from '../../core/services/transaction.service';
 import { BudgetService } from '../../core/services/budget.service';
 import { GoalService } from '../../core/services/goal.service';
+import { AnalyticsService } from '../../core/services/analytics.service';
+import { CurrencyService } from '../../core/services/currency.service';
+import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
 import { toLocalDateString } from '../../core/utils/date.utils';
 import { forkJoin, timeout, catchError, of, finalize } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, NgIconComponent, BaseChartDirective],
+  imports: [CommonModule, RouterLink, NgIconComponent, BaseChartDirective, CurrencyFormatPipe],
   providers: [
     provideIcons({
       lucideWallet,
@@ -33,72 +39,85 @@ import { forkJoin, timeout, catchError, of, finalize } from 'rxjs';
       lucideAlertCircle,
       lucideLightbulb,
       lucideArrowRight,
-      lucideChevronRight
+      lucideChevronRight,
+      lucideSparkles,
+      lucideX,
+      lucideLoader2,
     }),
     provideCharts(withDefaultRegisterables())
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   private transactionService = inject(TransactionService);
+  private currencyService = inject(CurrencyService);
   private budgetService = inject(BudgetService);
   private goalService = inject(GoalService);
+  private analyticsService = inject(AnalyticsService);
 
-  // Date range filter for summary + Cash Flow chart
+  // Date range filter
   dateRange: '30days' | '6months' | 'year' | 'all' = '6months';
 
-  // Summary Cards Data
+  // Loading states – separate initial vs. filter-change so charts don't disappear
+  isInitialLoad = true;
+  isLoading = true;
+  isFilterUpdating = false;
+
+  summaryLoadFailed = false;
+  hasNoDataForPeriod = false;
+
+  // Summary Cards
   totalBalance = 0;
   monthlyIncome = 0;
   monthlySpending = 0;
   activeGoalsCount = 0;
   goalsOnTrackCount = 0;
   goalsNeedAttentionCount = 0;
-  isLoading = true;
-  /** Set when summary API fails; show message and retry. */
-  summaryLoadFailed = false;
-  /** True when API returned but period has no income/expenses. */
-  hasNoDataForPeriod = false;
 
-  // Trend vs previous period (real data)
+  // Trends
   balanceTrend: { text: string; isPositive: boolean } = { text: '—', isPositive: true };
   spendingTrend: { text: string; isPositive: boolean } = { text: '—', isPositive: true };
   incomeTrend: { text: string; isPositive: boolean } = { text: '—', isPositive: true };
   trendComparisonLabel = 'from previous period';
 
-  // Budget alerts + nudges (from GET /budgets/alerts) — always show feedback
+  // Budget alerts + nudges
   budgetAlerts: any[] = [];
   nudges: { id: string; type: string; message: string; severity: string }[] = [];
+  private dismissedNudgeIds = new Set<string>();
+  private readonly DISMISSED_KEY = 'dismissedNudges';
 
-  // Goals Summary
+  // Goals
   goals: any[] = [];
 
-  // Insights
-  insights = [
-    { text: 'Keep up the good work saving towards your goals!', type: 'positive' },
-    { text: 'Consider reviewing your recurring subscriptions.', type: 'suggestion' }
-  ];
+  // Theme-aware chart observer
+  private themeObserver: MutationObserver | null = null;
 
-  // Cash Flow chart (real data: last 6 months income & expenses)
+  // Smart Analysis / AI Insights
+  insights: { text: string; type: string }[] = [];
+  isInsightsLoading = false;
+  insightsPanelOpen = false;
+  insightsError = false;
+
+  // Cash Flow chart
   public lineChartData: ChartConfiguration['data'] = {
     datasets: [
       {
         data: [],
         label: 'Income',
-        backgroundColor: 'rgba(16, 185, 129, 0.2)',
-        borderColor: 'rgba(16, 185, 129, 1)',
-        pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+        backgroundColor: 'rgba(34, 197, 94, 0.15)',
+        borderColor: 'rgba(34, 197, 94, 1)',
+        pointBackgroundColor: 'rgba(34, 197, 94, 1)',
         pointBorderColor: '#fff',
         pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: 'rgba(16, 185, 129, 1)',
+        pointHoverBorderColor: 'rgba(34, 197, 94, 1)',
         fill: 'origin',
         tension: 0.4
       },
       {
         data: [],
         label: 'Expenses',
-        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+        backgroundColor: 'rgba(239, 68, 68, 0.15)',
         borderColor: 'rgba(239, 68, 68, 1)',
         pointBackgroundColor: 'rgba(239, 68, 68, 1)',
         pointBorderColor: '#fff',
@@ -114,34 +133,31 @@ export class DashboardComponent implements OnInit {
   public lineChartOptions: ChartConfiguration['options'] = {
     responsive: true,
     maintainAspectRatio: false,
-    elements: {
-      line: {
-        tension: 0.5
-      }
-    },
     scales: {
       y: {
         display: true,
-        grid: {
-          color: 'rgba(0, 0, 0, 0.05)'
-        }
+        grid: { color: 'rgba(142,182,155,0.12)' },
+        ticks: { color: 'rgba(218,241,222,0.6)', font: { size: 11 } }
       },
       x: {
         display: true,
-        grid: {
-          display: false
-        }
+        grid: { display: false },
+        ticks: { color: 'rgba(218,241,222,0.6)', font: { size: 11 } }
       }
     },
     plugins: {
-      legend: { display: true, position: 'top' },
+      legend: {
+        display: true,
+        position: 'top',
+        labels: { color: 'rgba(218,241,222,0.8)', boxWidth: 12, padding: 16 }
+      },
       tooltip: {
         mode: 'index',
         intersect: false,
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        titleColor: '#1e293b',
-        bodyColor: '#1e293b',
-        borderColor: '#e2e8f0',
+        backgroundColor: 'rgba(11,43,38,0.95)',
+        titleColor: '#DAF1DE',
+        bodyColor: 'rgba(218,241,222,0.75)',
+        borderColor: 'rgba(142,182,155,0.3)',
         borderWidth: 1,
         padding: 12,
         boxPadding: 6,
@@ -152,35 +168,15 @@ export class DashboardComponent implements OnInit {
 
   public lineChartType: ChartType = 'line';
 
-  // Doughnut Chart for Expenses Breakdown
+  // Doughnut chart
   public doughnutChartData: ChartConfiguration<'doughnut'>['data'] = {
     labels: [],
-    datasets: [
-      {
-        data: [],
-        backgroundColor: [
-          '#3b82f6', // blue-500
-          '#10b981', // emerald-500
-          '#f59e0b', // amber-500
-          '#6366f1', // indigo-500
-          '#ef4444', // red-500
-          '#8b5cf6',
-          '#ec4899',
-          '#14b8a6'
-        ],
-        hoverBackgroundColor: [
-          '#2563eb',
-          '#059669',
-          '#d97706',
-          '#4f46e5',
-          '#dc2626',
-          '#7c3aed',
-          '#db2777',
-          '#0d9488'
-        ],
-        borderWidth: 0
-      }
-    ]
+    datasets: [{
+      data: [],
+      backgroundColor: ['#22c55e','#235347','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6'],
+      hoverBackgroundColor: ['#16a34a','#163832','#059669','#d97706','#dc2626','#7c3aed','#db2777','#0d9488'],
+      borderWidth: 0
+    }]
   };
 
   public doughnutChartOptions: ChartConfiguration<'doughnut'>['options'] = {
@@ -188,14 +184,12 @@ export class DashboardComponent implements OnInit {
     maintainAspectRatio: false,
     cutout: '75%',
     plugins: {
-      legend: {
-        display: false
-      },
+      legend: { display: false },
       tooltip: {
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        titleColor: '#1e293b',
-        bodyColor: '#1e293b',
-        borderColor: '#e2e8f0',
+        backgroundColor: 'rgba(11,43,38,0.95)',
+        titleColor: '#DAF1DE',
+        bodyColor: 'rgba(218,241,222,0.75)',
+        borderColor: 'rgba(142,182,155,0.3)',
         borderWidth: 1,
         padding: 12,
         usePointStyle: true,
@@ -205,7 +199,7 @@ export class DashboardComponent implements OnInit {
             const value = context.parsed ?? 0;
             const total = (context.dataset.data as number[]).reduce((a, b) => a + b, 0);
             const pct = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
-            return `${label}: ${new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(value)} (${pct}%)`;
+            return `${label}: ${this.currencyService.format(value)} (${pct}%)`;
           }
         }
       }
@@ -214,8 +208,74 @@ export class DashboardComponent implements OnInit {
 
   public doughnutChartType: ChartConfiguration<'doughnut'>['type'] = 'doughnut';
 
+  private isLightTheme(): boolean {
+    return document.documentElement.classList.contains('light');
+  }
+
+  private getChartColors() {
+    const light = this.isLightTheme();
+    return {
+      tick:        light ? 'rgba(5,31,32,0.55)'    : 'rgba(218,241,222,0.6)',
+      grid:        light ? 'rgba(5,31,32,0.08)'    : 'rgba(142,182,155,0.12)',
+      legend:      light ? 'rgba(5,31,32,0.7)'     : 'rgba(218,241,222,0.8)',
+      tooltipBg:   light ? 'rgba(255,255,255,0.97)': 'rgba(11,43,38,0.95)',
+      tooltipTitle:light ? '#051F20'               : '#DAF1DE',
+      tooltipBody: light ? 'rgba(5,31,32,0.6)'    : 'rgba(218,241,222,0.75)',
+      tooltipBorder:light? 'rgba(5,31,32,0.12)'   : 'rgba(142,182,155,0.3)',
+    };
+  }
+
+  private applyChartTheme(): void {
+    const c = this.getChartColors();
+    this.lineChartOptions = {
+      ...this.lineChartOptions,
+      scales: {
+        y: { display: true, grid: { color: c.grid }, ticks: { color: c.tick, font: { size: 11 } } },
+        x: { display: true, grid: { display: false }, ticks: { color: c.tick, font: { size: 11 } } },
+      },
+      plugins: {
+        legend: { display: true, position: 'top', labels: { color: c.legend, boxWidth: 12, padding: 16 } },
+        tooltip: {
+          mode: 'index', intersect: false,
+          backgroundColor: c.tooltipBg, titleColor: c.tooltipTitle, bodyColor: c.tooltipBody,
+          borderColor: c.tooltipBorder, borderWidth: 1, padding: 12, boxPadding: 6, usePointStyle: true,
+        },
+      },
+    };
+    this.doughnutChartOptions = {
+      ...this.doughnutChartOptions,
+      plugins: {
+        ...this.doughnutChartOptions?.plugins,
+        tooltip: {
+          ...(this.doughnutChartOptions?.plugins?.tooltip ?? {}),
+          backgroundColor: c.tooltipBg, titleColor: c.tooltipTitle, bodyColor: c.tooltipBody,
+          borderColor: c.tooltipBorder, borderWidth: 1, padding: 12, usePointStyle: true,
+        },
+      },
+    };
+  }
+
   ngOnInit(): void {
+    try {
+      const stored = localStorage.getItem(this.DISMISSED_KEY);
+      if (stored) this.dismissedNudgeIds = new Set(JSON.parse(stored));
+    } catch { /* ignore */ }
+    this.applyChartTheme();
+    this.themeObserver = new MutationObserver(() => this.applyChartTheme());
+    this.themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     this.loadDashboardData();
+  }
+
+  ngOnDestroy(): void {
+    this.themeObserver?.disconnect();
+  }
+
+  dismissNudge(id: string): void {
+    this.dismissedNudgeIds.add(id);
+    this.nudges = this.nudges.filter((n) => n.id !== id);
+    try {
+      localStorage.setItem(this.DISMISSED_KEY, JSON.stringify([...this.dismissedNudgeIds]));
+    } catch { /* ignore */ }
   }
 
   onDateRangeChange(e: Event): void {
@@ -224,6 +284,34 @@ export class DashboardComponent implements OnInit {
     if (value === this.dateRange) return;
     this.dateRange = value;
     this.loadDashboardData();
+  }
+
+  openSmartAnalysis(): void {
+    this.insightsPanelOpen = true;
+    if (this.insights.length > 0) return; // already loaded
+    this.isInsightsLoading = true;
+    this.insightsError = false;
+    this.analyticsService.getInsights().subscribe({
+      next: (res) => {
+        const data = res?.data ?? [];
+        this.insights = data.map((ins: any) => ({
+          text: ins.message,
+          type: ins.severity === 'warning' ? 'negative' : ins.severity === 'tip' ? 'suggestion' : 'positive'
+        }));
+        if (this.insights.length === 0) {
+          this.insights = [{ text: 'Great job! No issues detected in your recent spending patterns.', type: 'positive' }];
+        }
+        this.isInsightsLoading = false;
+      },
+      error: () => {
+        this.insightsError = true;
+        this.isInsightsLoading = false;
+      }
+    });
+  }
+
+  closeSmartAnalysis(): void {
+    this.insightsPanelOpen = false;
   }
 
   private getDateRangeForFilter(): { firstDay: Date; lastDay: Date; chartRanges: { label: string; dateFrom: string; dateTo: string }[] } {
@@ -235,14 +323,9 @@ export class DashboardComponent implements OnInit {
 
     switch (this.dateRange) {
       case '30days': {
-        // Exactly 30 days: one bucket so we reuse the same summary as the cards (avoids extra API calls and date-range bugs)
         firstDay = new Date(today);
         firstDay.setDate(firstDay.getDate() - 29);
-        chartRanges.push({
-          label: 'Last 30 Days',
-          dateFrom: toLocalDateString(firstDay),
-          dateTo: toLocalDateString(lastDay),
-        });
+        chartRanges.push({ label: 'Last 30 Days', dateFrom: toLocalDateString(firstDay), dateTo: toLocalDateString(lastDay) });
         break;
       }
       case '6months':
@@ -252,11 +335,7 @@ export class DashboardComponent implements OnInit {
           const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
           const start = new Date(d.getFullYear(), d.getMonth(), 1);
           const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
-          chartRanges.push({
-            label: start.toLocaleDateString('en-KE', { month: 'short', year: '2-digit' }),
-            dateFrom: toLocalDateString(start),
-            dateTo: toLocalDateString(end),
-          });
+          chartRanges.push({ label: start.toLocaleDateString('en-KE', { month: 'short', year: '2-digit' }), dateFrom: toLocalDateString(start), dateTo: toLocalDateString(end) });
         }
         break;
       case 'year':
@@ -265,21 +344,13 @@ export class DashboardComponent implements OnInit {
         for (let m = 0; m <= now.getMonth(); m++) {
           const start = new Date(now.getFullYear(), m, 1);
           const end = new Date(now.getFullYear(), m + 1, 0);
-          chartRanges.push({
-            label: start.toLocaleDateString('en-KE', { month: 'short' }),
-            dateFrom: toLocalDateString(start),
-            dateTo: toLocalDateString(end),
-          });
+          chartRanges.push({ label: start.toLocaleDateString('en-KE', { month: 'short' }), dateFrom: toLocalDateString(start), dateTo: toLocalDateString(end) });
         }
         break;
       case 'all': {
         firstDay = new Date(now.getFullYear() - 10, 0, 1);
         lastDay = new Date(today);
-        chartRanges.push({
-          label: 'All time',
-          dateFrom: toLocalDateString(firstDay),
-          dateTo: toLocalDateString(lastDay),
-        });
+        chartRanges.push({ label: 'All time', dateFrom: toLocalDateString(firstDay), dateTo: toLocalDateString(lastDay) });
         break;
       }
       default:
@@ -287,19 +358,13 @@ export class DashboardComponent implements OnInit {
         lastDay = new Date(today);
         for (let y = 0; y < 3; y++) {
           const yr = now.getFullYear() - 2 + y;
-          chartRanges.push({
-            label: String(yr),
-            dateFrom: `${yr}-01-01`,
-            dateTo: yr === now.getFullYear() ? toLocalDateString(lastDay) : `${yr}-12-31`,
-          });
+          chartRanges.push({ label: String(yr), dateFrom: `${yr}-01-01`, dateTo: yr === now.getFullYear() ? toLocalDateString(lastDay) : `${yr}-12-31` });
         }
-        break;
     }
 
     return { firstDay, lastDay, chartRanges };
   }
 
-  /** Parse summary from API: handles { data: { totalIncome, ... } }, direct object, or snake_case. */
   private static parseSummary(raw: any): { totalIncome: number; totalExpenses: number; balance: number } {
     const s = raw?.data ?? raw ?? {};
     const income = Number(s.totalIncome ?? s.total_income ?? 0) || 0;
@@ -308,44 +373,26 @@ export class DashboardComponent implements OnInit {
     return { totalIncome: income, totalExpenses: expenses, balance };
   }
 
-  /** Previous period of same length for trend comparison; null for "all". */
   private getPreviousPeriodRange(): { dateFrom: string; dateTo: string; label: string } | null {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     switch (this.dateRange) {
       case '30days': {
-        const curFirst = new Date(today);
-        curFirst.setDate(curFirst.getDate() - 30);
-        const prevLast = new Date(curFirst);
-        prevLast.setDate(prevLast.getDate() - 1);
-        const prevFirst = new Date(prevLast);
-        prevFirst.setDate(prevFirst.getDate() - 29);
-        return {
-          dateFrom: toLocalDateString(prevFirst),
-          dateTo: toLocalDateString(prevLast),
-          label: 'from previous 30 days',
-        };
+        const curFirst = new Date(today); curFirst.setDate(curFirst.getDate() - 30);
+        const prevLast = new Date(curFirst); prevLast.setDate(prevLast.getDate() - 1);
+        const prevFirst = new Date(prevLast); prevFirst.setDate(prevFirst.getDate() - 29);
+        return { dateFrom: toLocalDateString(prevFirst), dateTo: toLocalDateString(prevLast), label: 'from previous 30 days' };
       }
       case '6months': {
         const prevEnd = new Date(now.getFullYear(), now.getMonth() - 6, 0);
         const prevStart = new Date(now.getFullYear(), now.getMonth() - 12, 1);
-        return {
-          dateFrom: toLocalDateString(prevStart),
-          dateTo: toLocalDateString(prevEnd),
-          label: 'from last 6 months',
-        };
+        return { dateFrom: toLocalDateString(prevStart), dateTo: toLocalDateString(prevEnd), label: 'from last 6 months' };
       }
       case 'year': {
         const prevYear = now.getFullYear() - 1;
-        return {
-          dateFrom: `${prevYear}-01-01`,
-          dateTo: `${prevYear}-12-31`,
-          label: 'from last year',
-        };
+        return { dateFrom: `${prevYear}-01-01`, dateTo: `${prevYear}-12-31`, label: 'from last year' };
       }
-      case 'all':
-      default:
-        return null;
+      default: return null;
     }
   }
 
@@ -358,7 +405,12 @@ export class DashboardComponent implements OnInit {
   }
 
   loadDashboardData(): void {
-    this.isLoading = true;
+    // Show full overlay only on first load; use light indicator for filter changes
+    if (this.isInitialLoad) {
+      this.isLoading = true;
+    } else {
+      this.isFilterUpdating = true;
+    }
     this.summaryLoadFailed = false;
     this.hasNoDataForPeriod = false;
 
@@ -366,45 +418,17 @@ export class DashboardComponent implements OnInit {
     const firstDayStr = this.dateRange === 'all' ? undefined : toLocalDateString(firstDay);
     const lastDayStr = this.dateRange === 'all' ? undefined : toLocalDateString(lastDay);
 
-    const REQUEST_TIMEOUT_MS = 15000;
-    const summary$ = this.transactionService.getSummary(firstDayStr, lastDayStr).pipe(
-      timeout(REQUEST_TIMEOUT_MS),
-      catchError((err) => {
-        console.warn('Dashboard summary request failed', err);
-        return of(null);
-      }),
-    );
-    const categories$ = this.transactionService.getByCategory(firstDayStr, lastDayStr).pipe(
-      timeout(REQUEST_TIMEOUT_MS),
-      catchError(() => of({ data: [] })),
-    );
-    const alerts$ = this.budgetService.getAlerts().pipe(
-      timeout(REQUEST_TIMEOUT_MS),
-      catchError(() => of({ data: { budgetAlerts: [], nudges: [] } })),
-    );
-    const goals$ = this.goalService.getGoals().pipe(
-      timeout(REQUEST_TIMEOUT_MS),
-      catchError(() => of({ data: [] })),
-    );
-    // For single-bucket ranges (e.g. 30 days) we use the main summary for the chart; no extra requests.
-    // forkJoin([]) never emits, so use of([]) when there are no period requests.
-    const monthlySummaries$ =
-      chartRanges.length > 1
-        ? forkJoin(
-            chartRanges.map((r) =>
-              this.transactionService.getSummary(r.dateFrom, r.dateTo).pipe(
-                timeout(REQUEST_TIMEOUT_MS),
-                catchError(() => of(null)),
-              ),
-            ),
-          )
-        : of([]);
+    const T = 15000;
+    const summary$ = this.transactionService.getSummary(firstDayStr, lastDayStr).pipe(timeout(T), catchError((e) => { console.warn('summary failed', e); return of(null); }));
+    const categories$ = this.transactionService.getByCategory(firstDayStr, lastDayStr).pipe(timeout(T), catchError(() => of({ data: [] })));
+    const alerts$ = this.budgetService.getAlerts().pipe(timeout(T), catchError(() => of({ data: { budgetAlerts: [], nudges: [] } })));
+    const goals$ = this.goalService.getGoals().pipe(timeout(T), catchError(() => of({ data: [] })));
+    const monthlySummaries$ = chartRanges.length > 1
+      ? forkJoin(chartRanges.map((r) => this.transactionService.getSummary(r.dateFrom, r.dateTo).pipe(timeout(T), catchError(() => of(null)))))
+      : of([]);
     const prevRange = this.getPreviousPeriodRange();
     const previousSummary$ = prevRange
-      ? this.transactionService.getSummary(prevRange.dateFrom, prevRange.dateTo).pipe(
-          timeout(REQUEST_TIMEOUT_MS),
-          catchError(() => of(null)),
-        )
+      ? this.transactionService.getSummary(prevRange.dateFrom, prevRange.dateTo).pipe(timeout(T), catchError(() => of(null)))
       : null;
 
     forkJoin({
@@ -415,130 +439,77 @@ export class DashboardComponent implements OnInit {
       monthly: monthlySummaries$,
       ...(previousSummary$ ? { previousSummary: previousSummary$ } : {}),
     }).pipe(
-      // Ensure loading is cleared even if next() throws (e.g. when processing malformed data)
-      finalize(() => (this.isLoading = false)),
+      finalize(() => {
+        this.isLoading = false;
+        this.isFilterUpdating = false;
+        this.isInitialLoad = false;
+      })
     ).subscribe({
       next: (results) => {
         try {
-        this.summaryLoadFailed = results.summary == null;
-        const { totalIncome: monthlyIncome, totalExpenses: monthlySpending, balance: totalBalance } = DashboardComponent.parseSummary(results.summary);
-        this.totalBalance = totalBalance;
-        this.monthlyIncome = monthlyIncome;
-        this.monthlySpending = monthlySpending;
-        this.hasNoDataForPeriod = (monthlyIncome + monthlySpending) === 0;
+          this.summaryLoadFailed = results.summary == null;
+          const { totalIncome, totalExpenses, balance } = DashboardComponent.parseSummary(results.summary);
+          this.totalBalance = balance;
+          this.monthlyIncome = totalIncome;
+          this.monthlySpending = totalExpenses;
+          this.hasNoDataForPeriod = (totalIncome + totalExpenses) === 0;
 
-        if (prevRange && results.previousSummary != null) {
-          const prev = results.previousSummary?.data ?? results.previousSummary ?? {};
-          const prevBalance = prev.balance ?? 0;
-          const prevIncome = prev.totalIncome ?? 0;
-          const prevSpending = prev.totalExpenses ?? 0;
-          this.trendComparisonLabel = prevRange.label;
-          this.balanceTrend = this.formatTrendPct(this.totalBalance, prevBalance);
-          this.incomeTrend = this.formatTrendPct(this.monthlyIncome, prevIncome);
-          this.spendingTrend = this.formatTrendPct(this.monthlySpending, prevSpending, true);
-        } else {
-          this.trendComparisonLabel = 'from previous period';
-          this.balanceTrend = { text: '—', isPositive: true };
-          this.incomeTrend = { text: '—', isPositive: true };
-          this.spendingTrend = { text: '—', isPositive: true };
-        }
+          if (prevRange && results.previousSummary != null) {
+            const prev = results.previousSummary?.data ?? results.previousSummary ?? {};
+            this.trendComparisonLabel = prevRange.label;
+            this.balanceTrend = this.formatTrendPct(balance, Number(prev.balance ?? 0));
+            this.incomeTrend = this.formatTrendPct(totalIncome, Number(prev.totalIncome ?? 0));
+            this.spendingTrend = this.formatTrendPct(totalExpenses, Number(prev.totalExpenses ?? 0), true);
+          } else {
+            this.trendComparisonLabel = 'from previous period';
+            this.balanceTrend = this.incomeTrend = this.spendingTrend = { text: '—', isPositive: true };
+          }
 
-        const rawCategories = results.categories?.data ?? results.categories;
-        const categoryData = Array.isArray(rawCategories) ? rawCategories : [];
-        const palette = ['#3b82f6', '#10b981', '#f59e0b', '#6366f1', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
-        if (categoryData.length > 0) {
-          this.doughnutChartData = {
+          const rawCategories = results.categories?.data ?? results.categories;
+          const categoryData = Array.isArray(rawCategories) ? rawCategories : [];
+          const palette = ['#22c55e','#235347','#10b981','#f59e0b','#ef4444','#8EB69B','#16a34a','#15803d'];
+          this.doughnutChartData = categoryData.length > 0 ? {
             labels: categoryData.map((c: any) => c.name ?? 'Other'),
-            datasets: [{
-              data: categoryData.map((c: any) => Number(c.total ?? 0)),
-              backgroundColor: categoryData.map((c: any, i: number) => c.color ?? palette[i % palette.length]),
-              hoverBackgroundColor: categoryData.map((c: any, i: number) => c.color ?? palette[i % palette.length]),
-              borderWidth: 0,
-            }],
+            datasets: [{ data: categoryData.map((c: any) => Number(c.total ?? 0)), backgroundColor: categoryData.map((c: any, i: number) => c.color ?? palette[i % palette.length]), hoverBackgroundColor: categoryData.map((c: any, i: number) => c.color ?? palette[i % palette.length]), borderWidth: 0 }]
+          } : { labels: ['No expenses in period'], datasets: [{ data: [1], backgroundColor: ['rgba(142,182,155,0.2)'], hoverBackgroundColor: ['rgba(142,182,155,0.3)'], borderWidth: 0 }] };
+
+          const alertsPayload = results.alerts?.data ?? results.alerts ?? {};
+          const rawAlerts = alertsPayload.budgetAlerts ?? [];
+          this.nudges = (alertsPayload.nudges ?? []).filter((n: any) => !this.dismissedNudgeIds.has(n.id));
+          this.budgetAlerts = rawAlerts.map((b: any) => {
+            const limit = Number(b.limitAmount ?? b.limit ?? 0);
+            const spent = Number(b.totalSpent ?? b.spent ?? 0);
+            const pct = limit > 0 ? (spent / limit) * 100 : 0;
+            const status = pct >= 100 ? 'danger' : pct >= 80 ? 'warning' : 'safe';
+            const label = b.category?.name ?? 'Overall';
+            const feedback = status === 'danger' ? `Exceeded your ${label} budget.` : status === 'warning' ? `${Math.round(pct)}% of your ${label} budget used.` : `${label}: ${Math.round(pct)}% used.`;
+            return { category: label, spent, budget: limit, percentage: Math.min(pct, 100), status, feedback };
+          });
+
+          const goalsData = results.goals?.data ?? results.goals ?? [];
+          this.goals = goalsData.slice(0, 3).map((g: any) => ({ name: g.name, target: g.targetAmount ?? 0, current: g.currentAmount ?? 0 }));
+          this.activeGoalsCount = goalsData.length;
+          this.goalsOnTrackCount = goalsData.filter((g: any) => ['on_track','completed','in_progress'].includes(g.status)).length;
+          this.goalsNeedAttentionCount = goalsData.filter((g: any) => ['at_risk','overdue'].includes(g.status)).length;
+
+          const chartData = (results.monthly ?? []) as any[];
+          const useSummaryForChart = chartRanges.length === 1;
+          const incomeByPeriod = useSummaryForChart ? [totalIncome] : chartRanges.map((_, i) => Number((chartData[i]?.data ?? chartData[i] ?? {}).totalIncome ?? 0));
+          const expensesByPeriod = useSummaryForChart ? [totalExpenses] : chartRanges.map((_, i) => Number((chartData[i]?.data ?? chartData[i] ?? {}).totalExpenses ?? 0));
+
+          // Update datasets in-place to avoid canvas destruction on filter change
+          this.lineChartData = {
+            labels: chartRanges.map((r) => r.label),
+            datasets: [
+              { ...this.lineChartData.datasets[0], data: incomeByPeriod },
+              { ...this.lineChartData.datasets[1], data: expensesByPeriod },
+            ],
           };
-        } else {
-          this.doughnutChartData = {
-            labels: ['No expenses in period'],
-            datasets: [{
-              data: [0],
-              backgroundColor: ['#e2e8f0'],
-              hoverBackgroundColor: ['#cbd5e1'],
-              borderWidth: 0,
-            }],
-          };
-        }
-
-        const alertsPayload = results.alerts?.data ?? results.alerts ?? {};
-        const rawAlerts = alertsPayload.budgetAlerts ?? [];
-        this.nudges = alertsPayload.nudges ?? [];
-        this.budgetAlerts = rawAlerts.map((b: any) => {
-          const limit = Number(b.limitAmount ?? b.limit ?? 0);
-          const spent = Number(b.totalSpent ?? b.spent ?? 0);
-          const pct = limit > 0 ? (spent / limit) * 100 : 0;
-          let status = 'safe';
-          if (pct >= 100) status = 'danger';
-          else if (pct >= 80) status = 'warning';
-          const label = b.category?.name ?? 'Overall';
-          let feedback = '';
-          if (status === 'danger') feedback = `You've exceeded your ${label} budget.`;
-          else if (status === 'warning') feedback = `You've used ${Math.round(pct)}% of your ${label} budget — getting close to the limit.`;
-          else feedback = `${label}: ${Math.round(pct)}% used.`;
-          return {
-            category: label,
-            spent,
-            budget: limit,
-            percentage: Math.min(pct, 100),
-            status,
-            feedback,
-          };
-        });
-
-        const goalsData = results.goals?.data ?? results.goals ?? [];
-        this.goals = goalsData.slice(0, 3).map((g: any) => ({
-          name: g.name,
-          target: g.targetAmount ?? g.target ?? 0,
-          current: g.currentAmount ?? g.current ?? 0,
-        }));
-        this.activeGoalsCount = goalsData.length;
-        this.goalsOnTrackCount = goalsData.filter(
-          (g: any) => g.status === 'on_track' || g.status === 'completed' || g.status === 'in_progress'
-        ).length;
-        this.goalsNeedAttentionCount = goalsData.filter(
-          (g: any) => g.status === 'at_risk' || g.status === 'overdue'
-        ).length;
-
-        const chartData = (results.monthly ?? []) as any[];
-        const useSummaryForChart = chartRanges.length === 1;
-        const incomeByPeriod = useSummaryForChart
-          ? [monthlyIncome]
-          : chartRanges.map((_, i) => {
-              const m = chartData[i];
-              const d = m?.data ?? m ?? {};
-              return Number(d.totalIncome ?? 0);
-            });
-        const expensesByPeriod = useSummaryForChart
-          ? [monthlySpending]
-          : chartRanges.map((_, i) => {
-              const m = chartData[i];
-              const d = m?.data ?? m ?? {};
-              return Number(d.totalExpenses ?? 0);
-            });
-        this.lineChartData = {
-          labels: chartRanges.map((r) => r.label),
-          datasets: [
-            { ...this.lineChartData.datasets[0], data: incomeByPeriod },
-            { ...this.lineChartData.datasets[1], data: expensesByPeriod },
-          ],
-        };
-
-        this.isLoading = false;
         } catch (e) {
           console.error('Error processing dashboard data', e);
         }
       },
-      error: (err) => {
-        console.error('Error loading dashboard data', err);
-      },
+      error: (err) => console.error('Error loading dashboard data', err),
     });
   }
 
@@ -548,12 +519,6 @@ export class DashboardComponent implements OnInit {
   }
 
   get dateRangeLabel(): string {
-    const labels: Record<string, string> = {
-      '30days': 'Last 30 Days',
-      '6months': 'Last 6 Months',
-      'year': 'This Year',
-      'all': 'All Time',
-    };
-    return labels[this.dateRange] ?? 'Last 6 Months';
+    return { '30days': 'Last 30 Days', '6months': 'Last 6 Months', 'year': 'This Year', 'all': 'All Time' }[this.dateRange] ?? 'Last 6 Months';
   }
 }

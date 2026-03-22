@@ -9,6 +9,8 @@ import { TransactionService } from '../../../core/services/transaction.service';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { ConfirmModalComponent } from '../../../shared/confirm-modal/confirm-modal.component';
 import { getBackendErrorMessage } from '../../../core/utils/backend-error';
+import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
+import { CurrencyService } from '../../../core/services/currency.service';
 
 interface Goal {
   id: string;
@@ -21,7 +23,7 @@ interface Goal {
 @Component({
   selector: 'app-goal-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, NgIconComponent, ConfirmModalComponent],
+  imports: [CommonModule, RouterModule, FormsModule, NgIconComponent, ConfirmModalComponent, CurrencyFormatPipe],
   templateUrl: './goal-detail.component.html',
   styleUrls: ['./goal-detail.component.css'],
   viewProviders: [provideIcons({ lucideArrowLeft, lucidePiggyBank, lucideWallet, lucideCalendar, lucideTarget, lucideTrash2 })]
@@ -29,6 +31,7 @@ interface Goal {
 export class GoalDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  protected currencyService = inject(CurrencyService);
   private goalService = inject(GoalService);
   private transactionService = inject(TransactionService);
   private toast = inject(ToastService);
@@ -58,7 +61,7 @@ export class GoalDetailComponent implements OnInit {
           name: g.name,
           targetAmount: g.targetAmount ?? 0,
           currentAmount: g.currentAmount ?? 0,
-          targetDate: g.deadline ?? g.targetDate ?? ''
+          targetDate: g.deadline ?? ''
         };
         this.loading = false;
       },
@@ -85,7 +88,7 @@ export class GoalDetailComponent implements OnInit {
     if (!this.goal?.id || !this.allocationAmount || this.allocationAmount <= 0 || this.actionLoading) return;
     const amount = Number(this.allocationAmount);
     if (amount > this.availableBalance) {
-      this.toast.error(`Cannot allocate KES ${amount.toFixed(0)} — your Total Balance is only KES ${this.availableBalance.toFixed(0)}.`);
+      this.toast.error(`Cannot allocate ${this.currencyService.format(amount)} — your Total Balance is only ${this.currencyService.format(this.availableBalance)}.`);
       return;
     }
     this.actionLoading = true;
@@ -104,7 +107,7 @@ export class GoalDetailComponent implements OnInit {
           },
           error: () => { this.availableBalance = Math.max(0, this.availableBalance - amount); }
         });
-        this.toast.success(`KES ${amount} saved to goal. Deducted from your Total Balance.`);
+        this.toast.success(`${this.currencyService.format(amount)} saved to goal. Deducted from your Total Balance.`);
       },
       error: (err) => {
         this.actionLoading = false;

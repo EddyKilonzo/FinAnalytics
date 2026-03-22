@@ -212,4 +212,76 @@ export class MailerService {
       );
     }
   }
+
+  async sendBudgetAlertEmail(params: {
+    to: string;
+    name?: string | null;
+    categoryName: string;
+    percentageUsed: number;
+    limitAmount: number;
+    spent: number;
+  }): Promise<void> {
+    const displayName = params.name?.trim() || "there";
+    const isOver = params.percentageUsed >= 100;
+    try {
+      const html = await this.renderTemplate("budget-alert", {
+        name: displayName,
+        categoryName: params.categoryName,
+        percentageUsed: params.percentageUsed,
+        limitAmount: params.limitAmount,
+        spent: params.spent,
+        currency: "KES",
+      });
+      await this.sendMail({
+        to: params.to,
+        subject: isOver
+          ? `Budget exceeded: ${params.categoryName} (${Math.round(params.percentageUsed)}%)`
+          : `Budget alert: ${params.categoryName} at ${Math.round(params.percentageUsed)}%`,
+        html,
+        text: `Hi ${displayName}, your ${params.categoryName} budget is at ${Math.round(params.percentageUsed)}% (KES ${params.spent} of KES ${params.limitAmount}).`,
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Could not render/send budget-alert email to ${params.to}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+  }
+
+  async sendGoalProgressEmail(params: {
+    to: string;
+    name?: string | null;
+    goalName: string;
+    currentAmount: number;
+    targetAmount: number;
+    percentageComplete: number;
+  }): Promise<void> {
+    const displayName = params.name?.trim() || "there";
+    const isComplete = params.percentageComplete >= 100;
+    try {
+      const html = await this.renderTemplate("goal-progress", {
+        name: displayName,
+        goalName: params.goalName,
+        currentAmount: params.currentAmount,
+        targetAmount: params.targetAmount,
+        percentageComplete: params.percentageComplete,
+        currency: "KES",
+      });
+      await this.sendMail({
+        to: params.to,
+        subject: isComplete
+          ? `Goal achieved: "${params.goalName}" — Congratulations!`
+          : `Goal update: "${params.goalName}" is ${Math.round(params.percentageComplete)}% complete`,
+        html,
+        text: `Hi ${displayName}, your goal "${params.goalName}" is ${Math.round(params.percentageComplete)}% complete (KES ${params.currentAmount} of KES ${params.targetAmount}).`,
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Could not render/send goal-progress email to ${params.to}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+  }
 }

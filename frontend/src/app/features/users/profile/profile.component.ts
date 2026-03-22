@@ -25,6 +25,8 @@ import {
 } from '@ng-icons/lucide'
 import { environment } from '../../../../environments/environment'
 import { AuthService } from '../../../core/auth/auth.service'
+import { ThemeService } from '../../../core/theme.service'
+import { CurrencyService, CURRENCIES } from '../../../core/services/currency.service'
 import { Router } from '@angular/router'
 
 export interface ProfileUser {
@@ -37,6 +39,7 @@ export interface ProfileUser {
   userType: string | null
   incomeSources: unknown
   onboardingCompleted: boolean
+  createdAt?: string | null
 }
 
 type ProfileSection = 'profile' | 'security' | 'preferences'
@@ -75,12 +78,16 @@ export class ProfileComponent implements OnInit {
   private readonly http = inject(HttpClient)
   private readonly auth = inject(AuthService)
   private readonly router = inject(Router)
+  protected readonly themeService = inject(ThemeService)
+  protected readonly currencyService = inject(CurrencyService)
 
   protected readonly user = signal<ProfileUser | null>(null)
   protected readonly uploading = signal(false)
   protected readonly uploadError = signal<string | null>(null)
   protected readonly uploadSuccess = signal(false)
   protected readonly activeSection = signal<ProfileSection>('profile')
+  protected readonly previewUrl = signal<string | null>(null)
+  protected readonly isDragging = signal(false)
 
   protected readonly editingName = signal(false)
   protected readonly editNameValue = signal('')
@@ -97,6 +104,23 @@ export class ProfileComponent implements OnInit {
   protected readonly pwShowCurrent = signal(false)
   protected readonly pwShowNew = signal(false)
   protected readonly pwShowConfirm = signal(false)
+
+  // Preferences
+  private static readonly NOTIF_BUDGET_KEY = 'finanalytics-notif-budget'
+  private static readonly NOTIF_GOAL_KEY = 'finanalytics-notif-goal'
+  private static readonly NOTIF_INSIGHTS_KEY = 'finanalytics-notif-insights'
+
+  protected readonly notifBudget = signal<boolean>(
+    (localStorage.getItem(ProfileComponent.NOTIF_BUDGET_KEY) ?? 'true') === 'true'
+  )
+  protected readonly notifGoal = signal<boolean>(
+    (localStorage.getItem(ProfileComponent.NOTIF_GOAL_KEY) ?? 'true') === 'true'
+  )
+  protected readonly notifInsights = signal<boolean>(
+    (localStorage.getItem(ProfileComponent.NOTIF_INSIGHTS_KEY) ?? 'true') === 'true'
+  )
+
+  protected readonly currencies = CURRENCIES
 
   protected readonly sections = [
     {
@@ -120,7 +144,9 @@ export class ProfileComponent implements OnInit {
   }
 
   protected get memberSince(): string {
-    return 'March 2025'
+    const createdAt = this.user()?.createdAt
+    if (!createdAt) return '—'
+    return new Date(createdAt).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
   }
 
   protected get isEmailVerified(): boolean {
@@ -150,15 +176,47 @@ export class ProfileComponent implements OnInit {
   }
 
   onFileSelected(event: Event): void {
-    this.uploadError.set(null)
-    this.uploadSuccess.set(false)
     const input = event.target as HTMLInputElement
     const file = input.files?.[0]
     if (!file) return
+    this.uploadFile(file, input)
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault()
+    event.stopPropagation()
+    this.isDragging.set(true)
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault()
+    this.isDragging.set(false)
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault()
+    event.stopPropagation()
+    this.isDragging.set(false)
+    const file = event.dataTransfer?.files?.[0]
+    if (file) this.uploadFile(file, null)
+  }
+
+  private uploadFile(file: File, input: HTMLInputElement | null): void {
+    this.uploadError.set(null)
+    this.uploadSuccess.set(false)
     if (!file.type.startsWith('image/')) {
       this.uploadError.set('Please choose an image file.')
       return
     }
+    if (file.size > 5 * 1024 * 1024) {
+      this.uploadError.set('Image must be under 5 MB.')
+      return
+    }
+    // Show local preview immediately
+    const reader = new FileReader()
+    reader.onload = (e) => this.previewUrl.set(e.target?.result as string)
+    reader.readAsDataURL(file)
+
     const apiUrl = (environment as { apiUrl?: string }).apiUrl
     if (!apiUrl) {
       this.uploadError.set('API not configured.')
@@ -175,19 +233,21 @@ export class ProfileComponent implements OnInit {
       .subscribe({
         next: (res) => {
           this.uploading.set(false)
+          this.previewUrl.set(null)
           if (res.success && res.data?.avatarUrl) {
             this.user.update((u) => (u ? { ...u, avatarUrl: res.data!.avatarUrl } : null))
             this.auth.patchCurrentUser({ avatarUrl: res.data!.avatarUrl })
             this.uploadSuccess.set(true)
             setTimeout(() => this.uploadSuccess.set(false), 3000)
           }
-          input.value = ''
+          if (input) input.value = ''
         },
         error: (err) => {
           this.uploading.set(false)
+          this.previewUrl.set(null)
           const msg = err.error?.message ?? err.message ?? 'Upload failed.'
           this.uploadError.set(msg)
-          input.value = ''
+          if (input) input.value = ''
         },
       })
   }
@@ -269,6 +329,26 @@ export class ProfileComponent implements OnInit {
           this.pwError.set(err.error?.message ?? 'Failed to change password.')
         },
       })
+  }
+
+  setCurrency(code: string): void {
+    this.currencyService.setCurrency(code)
+  }
+
+  toggleNotif(key: 'budget' | 'goal' | 'insights'): void {
+    if (key === 'budget') {
+      const val = !this.notifBudget()
+      this.notifBudget.set(val)
+      localStorage.setItem(ProfileComponent.NOTIF_BUDGET_KEY, String(val))
+    } else if (key === 'goal') {
+      const val = !this.notifGoal()
+      this.notifGoal.set(val)
+      localStorage.setItem(ProfileComponent.NOTIF_GOAL_KEY, String(val))
+    } else {
+      const val = !this.notifInsights()
+      this.notifInsights.set(val)
+      localStorage.setItem(ProfileComponent.NOTIF_INSIGHTS_KEY, String(val))
+    }
   }
 
   logout(): void {

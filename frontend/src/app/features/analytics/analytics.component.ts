@@ -4,6 +4,7 @@ import { forkJoin, timeout, catchError, of, finalize } from 'rxjs';
 import { TransactionService } from '../../core/services/transaction.service';
 import { AnalyticsService } from '../../core/services/analytics.service';
 import { toLocalDateString } from '../../core/utils/date.utils';
+import { CurrencyService } from '../../core/services/currency.service';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideTrendingUp,
@@ -47,6 +48,7 @@ export class AnalyticsComponent implements OnInit {
   private static readonly MONTHLY_TARGET_STORAGE_KEY = 'finanalytics_monthly_spending_target';
   private transactionService = inject(TransactionService);
   private analyticsService = inject(AnalyticsService);
+  private currencyService = inject(CurrencyService);
   isLoading = true;
   /** Set when the summary API request failed (e.g. network or auth); show message and retry. */
   summaryLoadFailed = false;
@@ -198,22 +200,22 @@ export class AnalyticsComponent implements OnInit {
       {
         data: [],
         backgroundColor: [
-          '#6366f1',
-          '#8b5cf6',
-          '#ec4899',
-          '#14b8a6',
+          '#22c55e',
+          '#235347',
+          '#16a34a',
+          '#8EB69B',
           '#f59e0b',
-          '#3b82f6',
+          '#15803d',
           '#10b981',
           '#ef4444',
         ],
         hoverBackgroundColor: [
-          '#4f46e5',
-          '#7c3aed',
-          '#db2777',
-          '#0d9488',
+          '#16a34a',
+          '#163832',
+          '#15803d',
+          '#6d9a7a',
           '#d97706',
-          '#2563eb',
+          '#166534',
           '#059669',
           '#dc2626',
         ],
@@ -254,7 +256,7 @@ export class AnalyticsComponent implements OnInit {
             const value = context.parsed ?? 0;
             const total = (context.dataset.data as number[]).reduce((a, b) => a + b, 0);
             const pct = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
-            const formatted = new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(value);
+            const formatted = this.currencyService.format(value);
             return `${label}: ${formatted} (${pct}%)`;
           },
         },
@@ -278,7 +280,7 @@ export class AnalyticsComponent implements OnInit {
       {
         data: [],
         label: 'Actual',
-        backgroundColor: '#3b82f6',
+        backgroundColor: '#22c55e',
         borderRadius: 4,
         barPercentage: 0.6,
       },
@@ -465,8 +467,7 @@ export class AnalyticsComponent implements OnInit {
     this.monthlySpendingTarget = stored ? Number(stored) : null;
     this.spendingTargetInput = this.monthlySpendingTarget != null ? String(this.monthlySpendingTarget) : '';
 
-    const formatKES = (val: number) =>
-      new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(val);
+    const formatKES = (val: number) => this.currencyService.format(val);
 
     const { firstDay, lastDay, chartRanges } = this.getDateRangeForFilter();
     const firstDayStr = this.dateRange === 'all' ? undefined : toLocalDateString(firstDay);
@@ -527,7 +528,7 @@ export class AnalyticsComponent implements OnInit {
 
         const rawByCategory = result.byCategory?.data ?? result.byCategory;
         const categories: any[] = Array.isArray(rawByCategory) ? rawByCategory : [];
-        const palette = ['#6366f1','#8b5cf6','#ec4899','#14b8a6','#f59e0b','#3b82f6','#10b981','#ef4444'];
+        const palette = ['#22c55e','#235347','#16a34a','#8EB69B','#f59e0b','#15803d','#10b981','#ef4444'];
         if (categories.length > 0) {
           this.doughnutChartData = {
             labels: categories.map((c: any) => c.name ?? 'Other'),
@@ -612,7 +613,7 @@ export class AnalyticsComponent implements OnInit {
             {
               data: actuals,
               label: 'Actual',
-              backgroundColor: '#3b82f6',
+              backgroundColor: '#22c55e',
               borderRadius: 4,
               barPercentage: 0.6,
             },

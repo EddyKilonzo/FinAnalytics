@@ -1,9 +1,14 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { PrismaService } from "../common/prisma.service";
 import { handlePrismaError } from "../common/helpers/prisma-error.handler";
 import { HttpException } from "@nestjs/common";
+
+export interface LessonProgressItem {
+  lessonId: string;
+  completedAt: Date;
+}
 
 export interface Lesson {
   id: string;
@@ -11,8 +16,15 @@ export interface Lesson {
   slug: string;
   durationMinutes: number;
   topics: string[];
+  category?: string;
   summary: string;
   body: string;
+  quiz?: Array<{
+    question: string;
+    options: string[];
+    correct: number;
+    explanation: string;
+  }>;
 }
 
 /** Suggested lesson item returned by getSuggested (contextual recommendations). */
@@ -62,16 +74,17 @@ export class LessonsService {
    */
   findAll(): Pick<
     Lesson,
-    "id" | "title" | "slug" | "durationMinutes" | "topics" | "summary"
+    "id" | "title" | "slug" | "durationMinutes" | "topics" | "category" | "summary"
   >[] {
     const list = this.loadLessons();
     return list.map(
-      ({ id, title, slug, durationMinutes, topics, summary }) => ({
+      ({ id, title, slug, durationMinutes, topics, category, summary }) => ({
         id,
         title,
         slug,
         durationMinutes,
         topics,
+        category,
         summary,
       }),
     );
@@ -198,6 +211,138 @@ export class LessonsService {
       if (error instanceof HttpException) throw error;
       handlePrismaError(error, this.logger, "LessonsService.getUserGoalCount");
       return 0;
+    }
+  }
+
+  /**
+   * Mark a lesson as completed for a user. Upserts so re-completing is idempotent.
+   */
+  async markComplete(
+    idOrSlug: string,
+    userId: string,
+    quiz: { correctAnswers: number; totalQuestions: number } = { correctAnswers: 0, totalQuestions: 0 },
+  ): Promise<void> {
+    try {
+      const list = this.loadLessons();
+      const lesson = list.find((l) => l.id === idOrSlug || l.slug === idOrSlug);
+      if (!lesson) {
+        throw new NotFoundException(`Lesson "${idOrSlug}" was not found`);
+      }
+      await this.db.userLessonProgress.upsert({
+        where: { userId_lessonId: { userId, lessonId: lesson.id } },
+        update: {
+          completedAt: new Date(),
+          correctAnswers: quiz.correctAnswers,
+          totalQuestions: quiz.totalQuestions,
+        },
+        create: {
+          userId,
+          lessonId: lesson.id,
+          correctAnswers: quiz.correctAnswers,
+          totalQuestions: quiz.totalQuestions,
+        },
+      });
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      handlePrismaError(error, this.logger, "LessonsService.markComplete");
+    }
+  }
+
+  private saveLessons(list: Lesson[]): void {
+    writeFileSync(LESSONS_PATH, JSON.stringify(list, null, 2), "utf-8");
+    this.lessons = list;
+  }
+
+  createLesson(dto: Omit<Lesson, "id">): Lesson {
+    const list = this.loadLessons();
+    const id = dto.slug;
+    if (list.find((l) => l.id === id || l.slug === dto.slug)) {
+      throw new Error(`A lesson with slug "${dto.slug}" already exists.`);
+    }
+    const lesson: Lesson = { id, ...dto };
+    list.push(lesson);
+    this.saveLessons(list);
+    return lesson;
+  }
+
+  updateLesson(idOrSlug: string, dto: Partial<Omit<Lesson, "id">>): Lesson {
+    const list = this.loadLessons();
+    const idx = list.findIndex((l) => l.id === idOrSlug || l.slug === idOrSlug);
+    if (idx === -1) {
+      throw new NotFoundException(`Lesson "${idOrSlug}" was not found`);
+    }
+    list[idx] = { ...list[idx], ...dto };
+    this.saveLessons(list);
+    return list[idx];
+  }
+
+  deleteLesson(idOrSlug: string): void {
+    const list = this.loadLessons();
+    const idx = list.findIndex((l) => l.id === idOrSlug || l.slug === idOrSlug);
+    if (idx === -1) {
+      throw new NotFoundException(`Lesson "${idOrSlug}" was not found`);
+    }
+    list.splice(idx, 1);
+    this.saveLessons(list);
+  }
+
+  /**
+   * Return the top-10 users ranked by lessons completed.
+   */
+  async getLeaderboard(): Promise<{ rank: number; name: string; lessonsCompleted: number; correctAnswers: number; score: number }[]> {
+    try {
+      const rows = await this.db.userLessonProgress.groupBy({
+        by: ['userId'],
+        _count: { lessonId: true },
+        _sum: { correctAnswers: true },
+        orderBy: [{ _count: { lessonId: 'desc' } }],
+        take: 50, // fetch more, re-sort by composite score
+      });
+      const userIds = rows.map((r: any) => r.userId);
+      const users = await this.db.user.findMany({
+        where: { id: { in: userIds } },
+        select: { id: true, name: true },
+      });
+      const userMap = new Map(users.map((u: any) => [u.id, u]));
+
+      interface ScoredEntry { name: string; lessonsCompleted: number; correctAnswers: number; score: number }
+
+      const scored: ScoredEntry[] = rows.map((row: any) => {
+        const lessonsCompleted: number = row._count.lessonId;
+        const correctAnswers: number = row._sum.correctAnswers ?? 0;
+        const score = lessonsCompleted * 10 + correctAnswers;
+        const user = userMap.get(row.userId) as any;
+        const fullName: string = user?.name ?? '';
+        const parts = fullName.trim().split(/\s+/);
+        const display = parts.length > 1 ? `${parts[0]} ${parts[parts.length - 1][0]}.` : (parts[0] || 'Learner');
+        return { name: display, lessonsCompleted, correctAnswers, score };
+      });
+
+      scored.sort((a: ScoredEntry, b: ScoredEntry) => b.score - a.score);
+
+      return scored.slice(0, 10).map((entry: ScoredEntry, i: number) => ({ rank: i + 1, ...entry }));
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      handlePrismaError(error, this.logger, 'LessonsService.getLeaderboard');
+      return [];
+    }
+  }
+
+  /**
+   * Return all completed lesson IDs for the user with completion timestamps.
+   */
+  async getProgress(userId: string): Promise<LessonProgressItem[]> {
+    try {
+      const rows = await this.db.userLessonProgress.findMany({
+        where: { userId },
+        select: { lessonId: true, completedAt: true },
+        orderBy: { completedAt: "desc" },
+      });
+      return rows as LessonProgressItem[];
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      handlePrismaError(error, this.logger, "LessonsService.getProgress");
+      return [];
     }
   }
 }
