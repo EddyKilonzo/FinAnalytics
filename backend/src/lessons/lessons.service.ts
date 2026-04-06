@@ -22,7 +22,9 @@ export interface Lesson {
   quiz?: Array<{
     question: string;
     options: string[];
-    correct: number;
+    /** 0-based correct option; `correctIndex` is an alias used in data files. */
+    correct?: number;
+    correctIndex?: number;
     explanation: string;
   }>;
 }

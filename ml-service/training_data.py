@@ -1,8 +1,9 @@
 """Seed training data for the FinAnalytix transaction classifier.
 
-Labels match the category slugs seeded in the PostgreSQL database:
-  food-dining | transport | social | entertainment | utilities |
-  health      | education | clothing | rent-housing | savings  | other
+Labels match category slugs in the PostgreSQL `categories` table (see backend
+`default-categories.data.ts`). User corrections (feedback.jsonl + /retrain)
+add any slug the admin creates — the ML service accepts lowercase slugs that
+match the API.
 
 Merchant names, M-PESA descriptions, POS receipts, and bank statement
 entries typical of young Kenyans are used to give the model broad coverage.
@@ -336,4 +337,62 @@ TRAINING_SAMPLES: list[tuple[str, str]] = [
     ("DHL courier delivery", "other"),
     ("G4S parcel delivery", "other"),
     ("money transfer", "other"),
+
+    # ── groceries (supermarkets / markets — split from generic food-dining) ─
+    ("Naivas weekly groceries", "groceries"),
+    ("Quickmart household groceries", "groceries"),
+    ("Carrefour grocery shop", "groceries"),
+    ("Chandarana supermarket", "groceries"),
+    ("vegetable market mama mboga", "groceries"),
+    ("greens and tomatoes market", "groceries"),
+    ("bulk maize flour shop", "groceries"),
+    ("cooking oil 5l supermarket", "groceries"),
+    ("toilet paper bulk pack", "groceries"),
+    ("household cleaning supplies store", "groceries"),
+
+    # ── subscriptions (recurring digital / apps) ───────────────────────────
+    ("Netflix monthly subscription", "subscriptions"),
+    ("Showmax subscription renewal", "subscriptions"),
+    ("Spotify Premium KE", "subscriptions"),
+    ("YouTube Premium subscription", "subscriptions"),
+    ("iCloud storage monthly", "subscriptions"),
+    ("Google One storage", "subscriptions"),
+    ("Microsoft 365 subscription", "subscriptions"),
+    ("Adobe Creative Cloud", "subscriptions"),
+    ("Notion subscription", "subscriptions"),
+    ("ChatGPT Plus", "subscriptions"),
+
+    # ── personal-care ───────────────────────────────────────────────────────
+    ("barber haircut CBD", "personal-care"),
+    ("salon braids Westlands", "personal-care"),
+    ("nails manicure", "personal-care"),
+    ("beauty parlour facial", "personal-care"),
+    ("perfume purchase", "personal-care"),
+    ("skincare products", "personal-care"),
+    ("hair oil and shampoo", "personal-care"),
+
+    # ── travel (trips, not daily commute) ───────────────────────────────────
+    ("Jambo Jet flight ticket", "travel"),
+    ("Kenya Airways booking", "travel"),
+    ("Airbnb accommodation", "travel"),
+    ("hotel booking Mombasa", "travel"),
+    ("SGR ticket Nairobi Mombasa holiday", "travel"),
+    ("safari lodge deposit", "travel"),
+    ("visa application fee travel", "travel"),
+    ("travel insurance trip", "travel"),
+
+    # ── bank-fees ───────────────────────────────────────────────────────────
+    ("M-PESA send money charge", "bank-fees"),
+    ("Safaricom till charges", "bank-fees"),
+    ("ATM withdrawal fee", "bank-fees"),
+    ("bank monthly maintenance fee", "bank-fees"),
+    ("swift transfer fee", "bank-fees"),
+    ("card replacement fee", "bank-fees"),
+
+    # ── income (also short-circuited in API when type=income) ───────────────
+    ("salary credited", "income"),
+    ("employer payroll", "income"),
+    ("freelance payment received", "income"),
+    ("HELB disbursement", "income"),
+    ("parent allowance sent", "income"),
 ]

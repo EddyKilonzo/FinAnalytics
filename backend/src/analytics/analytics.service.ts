@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "../common/prisma.service";
+import { AnthropicAiService } from "../ai/anthropic-ai.service";
 import { handlePrismaError } from "../common/helpers/prisma-error.handler";
 import { HttpException } from "@nestjs/common";
 
@@ -8,6 +9,8 @@ export interface Insight {
   type: string;
   message: string;
   severity?: "info" | "tip" | "warning";
+  /** Present when the message was produced by the Anthropic API. */
+  source?: "rules" | "ai";
 }
 
 const DAYS_LOOKBACK = 30;
@@ -18,7 +21,10 @@ const CATEGORY_SPIKE_RATIO = 2.0; // e.g. "doubled" when this month >= 2 * last 
 export class AnalyticsService {
   private readonly logger = new Logger(AnalyticsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly anthropicAi: AnthropicAiService,
+  ) {}
 
   private get db() {
     return this.prisma as any;
@@ -375,15 +381,92 @@ export class AnalyticsService {
       ]);
 
       const list: Insight[] = [];
-      if (summary) list.push(summary);
-      if (topCat) list.push(topCat);
-      if (weekend) list.push(weekend);
-      list.push(...(categorySpikes ?? []));
-      list.push(...(momInsights ?? []));
+      if (summary) list.push({ ...summary, source: "rules" });
+      if (topCat) list.push({ ...topCat, source: "rules" });
+      if (weekend) list.push({ ...weekend, source: "rules" });
+      for (const i of categorySpikes ?? []) list.push({ ...i, source: "rules" });
+      for (const i of momInsights ?? []) list.push({ ...i, source: "rules" });
+
+      const dataSummary = await this.buildSpendingSummaryForAi(userId);
+      const aiTips = await this.anthropicAi.generateSmartInsights(list, dataSummary);
+      const baseTime = Date.now();
+      for (let n = 0; n < aiTips.length; n++) {
+        const t = aiTips[n];
+        list.push({
+          id: `ai_coach_${baseTime}_${n}`,
+          type: "ai_coach",
+          message: t.message,
+          severity: t.severity,
+          source: "ai",
+        });
+      }
+
       return list;
     } catch (error) {
       if (error instanceof HttpException) throw error;
       handlePrismaError(error, this.logger, "AnalyticsService.getInsights");
+    }
+  }
+
+  /**
+   * Compact spending context for the LLM (this month + last 30 days snapshot).
+   */
+  private async buildSpendingSummaryForAi(userId: string): Promise<string> {
+    try {
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const thirtyAgo = new Date(now);
+      thirtyAgo.setDate(thirtyAgo.getDate() - 30);
+
+      const [monthRows, recentRows] = await Promise.all([
+        this.db.transaction.findMany({
+          where: {
+            userId,
+            type: "expense",
+            date: { gte: monthStart, lte: now },
+          },
+          include: { category: true },
+        }),
+        this.db.transaction.findMany({
+          where: {
+            userId,
+            type: "expense",
+            date: { gte: thirtyAgo, lte: now },
+          },
+          select: { amount: true },
+        }),
+      ]);
+
+      let monthTotal = 0;
+      const byName = new Map<string, number>();
+      for (const t of monthRows as { amount: unknown; category: { name?: string } | null }[]) {
+        const amt = Number(t.amount);
+        monthTotal += amt;
+        const name = t.category?.name ?? "Uncategorised";
+        byName.set(name, (byName.get(name) ?? 0) + amt);
+      }
+
+      const top = [...byName.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(([n, a]) => `${n}: KES ${Math.round(a)}`)
+        .join("; ");
+
+      let recent30 = 0;
+      for (const t of recentRows as { amount: unknown }[]) {
+        recent30 += Number(t.amount);
+      }
+
+      return (
+        `This month (since ${monthStart.toISOString().slice(0, 10)}): ${monthRows.length} expense transactions, total KES ${Math.round(monthTotal)}. ` +
+        (top ? `Top categories: ${top}. ` : "") +
+        `Last 30 days expense total (approx): KES ${Math.round(recent30)}.`
+      );
+    } catch (error) {
+      this.logger.warn(
+        `buildSpendingSummaryForAi: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return "";
     }
   }
 }

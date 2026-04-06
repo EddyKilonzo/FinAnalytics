@@ -254,6 +254,38 @@ export class AdminController {
     }
   }
 
+  // ── POST /admin/ml/sync-feedback ───────────────────────────────────────────
+
+  @Post("ml/sync-feedback")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Push DB corrections to ML service [ADMIN]",
+    description:
+      "Sends every `MlFeedback` row to the Python service (append to feedback.jsonl). " +
+      "Run this if feedback was lost or before retraining after adding new category slugs. " +
+      "Then call POST /admin/ml/retrain.",
+  })
+  @ApiResponse({ status: 200, description: "Sync finished (check acknowledged count)." })
+  async syncMlFeedback() {
+    try {
+      const result = await this.adminService.pushMlFeedbackToMl();
+      return {
+        success: true,
+        message: `Pushed ${result.acknowledged} of ${result.total} feedback rows to the ML service.`,
+        data: result,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error(
+        "ML feedback sync failed",
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw new InternalServerErrorException(
+        "Could not sync feedback to the ML service.",
+      );
+    }
+  }
+
   // ── POST /admin/ml/retrain ─────────────────────────────────────────────────
 
   @Post("ml/retrain")

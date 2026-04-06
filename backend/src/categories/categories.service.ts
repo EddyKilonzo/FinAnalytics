@@ -8,6 +8,7 @@ import { PrismaService } from "../common/prisma.service";
 import { handlePrismaError } from "../common/helpers/prisma-error.handler";
 import type { CreateCategoryDto } from "./dto/create-category.dto";
 import type { UpdateCategoryDto } from "./dto/update-category.dto";
+import { DEFAULT_CATEGORIES } from "./default-categories.data";
 
 /** The shape we hand back to callers — no generated Prisma namespace needed. */
 export interface CategoryEntity {
@@ -166,6 +167,30 @@ export class CategoriesService {
     } catch (error) {
       if (error instanceof HttpException) throw error;
       handlePrismaError(error, this.logger, "CategoriesService.upsertBySlug");
+    }
+  }
+
+  /**
+   * Upsert all built-in categories (same list as `prisma/seed.ts`).
+   * Admin-only — used when the DB has no categories yet or to refresh labels/colors.
+   */
+  async seedDefaults(): Promise<{ count: number; data: CategoryEntity[] }> {
+    try {
+      for (const cat of DEFAULT_CATEGORIES) {
+        await this.upsertBySlug(cat.slug, {
+          name: cat.name,
+          description: cat.description,
+          color: cat.color,
+        });
+      }
+      this.logger.log(
+        `Default categories seeded: ${DEFAULT_CATEGORIES.length} slugs`,
+      );
+      const data = await this.findAll();
+      return { count: DEFAULT_CATEGORIES.length, data };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      handlePrismaError(error, this.logger, "CategoriesService.seedDefaults");
     }
   }
 }

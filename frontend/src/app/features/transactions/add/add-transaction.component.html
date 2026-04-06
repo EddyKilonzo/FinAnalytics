@@ -115,6 +115,9 @@
             <span *ngIf="!isPredicting && aiSuggestedCategoryId" class="text-xs text-emerald-500 font-medium flex items-center gap-1 animate-fade-in">
               <ng-icon name="lucideSparkles"></ng-icon> AI Selected
             </span>
+            <span *ngIf="!isPredicting && !aiSuggestedCategoryId" class="text-xs text-slate-400 flex items-center gap-1">
+              <ng-icon name="lucideSparkles" size="11"></ng-icon> AI will auto-assign
+            </span>
           </div>
           <div class="relative">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -125,7 +128,7 @@
               class="block w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all appearance-none"
               [ngClass]="{'ring-2 ring-emerald-500/30 border-emerald-500 bg-emerald-50/10': aiSuggestedCategoryId}"
             >
-              <option value="" disabled>Select a category</option>
+              <option value="">Auto-assign (AI)</option>
               <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
             </select>
             <!-- Custom chevron -->

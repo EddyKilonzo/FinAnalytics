@@ -298,6 +298,18 @@
   max-width: 100%;
 }
 
+/* AI / pasted Markdown sometimes includes inline color styles (e.g. white) that break contrast */
+.markdown-content span[style],
+.markdown-content font[style] {
+  color: inherit !important;
+}
+
+.markdown-content a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .markdown-content h1 {
   font-size: 3.5rem;
   font-weight: 800;

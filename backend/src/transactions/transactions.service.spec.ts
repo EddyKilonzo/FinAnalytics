@@ -43,13 +43,17 @@ describe("TransactionsService", () => {
     sendFeedback: jest.fn().mockResolvedValue(undefined),
   };
 
+  const mockAi = {
+    suggestTransactionCategory: jest.fn().mockResolvedValue(null),
+  };
+
   let service: TransactionsService;
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockPrisma.transaction.findMany.mockResolvedValue([]);
     mockPrisma.transaction.count.mockResolvedValue(0);
-    service = new TransactionsService(mockPrisma as any, mockMl as any);
+    service = new TransactionsService(mockPrisma as any, mockMl as any, mockAi as any);
   });
 
   it("should be defined", () => {
@@ -129,6 +133,7 @@ describe("TransactionsService", () => {
       );
       expect(result).toEqual(mockTransaction);
       expect(mockPrisma.transaction.create).toHaveBeenCalled();
+      expect(mockAi.suggestTransactionCategory).not.toHaveBeenCalled();
       expect(mockMl.categorise).not.toHaveBeenCalled();
     });
 

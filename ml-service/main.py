@@ -28,9 +28,9 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
-from classifier import TransactionClassifier, VALID_SLUGS
+from classifier import TransactionClassifier, is_allowed_slug
 
 load_dotenv()
 
@@ -104,8 +104,21 @@ class FeedbackRequest(BaseModel):
     description: str = Field(..., min_length=1, max_length=500)
     correct_category_slug: str = Field(
         ...,
-        description=f"The correct category slug. Valid values: {sorted(VALID_SLUGS)}",
+        description=(
+            "Correct category slug (lowercase letters, digits, hyphens). "
+            "Use the same slug as in the FinAnalytics database — including categories "
+            "you add in admin — then call /retrain so the model learns them."
+        ),
     )
+
+    @field_validator("correct_category_slug")
+    @classmethod
+    def slug_format(cls, v: str) -> str:
+        if not is_allowed_slug(v):
+            raise ValueError(
+                "Slug must be lowercase letters, digits, and hyphens only (max 80 chars)."
+            )
+        return v
 
 
 class HealthResponse(BaseModel):
@@ -200,15 +213,6 @@ def feedback(body: FeedbackRequest) -> dict:
             detail="Classifier not initialised.",
         )
 
-    if body.correct_category_slug not in VALID_SLUGS:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=(
-                f"Unknown category slug '{body.correct_category_slug}'. "
-                f"Valid values: {sorted(VALID_SLUGS)}"
-            ),
-        )
-
     try:
         _classifier.add_feedback(body.description, body.correct_category_slug)
     except Exception as exc:
@@ -249,5 +253,6 @@ def retrain() -> dict:
 
     return {
         "message": f"Model retrained successfully on {total_samples} total samples.",
+        "samples_used": total_samples,
         "categories": _classifier.classes_,
     }

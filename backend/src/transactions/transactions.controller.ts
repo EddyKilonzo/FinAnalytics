@@ -311,10 +311,9 @@ export class TransactionsController {
   @ApiOperation({
     summary: "Record a new transaction",
     description:
-      "Creates a transaction and automatically suggests a category using the ML service. " +
-      "The response includes suggestedCategory and categoryConfidence if the ML service " +
-      "is available. Category suggestion does not delay the response — if ML is unavailable " +
-      "the transaction is still created immediately.",
+      "Creates a transaction and suggests a category using Anthropic AI (if ANTHROPIC_API_KEY is set), " +
+      "then the Python ML service, then keyword rules. " +
+      "The response may include suggestedCategory and categoryConfidence. Suggestions never block creation.",
   })
   @ApiResponse({ status: 201, description: "Transaction created." })
   @ApiResponse({

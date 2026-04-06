@@ -65,10 +65,6 @@ export class AddTransactionComponent implements OnInit {
         if (cat) {
           this.transactionForm.patchValue({ categoryId: cat.id });
         }
-      } else if (!this.transaction && this.categories.length > 0) {
-        // Set default category
-        const defaultCat = this.categories.find(c => c.name === 'Food & Dining') || this.categories[0];
-        this.transactionForm.patchValue({ categoryId: defaultCat.id });
       }
     });
   }
@@ -125,7 +121,7 @@ export class AddTransactionComponent implements OnInit {
       merchant: ['', Validators.required],
       amount: [null, [Validators.required, Validators.min(0.01)]],
       type: ['expense', Validators.required],
-      categoryId: ['', Validators.required],
+      categoryId: [''],
       date: [this.formatDateForInput(new Date().toISOString()), Validators.required]
     });
   }

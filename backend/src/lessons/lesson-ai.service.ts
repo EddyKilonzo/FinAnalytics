@@ -30,11 +30,21 @@ const LESSON_TOPICS = [
   { title: "Tax Basics for Kenyan Employees (PAYE)", category: "Personal Finance", topics: ["tax", "PAYE", "KRA"] },
 ];
 
+/** Default model for lesson generation (override with ANTHROPIC_MODEL). See Anthropic docs for current IDs. */
+const DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-4-6";
+
 @Injectable()
 export class LessonAiService {
   private readonly logger = new Logger(LessonAiService.name);
 
   constructor(private readonly config: ConfigService) {}
+
+  private getAnthropicModel(): string {
+    return (
+      this.config.get<string>("ANTHROPIC_MODEL")?.trim() ||
+      DEFAULT_ANTHROPIC_MODEL
+    );
+  }
 
   private loadDrafts(): LessonDraft[] {
     try {
@@ -129,8 +139,9 @@ Format the lesson as Markdown with these sections:
 
 The lesson should be 600-900 words, educational, conversational, and actionable. Use KES amounts for examples.`;
 
+      const model = this.getAnthropicModel();
       const response = await client.messages.create({
-        model: "claude-opus-4-6",
+        model,
         max_tokens: 2048,
         messages: [{ role: "user", content: prompt }],
       });
@@ -165,7 +176,9 @@ The lesson should be 600-900 words, educational, conversational, and actionable.
 
       drafts.push(draft);
       this.saveDrafts(drafts);
-      this.logger.log(`AI lesson draft generated: "${topic.title}" (id: ${id})`);
+      this.logger.log(
+        `AI lesson draft generated: "${topic.title}" (id: ${id}, model: ${model})`,
+      );
     } catch (err) {
       this.logger.error(
         `Failed to generate lesson draft: ${err instanceof Error ? err.message : String(err)}`,
@@ -187,6 +200,7 @@ The lesson should be 600-900 words, educational, conversational, and actionable.
     try {
       const Anthropic = (await import("@anthropic-ai/sdk")).default;
       const client = new Anthropic({ apiKey });
+      const model = this.getAnthropicModel();
 
       const prompt = `You are a financial education writer for FinAnalytics, a personal finance app for Kenyan university students and young professionals.
 
@@ -203,7 +217,7 @@ Format the lesson as Markdown with these sections:
 600-900 words. Conversational, practical, and actionable.`;
 
       const response = await client.messages.create({
-        model: "claude-opus-4-6",
+        model,
         max_tokens: 2048,
         messages: [{ role: "user", content: prompt }],
       });

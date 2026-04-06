@@ -11,7 +11,7 @@ import {
 import { marked } from 'marked';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { LessonService } from '../../../core/services/lesson.service';
-import type { Lesson } from '../../../core/models';
+import type { Lesson, LessonQuizQuestion } from '../../../core/models';
 
 interface QuizQuestion {
   question: string;
@@ -196,10 +196,19 @@ export class LessonViewComponent implements OnInit, OnDestroy {
       this.lessonService.getLesson(id).subscribe({
         next: (response) => {
           if (response.success && response.data) {
-            this.lesson.set(response.data);
-            const body = response.data.body ?? response.data.content;
+            const data = response.data;
+            this.lesson.set(data);
+            const body = data.body ?? data.content;
             if (body) this.parseMarkdown(body);
-            this.loadCategoryContent(response.data.category);
+            this.loadCategoryContent(data.category);
+            const canonicalId = data.id ?? id;
+            this.lessonService.getProgress().subscribe({
+              next: (res) => {
+                const progress: { lessonId: string }[] = res?.data ?? [];
+                this.isCompleted.set(progress.some((p) => p.lessonId === canonicalId));
+              },
+              error: () => { /* non-critical */ },
+            });
           }
           this.isLoading.set(false);
         },
@@ -207,14 +216,6 @@ export class LessonViewComponent implements OnInit, OnDestroy {
           console.error('Error fetching lesson:', error);
           this.isLoading.set(false);
         }
-      });
-
-      this.lessonService.getProgress().subscribe({
-        next: (res) => {
-          const progress: any[] = res?.data ?? [];
-          this.isCompleted.set(progress.some((p) => p.lessonId === id));
-        },
-        error: () => { /* non-critical */ }
       });
     } else {
       this.isLoading.set(false);
@@ -267,10 +268,56 @@ export class LessonViewComponent implements OnInit, OnDestroy {
     const key = this.findKey(cat);
     this.facts = this.factsData[key] ?? this.factsData['Personal Finance'];
     const lessonQuiz = this.lesson()?.quiz;
-    this.quiz = (lessonQuiz && lessonQuiz.length > 0)
-      ? lessonQuiz
-      : (this.quizData[key] ?? this.quizData['Personal Finance']);
+    const raw =
+      lessonQuiz && lessonQuiz.length > 0
+        ? lessonQuiz
+        : (this.quizData[key] ?? this.quizData['Personal Finance']);
+    this.quiz = this.normalizeQuizQuestions(raw);
+    this.currentQuestion.set(0);
+    this.selectedAnswer.set(null);
+    this.answeredQuestions.set({});
+    this.quizSubmitted.set(false);
     this.startFactRotation();
+  }
+
+  /**
+   * API / `lessons.json` use `correctIndex`; built-in fallbacks use `correct`.
+   * Ensures `correct` is a valid option index so scoring and UI match user picks.
+   */
+  private normalizeQuizQuestions(
+    raw: LessonQuizQuestion[] | QuizQuestion[],
+  ): QuizQuestion[] {
+    if (!Array.isArray(raw) || raw.length === 0) return [];
+    const out: QuizQuestion[] = [];
+    for (const item of raw) {
+      const row = item as LessonQuizQuestion & { correct?: number; correctIndex?: number };
+      const options = Array.isArray(row.options)
+        ? row.options.map((o) => String(o))
+        : [];
+      const question = String(row.question ?? '').trim();
+      let correct: number | undefined =
+        typeof row.correct === 'number' ? row.correct : undefined;
+      if (correct === undefined && typeof row.correctIndex === 'number') {
+        correct = row.correctIndex;
+      }
+      if (!question || options.length === 0) continue;
+      if (
+        correct === undefined ||
+        correct < 0 ||
+        correct >= options.length ||
+        !Number.isInteger(correct)
+      ) {
+        console.warn('[LessonView] Skipping invalid quiz row:', question);
+        continue;
+      }
+      out.push({
+        question,
+        options,
+        correct,
+        explanation: String(row.explanation ?? ''),
+      });
+    }
+    return out;
   }
 
   private findKey(category: string): string {

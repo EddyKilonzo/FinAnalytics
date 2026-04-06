@@ -116,7 +116,27 @@ import type { Category } from '../../../core/models';
           @if (!loading() && !loadError()) {
             @if (filtered().length === 0) {
               <div class="state-block state-muted">
-                <p>{{ categories().length === 0 ? 'No categories yet. Create one to get started.' : 'No categories match your search.' }}</p>
+                @if (categories().length === 0) {
+                  <p>No categories yet. Load the starter set or create your own.</p>
+                  <div class="empty-actions">
+                    <button
+                      type="button"
+                      class="btn-primary"
+                      (click)="seedDefaults()"
+                      [disabled]="seedLoading()"
+                    >
+                      {{ seedLoading() ? 'Loading…' : 'Load default categories' }}
+                    </button>
+                    <button type="button" class="btn-secondary" (click)="openCreate()">
+                      <ng-icon name="lucidePlus"></ng-icon> New category
+                    </button>
+                  </div>
+                  @if (seedError()) {
+                    <p class="seed-error">{{ seedError() }}</p>
+                  }
+                } @else {
+                  <p>No categories match your search.</p>
+                }
               </div>
             } @else {
               <div class="categories-grid">
@@ -277,6 +297,8 @@ import type { Category } from '../../../core/models';
     .categories-body { padding: 1.5rem 1.75rem 1.75rem; }
     .state-block { text-align: center; padding: 3rem 1.5rem; }
     .state-muted { color: var(--text-muted); }
+    .empty-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; margin-top: 1.25rem; }
+    .seed-error { color: #dc2626; font-size: 0.875rem; margin-top: 1rem; font-weight: 600; }
     .state-error { color: #dc2626; margin: 0 0 1rem 0; font-weight: 600; }
     .categories-grid {
       display: grid;
@@ -365,6 +387,8 @@ export class AdminCategoriesComponent implements OnInit {
   loading = signal(true);
   loadError = signal(false);
   categories = signal<Category[]>([]);
+  seedLoading = signal(false);
+  seedError = signal('');
   searchQuery = '';
 
   // Form modal ('create' | 'edit' | null)
@@ -400,6 +424,9 @@ export class AdminCategoriesComponent implements OnInit {
 
     const raw = `${slug} ${(cat.name || '').toLowerCase()}`;
     const rules: readonly [string, string][] = [
+      ['subscriptions', 'lucideMonitor'],
+      ['bank-fees', 'lucideBanknote'],
+      ['personal-care', 'lucideHeart'],
       ['food-dining', 'lucideUtensils'],
       ['groceries', 'lucideShoppingCart'],
       ['food', 'lucideUtensils'],
@@ -440,6 +467,23 @@ export class AdminCategoriesComponent implements OnInit {
 
   ngOnInit() {
     this.fetchCategories();
+  }
+
+  seedDefaults() {
+    this.seedError.set('');
+    this.seedLoading.set(true);
+    this.categoryService.seedDefaultCategories().subscribe({
+      next: (res) => {
+        this.categories.set(res.data ?? []);
+        this.seedLoading.set(false);
+      },
+      error: (err) => {
+        this.seedError.set(
+          err?.error?.message ?? 'Could not load default categories. Try again or run npm run db:seed on the server.',
+        );
+        this.seedLoading.set(false);
+      },
+    });
   }
 
   fetchCategories() {

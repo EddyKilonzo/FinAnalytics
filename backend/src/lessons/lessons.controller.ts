@@ -175,6 +175,78 @@ export class LessonsController {
     }
   }
 
+  /**
+   * AI draft routes must be registered before @Get(":id"), otherwise paths like
+   * GET /lessons/drafts are handled as findOne("drafts") and return 404.
+   */
+  // ── AI Draft management (Admin-only) ──────────────────────────────────────
+
+  @Get("drafts")
+  @UseGuards(AdminGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "[Admin] List all AI-generated lesson drafts" })
+  async getDrafts() {
+    return { success: true, data: this.lessonAiService.getAllDrafts() };
+  }
+
+  @Post("drafts/generate")
+  @UseGuards(AdminGuard)
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: "[Admin] Trigger immediate AI lesson draft generation" })
+  async generateDraft(@Body() body: { topic?: string }) {
+    try {
+      const draft = await this.lessonAiService.generateDraftNow(body?.topic);
+      return { success: true, data: draft };
+    } catch (err) {
+      throw new InternalServerErrorException(err instanceof Error ? err.message : "Generation failed.");
+    }
+  }
+
+  @Post("drafts/:id/approve")
+  @UseGuards(AdminGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "[Admin] Approve a draft and publish it as a lesson" })
+  async approveDraft(@Param("id") id: string) {
+    try {
+      const draft = this.lessonAiService.approveDraft(id);
+      if (!draft) throw new BadRequestException("Draft not found.");
+      const existing = this.lessonsService.findAll();
+      if (!existing.find((l) => l.slug === draft.slug)) {
+        this.lessonsService.createLesson({
+          title: draft.title,
+          slug: draft.slug,
+          durationMinutes: draft.durationMinutes,
+          topics: draft.topics,
+          category: draft.category,
+          summary: draft.summary,
+          body: draft.body,
+        });
+      }
+      return { success: true, message: `Draft "${draft.title}" published.` };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new InternalServerErrorException("Could not approve draft.");
+    }
+  }
+
+  @Post("drafts/:id/reject")
+  @UseGuards(AdminGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "[Admin] Reject a draft" })
+  async rejectDraft(@Param("id") id: string) {
+    this.lessonAiService.rejectDraft(id);
+    return { success: true, message: "Draft rejected." };
+  }
+
+  @Delete("drafts/:id")
+  @UseGuards(AdminGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "[Admin] Delete a draft permanently" })
+  async deleteDraft(@Param("id") id: string) {
+    this.lessonAiService.deleteDraft(id);
+    return { success: true, message: "Draft deleted." };
+  }
+
   @Get(":id")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -221,7 +293,7 @@ export class LessonsController {
   @ApiResponse({ status: 201, description: "Lesson created." })
   async createLesson(@Body() body: any) {
     try {
-      const { title, slug, durationMinutes, topics, summary, body: lessonBody } = body;
+      const { title, slug, durationMinutes, topics, summary, body: lessonBody, category } = body;
       if (!title || !slug || !durationMinutes || !summary || !lessonBody) {
         throw new BadRequestException("title, slug, durationMinutes, summary, and body are required.");
       }
@@ -232,6 +304,7 @@ export class LessonsController {
         topics: Array.isArray(topics) ? topics : [],
         summary,
         body: lessonBody,
+        ...(typeof category === "string" && category.trim() ? { category: category.trim() } : {}),
       });
       return { success: true, data };
     } catch (error) {
@@ -255,74 +328,6 @@ export class LessonsController {
       this.logger.error(`Error updating lesson [${id}]`, error instanceof Error ? error.stack : String(error));
       throw new InternalServerErrorException("Could not update lesson.");
     }
-  }
-
-  // ── AI Draft management (Admin-only) ──────────────────────────────────────
-
-  @Get("drafts")
-  @UseGuards(AdminGuard)
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "[Admin] List all AI-generated lesson drafts" })
-  async getDrafts() {
-    return { success: true, data: this.lessonAiService.getAllDrafts() };
-  }
-
-  @Post("drafts/generate")
-  @UseGuards(AdminGuard)
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: "[Admin] Trigger immediate AI lesson draft generation" })
-  async generateDraft(@Body() body: { topic?: string }) {
-    try {
-      const draft = await this.lessonAiService.generateDraftNow(body?.topic);
-      return { success: true, data: draft };
-    } catch (err) {
-      throw new InternalServerErrorException(err instanceof Error ? err.message : "Generation failed.");
-    }
-  }
-
-  @Post("drafts/:id/approve")
-  @UseGuards(AdminGuard)
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "[Admin] Approve a draft and publish it as a lesson" })
-  async approveDraft(@Param("id") id: string) {
-    try {
-      const draft = this.lessonAiService.approveDraft(id);
-      if (!draft) throw new BadRequestException("Draft not found.");
-      // Publish the draft as a real lesson
-      const existing = this.lessonsService.findAll();
-      if (!existing.find((l) => l.slug === draft.slug)) {
-        this.lessonsService.createLesson({
-          title: draft.title,
-          slug: draft.slug,
-          durationMinutes: draft.durationMinutes,
-          topics: draft.topics,
-          summary: draft.summary,
-          body: draft.body,
-        });
-      }
-      return { success: true, message: `Draft "${draft.title}" published.` };
-    } catch (error) {
-      if (error instanceof HttpException) throw error;
-      throw new InternalServerErrorException("Could not approve draft.");
-    }
-  }
-
-  @Post("drafts/:id/reject")
-  @UseGuards(AdminGuard)
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "[Admin] Reject a draft" })
-  async rejectDraft(@Param("id") id: string) {
-    this.lessonAiService.rejectDraft(id);
-    return { success: true, message: "Draft rejected." };
-  }
-
-  @Delete("drafts/:id")
-  @UseGuards(AdminGuard)
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "[Admin] Delete a draft permanently" })
-  async deleteDraft(@Param("id") id: string) {
-    this.lessonAiService.deleteDraft(id);
-    return { success: true, message: "Draft deleted." };
   }
 
   @Delete(":id")

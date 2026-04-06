@@ -26,4 +26,9 @@ export class CategoryService {
   deleteCategory(id: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
+
+  /** Admin: upsert built-in categories (same as `npm run db:seed` in backend). */
+  seedDefaultCategories(): Observable<ApiResponse<Category[]>> {
+    return this.http.post<ApiResponse<Category[]>>(`${this.apiUrl}/seed-defaults`, {});
+  }
 }

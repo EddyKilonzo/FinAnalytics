@@ -119,7 +119,10 @@ export interface Goal {
 export interface LessonQuizQuestion {
   question: string;
   options: string[];
-  correct: number;
+  /** 0-based index of the correct option (preferred). */
+  correct?: number;
+  /** Alias used in `lessons.json`; normalized to `correct` in the lesson view. */
+  correctIndex?: number;
   explanation: string;
 }
 
@@ -168,6 +171,8 @@ export interface Insight {
   type: string;
   message: string;
   severity?: 'info' | 'tip' | 'warning';
+  /** Backend: rule engine vs Anthropic smart tips */
+  source?: 'rules' | 'ai';
 }
 
 // ── Admin ──────────────────────────────────────────────────────────────────

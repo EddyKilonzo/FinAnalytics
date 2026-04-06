@@ -170,11 +170,14 @@ export class MlService {
    * Fire-and-forget: we intentionally do not await this in normal flows.
    * Errors are logged but never propagated to the caller.
    */
+  /**
+   * @returns true if the ML service acknowledged the feedback (HTTP 2xx).
+   */
   async sendFeedback(
     description: string,
     correctCategorySlug: string,
-  ): Promise<void> {
-    if (!description?.trim()) return;
+  ): Promise<boolean> {
+    if (!description?.trim()) return false;
 
     try {
       const response = await this.fetchWithTimeout(`${this.baseUrl}/feedback`, {
@@ -188,11 +191,14 @@ export class MlService {
 
       if (!response.ok) {
         this.logger.warn(`ML /feedback returned HTTP ${response.status}`);
+        return false;
       }
+      return true;
     } catch (err) {
       this.logger.warn(
         `ML feedback could not be sent: ${err instanceof Error ? err.message : String(err)}`,
       );
+      return false;
     }
   }
 

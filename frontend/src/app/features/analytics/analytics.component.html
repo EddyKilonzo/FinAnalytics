@@ -1,5 +1,4 @@
 <div class="analytics-container relative min-h-[400px]">
-  <!-- Loading Overlay -->
   <div *ngIf="isLoading" class="absolute inset-0 z-50 flex items-center justify-center bg-slate-50/80 backdrop-blur-sm rounded-2xl">
     <div class="flex flex-col items-center">
       <div class="w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
@@ -7,22 +6,20 @@
     </div>
   </div>
 
-  <!-- Summary load error: show when summary API failed (e.g. auth/network) -->
   <div *ngIf="summaryLoadFailed" class="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 flex items-center justify-between gap-4">
-    <p class="text-sm font-medium">We couldn't load your summary. Check your connection, try "All time" in the date filter, or retry.</p>
+    <p class="text-sm font-medium">We couldn't load your data. Check your connection or retry.</p>
     <button type="button" class="btn btn-secondary btn-sm shrink-0" (click)="loadData()">Retry</button>
   </div>
 
-  <!-- No data for period -->
   <div *ngIf="!isLoading && !summaryLoadFailed && hasNoDataForPeriod && dateRange !== 'all'" class="mb-6 p-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-sm">
-    No transactions in <strong>{{ dateRangeLabel }}</strong>. Try <strong>All time</strong> or <strong>Last 6 Months</strong> in the date filter to see your data.
+    No transactions in <strong>{{ dateRangeLabel }}</strong>. Try <strong>All time</strong> or <strong>Last 6 Months</strong> in the date filter.
   </div>
 
   <header class="header-section animate-fade-in-up">
     <div>
       <h1 class="page-title">Analytics</h1>
       <p class="page-subtitle">
-        Metrics and breakdown for <strong>{{ dateRangeLabel }}</strong>.
+        Spending target vs actuals for <strong>{{ dateRangeLabel }}</strong>. Overview on the home page has your balance, cash flow, and category breakdown.
       </p>
     </div>
     <div class="header-actions">
@@ -38,145 +35,48 @@
           <option value="all">All time</option>
         </select>
       </div>
-      <button class="btn btn-primary">
+      <button type="button" class="btn btn-primary">
         <ng-icon name="lucideDownload"></ng-icon>
         Export Report
       </button>
     </div>
   </header>
 
-  <!-- Key Metrics -->
-  <div class="metrics-grid">
-    <div
-      *ngFor="let metric of metrics; let i = index"
-      class="fin-card card-shadow metric-card animate-fade-in-up"
-      [ngClass]="'delay-' + (i + 1) * 100"
-    >
-      <div class="metric-header">
-        <span class="metric-label">{{ metric.label }}</span>
-        <div class="metric-icon">
-          <ng-icon *ngIf="i === 0" name="lucideActivity" size="20"></ng-icon>
-          <ng-icon *ngIf="i === 1" name="lucideBarChart3" size="20"></ng-icon>
-          <ng-icon *ngIf="i === 2" name="lucidePieChart" size="20"></ng-icon>
-          <ng-icon *ngIf="i === 3" name="lucideTrendingDown" size="20"></ng-icon>
-        </div>
-      </div>
-      <div class="metric-value">{{ metric.value }}</div>
-      <div class="metric-footer">
-        <span [class]="metric.isPositive ? 'trend-positive' : 'trend-negative'">
-          <ng-icon
-            [name]="metric.isPositive ? 'lucideTrendingUp' : 'lucideTrendingDown'"
-            size="16"
-          ></ng-icon>
-          {{ metric.trend }}
-        </span>
-        <span class="metric-vs">vs last month</span>
-      </div>
+  <div class="single-analytics-card fin-card card-shadow animate-fade-in-up delay-300">
+    <div class="chart-header">
+      <h2 class="chart-title">Monthly spending target</h2>
+      <p class="chart-sub">Set a monthly cap and see how each period compares. This does not repeat the charts on your Overview page.</p>
     </div>
-  </div>
-
-  <!-- Primary Charts Layout -->
-  <div class="charts-layout">
-    <!-- Main Line Chart -->
-    <div class="fin-card card-shadow chart-card animate-fade-in-up delay-300">
-      <div class="chart-header">
-        <h2 class="chart-title">Revenue & Expenses Overview</h2>
-      </div>
-      <div class="chart-container">
-        <canvas
-          baseChart
-          [data]="lineChartData"
-          [options]="lineChartOptions"
-          [type]="lineChartType"
+    <div class="target-setter">
+      <div class="target-input-group">
+        <ng-icon name="lucideTarget" size="20"></ng-icon>
+        <input
+          type="number"
+          min="0"
+          step="100"
+          placeholder="Monthly spending target (KES)"
+          [(ngModel)]="spendingTargetInput"
+          class="target-input"
+        />
+        <button type="button" class="btn btn-primary btn-sm" (click)="setSpendingTarget()">
+          Set target
+        </button>
+        <button
+          *ngIf="monthlySpendingTarget != null"
+          type="button"
+          class="btn btn-ghost btn-sm"
+          (click)="clearSpendingTarget()"
         >
-        </canvas>
+          Clear
+        </button>
       </div>
+      <p *ngIf="monthlySpendingTarget != null" class="target-hint">
+        Target: KES {{ monthlySpendingTarget | number:'1.0-0' }} per month. Bars show actual spending per period below.
+      </p>
     </div>
-
-    <!-- Doughnut Chart -->
-    <div class="fin-card card-shadow chart-card animate-fade-in-up delay-400">
-      <div class="chart-header">
-        <h2 class="chart-title">Expense Breakdown</h2>
-      </div>
-      <div class="chart-container">
-        <canvas
-          baseChart
-          [data]="doughnutChartData"
-          [options]="doughnutChartOptions"
-          [type]="doughnutChartType"
-        >
-        </canvas>
-      </div>
-    </div>
-  </div>
-
-  <!-- Secondary Grid -->
-  <div class="bottom-grid">
-    <!-- Monthly Performance Target -->
-    <div class="fin-card card-shadow chart-card animate-fade-in-up delay-400">
-      <div class="chart-header">
-        <h2 class="chart-title">Monthly Performance Target</h2>
-      </div>
-      <div class="target-setter">
-        <div class="target-input-group">
-          <ng-icon name="lucideTarget" size="20"></ng-icon>
-          <input
-            type="number"
-            min="0"
-            step="100"
-            placeholder="Set monthly spending target (KSh)"
-            [(ngModel)]="spendingTargetInput"
-            class="target-input"
-          />
-          <button type="button" class="btn btn-primary btn-sm" (click)="setSpendingTarget()">
-            Set target
-          </button>
-          <button
-            *ngIf="monthlySpendingTarget != null"
-            type="button"
-            class="btn btn-ghost btn-sm"
-            (click)="clearSpendingTarget()"
-          >
-            Clear
-          </button>
-        </div>
-        <p *ngIf="monthlySpendingTarget != null" class="target-hint">
-          Target: KSh {{ monthlySpendingTarget | number:'1.0-0' }} per month. Chart shows actual spending vs your target.
-        </p>
-      </div>
-      <div class="chart-container" style="height: 280px">
-        <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="barChartType">
-        </canvas>
-      </div>
-    </div>
-
-    <!-- Key Insights (from real spending data) -->
-    <div class="fin-card card-shadow chart-card animate-fade-in-up delay-400">
-      <div class="chart-header">
-        <h2 class="chart-title">Key Insights</h2>
-      </div>
-      <div class="insights-list">
-        <ng-container *ngIf="insights.length > 0; else noInsights">
-          <div *ngFor="let insight of insights" class="insight-item">
-            <div class="insight-icon-wrapper" [ngClass]="'icon-' + insight.type">
-              <ng-icon [name]="insight.icon" size="20"></ng-icon>
-            </div>
-            <div class="insight-content">
-              <h3 class="insight-title">{{ insight.title }}</h3>
-              <p class="insight-desc">{{ insight.description }}</p>
-            </div>
-            <button class="insight-action">
-              <ng-icon name="lucideArrowRight" size="20"></ng-icon>
-            </button>
-          </div>
-        </ng-container>
-        <ng-template #noInsights>
-          <div class="insight-item insight-empty">
-            <ng-icon name="lucideActivity" size="24"></ng-icon>
-            <p class="insight-desc">No insights yet. Keep logging transactions to see spending patterns and tips here.</p>
-          </div>
-        </ng-template>
-      </div>
+    <div class="chart-container chart-container-tall">
+      <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="barChartType">
+      </canvas>
     </div>
   </div>
 </div>

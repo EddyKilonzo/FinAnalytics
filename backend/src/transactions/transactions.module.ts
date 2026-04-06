@@ -2,9 +2,11 @@ import { Module } from "@nestjs/common";
 import { TransactionsService } from "./transactions.service";
 import { TransactionsController } from "./transactions.controller";
 import { MlModule } from "../ml/ml.module";
+import { AiModule } from "../ai/ai.module";
 
 @Module({
   imports: [
+    AiModule,
     // MlModule provides MlService for automatic category suggestions
     // and feedback forwarding on user corrections.
     MlModule,

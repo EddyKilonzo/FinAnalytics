@@ -91,7 +91,11 @@ interface Category {
       @if (!loading() && !error()) {
         @if (filtered().length === 0) {
           <div class="text-center py-24 text-white/40">
-            No categories match "{{ searchQuery() }}"
+            @if (searchQuery()) {
+              No categories match "{{ searchQuery() }}"
+            } @else {
+              No categories yet.
+            }
           </div>
         } @else {
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">

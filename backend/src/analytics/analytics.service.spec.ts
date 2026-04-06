@@ -5,15 +5,20 @@ describe("AnalyticsService", () => {
     transaction: {
       findMany: jest.fn().mockResolvedValue([]),
       aggregate: jest.fn().mockResolvedValue({ _sum: { amount: 0 } }),
+      count: jest.fn().mockResolvedValue(0),
     },
     category: { findMany: jest.fn().mockResolvedValue([]) },
+  };
+
+  const mockAi = {
+    generateSmartInsights: jest.fn().mockResolvedValue([]),
   };
 
   let service: AnalyticsService;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new AnalyticsService(mockPrisma as any);
+    service = new AnalyticsService(mockPrisma as any, mockAi as any);
   });
 
   it("should be defined", () => {

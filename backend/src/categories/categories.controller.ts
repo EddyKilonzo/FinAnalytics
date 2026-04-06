@@ -82,6 +82,43 @@ export class CategoriesController {
     }
   }
 
+  // ─── POST /api/v1/categories/seed-defaults  [ADMIN] ───────────────────────
+  // Declared before GET :id so "seed-defaults" is not captured as an id.
+
+  @Post("seed-defaults")
+  @UseGuards(AdminGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Seed default categories  [ADMIN]",
+    description:
+      "Upserts the built-in category list (same as `npm run db:seed`). Safe to run multiple times.",
+  })
+  @ApiResponse({ status: 200, description: "Defaults loaded." })
+  @ApiResponse({
+    status: 403,
+    description: "Requires ADMIN role.",
+    type: ErrorResponseDto,
+  })
+  async seedDefaults() {
+    try {
+      const { count, data } = await this.categoriesService.seedDefaults();
+      return {
+        success: true,
+        message: `Loaded ${count} default categories.`,
+        data,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error(
+        "Unexpected error seeding default categories",
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw new InternalServerErrorException(
+        "Could not load default categories. Please try again.",
+      );
+    }
+  }
+
   // ─── GET /api/v1/categories/:id ───────────────────────────────────────────
 
   @Get(":id")

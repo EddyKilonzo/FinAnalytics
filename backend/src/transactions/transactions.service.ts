@@ -7,6 +7,7 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "../common/prisma.service";
 import { MlService } from "../ml/ml.service";
+import { AnthropicAiService } from "../ai/anthropic-ai.service";
 import { handlePrismaError } from "../common/helpers/prisma-error.handler";
 import type { CreateTransactionDto } from "./dto/create-transaction.dto";
 import type { UpdateTransactionDto } from "./dto/update-transaction.dto";
@@ -20,6 +21,7 @@ export class TransactionsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ml: MlService,
+    private readonly anthropicAi: AnthropicAiService,
   ) {}
 
   /** Loose cast so we can call Prisma model methods without importing the generated namespace. */
@@ -216,11 +218,9 @@ export class TransactionsService {
    * Flow:
    *  1. Validate the user-supplied categoryId (if any).
    *  2. Create the transaction row.
-   *  3. Call the ML service to get a category suggestion (2–3 second timeout).
-   *     • If ML responds in time → update the row with suggestedCategoryId +
-   *       categoryConfidence and return the enriched record.
-   *     • If ML is unavailable → return the transaction without ML fields
-   *       (graceful degradation; does not fail the request).
+   *  3. Suggest a category: Anthropic (if ANTHROPIC_API_KEY) → Python ML service → keyword rules.
+   *     • On success → update suggestedCategoryId + categoryConfidence and return the enriched row.
+   *     • If all unavailable → return the transaction without suggestion (no failure).
    */
   async create(dto: CreateTransactionDto, userId: string): Promise<any> {
     try {
@@ -249,9 +249,29 @@ export class TransactionsService {
         `Transaction created: ${transaction.id} (${dto.type} KES ${dto.amount}) — user ${userId}`,
       );
 
-      // Step 2 — request ML categorisation, with keyword fallback when ML returns null or "other"
+      // Step 2 — AI → ML → keyword categorisation
       if (dto.description?.trim()) {
-        const prediction = await this.ml.categorise(dto.description, dto.type);
+        const categories = await this.db.category.findMany({
+          select: { slug: true, name: true },
+          orderBy: { name: "asc" },
+        });
+
+        let prediction: {
+          suggestedCategorySlug: string;
+          confidence: number;
+        } | null = null;
+
+        if (categories.length > 0) {
+          prediction = await this.anthropicAi.suggestTransactionCategory(
+            dto.description,
+            dto.type,
+            categories,
+          );
+        }
+        if (!prediction) {
+          prediction = await this.ml.categorise(dto.description, dto.type);
+        }
+
         const slug =
           prediction &&
           prediction.suggestedCategorySlug &&
@@ -263,16 +283,21 @@ export class TransactionsService {
           const suggestedCategoryId = await this.categoryIdFromSlug(slug);
           if (suggestedCategoryId) {
             const confidence = prediction?.confidence ?? 0.7;
+            // Auto-accept the AI suggestion as the confirmed category when the
+            // user did not explicitly choose one. This ensures every transaction
+            // gets a category automatically; the user can still correct it later.
+            const autoAccept = !dto.categoryId;
             const enriched = await this.db.transaction.update({
               where: { id: transaction.id },
               data: {
                 suggestedCategoryId,
                 categoryConfidence: confidence,
+                ...(autoAccept ? { categoryId: suggestedCategoryId } : {}),
               },
               include: { category: true, suggestedCategory: true },
             });
             this.logger.log(
-              `Category suggestion: "${slug}" for tx ${transaction.id}`,
+              `Category ${autoAccept ? "auto-assigned" : "suggested"}: "${slug}" (confidence ${confidence}) for tx ${transaction.id}`,
             );
             return enriched;
           }
@@ -318,13 +343,62 @@ export class TransactionsService {
           : null;
       }
 
-      const updated = await this.db.transaction.update({
+      let updated = await this.db.transaction.update({
         where: { id },
         data,
         include: { category: true, suggestedCategory: true },
       });
 
       this.logger.log(`Transaction updated: ${id} by user ${userId}`);
+
+      // Re-run AI categorisation when the description changed and the transaction
+      // still has no confirmed category (user didn't explicitly set one).
+      const descriptionChanged =
+        dto.description !== undefined &&
+        dto.description !== existing.description;
+      const noConfirmedCategory =
+        dto.categoryId === undefined && !updated.categoryId;
+
+      if (descriptionChanged && noConfirmedCategory && dto.description?.trim()) {
+        const categories = await this.db.category.findMany({
+          select: { slug: true, name: true },
+          orderBy: { name: "asc" },
+        });
+
+        let prediction: { suggestedCategorySlug: string; confidence: number } | null = null;
+        if (categories.length > 0) {
+          prediction = await this.anthropicAi.suggestTransactionCategory(
+            dto.description,
+            updated.type,
+            categories,
+          );
+        }
+        if (!prediction) {
+          prediction = await this.ml.categorise(dto.description, updated.type);
+        }
+
+        const slug =
+          prediction?.suggestedCategorySlug &&
+          prediction.suggestedCategorySlug.toLowerCase() !== "other"
+            ? prediction.suggestedCategorySlug
+            : this.keywordSuggestSlug(dto.description);
+
+        if (slug) {
+          const suggestedCategoryId = await this.categoryIdFromSlug(slug);
+          if (suggestedCategoryId) {
+            const confidence = prediction?.confidence ?? 0.7;
+            updated = await this.db.transaction.update({
+              where: { id },
+              data: { suggestedCategoryId, categoryConfidence: confidence, categoryId: suggestedCategoryId },
+              include: { category: true, suggestedCategory: true },
+            });
+            this.logger.log(
+              `Category re-assigned on update: "${slug}" for tx ${id}`,
+            );
+          }
+        }
+      }
+
       return updated;
     } catch (error) {
       if (error instanceof HttpException) throw error;

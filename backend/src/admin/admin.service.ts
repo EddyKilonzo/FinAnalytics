@@ -1,6 +1,7 @@
 import { Injectable, Logger, HttpException } from "@nestjs/common";
 import { PrismaService } from "../common/prisma.service";
 import { handlePrismaError } from "../common/helpers/prisma-error.handler";
+import { MlService } from "../ml/ml.service";
 
 /** Query params for admin list endpoints (paginated, optional user filter). */
 export interface AdminListQuery {
@@ -13,7 +14,10 @@ export interface AdminListQuery {
 export class AdminService {
   private readonly logger = new Logger(AdminService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly ml: MlService,
+  ) {}
 
   private get db() {
     return this.prisma as any;
@@ -223,6 +227,51 @@ export class AdminService {
     } catch (error) {
       if (error instanceof HttpException) throw error;
       handlePrismaError(error, this.logger, "AdminService.getAllGoals");
+    }
+  }
+
+  /**
+   * Push every stored `MlFeedback` row to the Python ML service so it can be
+   * merged on the next /retrain. Use when the ML container lost feedback.jsonl
+   * or after fixing slug validation for new categories.
+   */
+  async pushMlFeedbackToMl(): Promise<{
+    total: number;
+    acknowledged: number;
+    failed: number;
+  }> {
+    try {
+      const rows = await this.db.mlFeedback.findMany({
+        orderBy: { createdAt: "asc" },
+        select: { description: true, correctedSlug: true },
+      });
+
+      let acknowledged = 0;
+      let failed = 0;
+
+      for (const row of rows) {
+        const desc = row.description?.trim();
+        const slug = row.correctedSlug?.trim();
+        if (!desc || !slug) {
+          failed++;
+          continue;
+        }
+        const ok = await this.ml.sendFeedback(desc, slug);
+        if (ok) {
+          acknowledged++;
+        } else {
+          failed++;
+        }
+      }
+
+      this.logger.log(
+        `ML feedback sync: ${acknowledged}/${rows.length} acknowledged, ${failed} failed`,
+      );
+
+      return { total: rows.length, acknowledged, failed };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      handlePrismaError(error, this.logger, "AdminService.pushMlFeedbackToMl");
     }
   }
 }

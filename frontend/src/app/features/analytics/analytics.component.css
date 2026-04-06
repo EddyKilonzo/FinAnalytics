@@ -232,6 +232,31 @@ html.light .btn-secondary:hover {
   align-items: center;
 }
 
+.single-analytics-card {
+  padding: 1.75rem;
+  max-width: 960px;
+}
+
+.single-analytics-card .chart-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.chart-sub {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 400;
+  line-height: 1.45;
+  max-width: 52rem;
+}
+
+.chart-container-tall {
+  height: 360px;
+}
+
 .chart-title {
   font-size: 1.25rem;
   font-weight: 700;

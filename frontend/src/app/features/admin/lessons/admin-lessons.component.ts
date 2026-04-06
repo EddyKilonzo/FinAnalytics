@@ -312,6 +312,7 @@ type TabMode = 'published' | 'drafts';
     .draft-preview-wrap { max-height: 400px; overflow-y: auto; }
     .draft-preview { padding: 1.25rem; background: var(--surface-alt); border-radius: 12px; color: var(--text-primary); font-size: 0.875rem; line-height: 1.7; }
     .draft-preview h1, .draft-preview h2, .draft-preview h3 { color: var(--text-primary); margin-top: 1rem; }
+    .draft-preview span[style], .draft-preview font[style] { color: inherit !important; }
     .draft-preview code { background: var(--surface); padding: 0.1rem 0.35rem; border-radius: 4px; }
     /* Form */
     .form-card { }

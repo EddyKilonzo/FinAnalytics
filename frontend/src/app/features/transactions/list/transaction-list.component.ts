@@ -97,7 +97,7 @@ export class TransactionListComponent implements OnInit {
             category,
             categoryColor: tx.category?.color ?? this.getCategoryColor(category),
             icon: this.getIconForCategory(category),
-            aiSuggested: !!tx.suggestedCategoryId,
+            aiSuggested: !!tx.suggestedCategoryId && tx.suggestedCategoryId === tx.categoryId,
           };
         });
         this.allTransactions.set(mapped);
@@ -161,7 +161,7 @@ export class TransactionListComponent implements OnInit {
       amount: transaction.amount,
       type: transaction.type,
       date: new Date(transaction.date).toISOString(),
-      categoryId: transaction.categoryId || undefined
+      categoryId: transaction.categoryId && transaction.categoryId !== '' ? transaction.categoryId : undefined
     };
 
     if (this.editingTransaction()) {

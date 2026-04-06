@@ -33,11 +33,25 @@ from training_data import TRAINING_SAMPLES
 log = logging.getLogger("ml-service.classifier")
 
 FEEDBACK_PATH = os.getenv("FEEDBACK_PATH", "feedback.jsonl")
-VALID_SLUGS = {
-    "food-dining", "transport", "social", "entertainment",
-    "utilities", "health", "education", "clothing",
-    "rent-housing", "savings", "income", "other",
-}
+
+
+def is_allowed_slug(s: str) -> bool:
+    """
+    Match NestJS CreateCategoryDto: lowercase letters, digits, hyphens; max 80 chars.
+    Any category the admin adds in the DB can be learned after feedback + retrain.
+    """
+    if not s or len(s) > 80:
+        return False
+    for ch in s:
+        if not (ch.islower() or ch.isdigit() or ch == "-"):
+            return False
+    if s.startswith("-") or s.endswith("-") or "--" in s:
+        return False
+    return True
+
+
+# Backwards compatibility for imports / tests — not used for validation anymore
+VALID_SLUGS = frozenset({label for _, label in TRAINING_SAMPLES})
 
 
 class TransactionClassifier:
@@ -115,8 +129,9 @@ class TransactionClassifier:
                                 continue
                             try:
                                 entry = json.loads(line)
-                                if entry.get("text") and entry.get("label") in VALID_SLUGS:
-                                    samples.append((entry["text"], entry["label"]))
+                                label = entry.get("label") or ""
+                                if entry.get("text") and is_allowed_slug(label):
+                                    samples.append((entry["text"], label))
                             except json.JSONDecodeError:
                                 log.warning("Skipping malformed feedback line: %s", raw_line[:80])
                 except (OSError, IOError) as exc:
